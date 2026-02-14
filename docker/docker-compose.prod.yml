@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: hlab-web:prod
+    container_name: hlab-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - hlab-network
+
+networks:
+  hlab-network:
+    driver: bridge
