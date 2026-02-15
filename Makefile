@@ -15,25 +15,25 @@ dev:
 	./scripts/run_dev.sh
 
 build:
-	docker-compose -f ./docker/docker-compose.prod.yml build
+	docker compose -f ./docker/docker-compose.prod.yml build
 
 prod:
 	./scripts/run_prod.sh
 
 stop:
-	docker-compose -f ./docker/docker-compose.prod.yml down
+	docker compose -f ./docker/docker-compose.prod.yml down
 
 logs:
-	docker-compose -f ./docker/docker-compose.prod.yml logs -f
+	docker compose -f ./docker/docker-compose.prod.yml logs -f
 
 clean:
 	docker system prune -f
 
 db-migrate:
-	docker-compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:migrate
+	docker compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:migrate
 
 db-reset:
-	docker-compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:drop
-	docker-compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:create
-	docker-compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:migrate
-	docker-compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:seed:all
+	docker compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:drop
+	docker compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:create
+	docker compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:migrate
+	docker compose -f ./docker/docker-compose.dev.yml run --rm web npx sequelize-cli db:seed:all

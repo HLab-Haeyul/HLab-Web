@@ -59,23 +59,24 @@ fi
 step "서버 시작..."
 
 if lsof -i :3000 > /dev/null 2>&1; then
-  PIDS=$(lsof -t -i :3000)  
-  if [ -n "$PIDS" ]; then  
-    kill $PIDS  
-    sleep 5 
-    if lsof -i :3000 > /dev/null 2>&1; then  
-      warn "정상 종료 실패, 프로세스를 강제 종료합니다 (SIGKILL)..."  
-      kill -9 $PIDS  
-      sleep 2  
-    fi  
-  fi  
   warn "포트 3000이 이미 사용 중입니다. 기존 프로세스 종료 중..."
-  kill -9 $(lsof -t -i :3000)
-  sleep 2
+  PIDS=$(lsof -t -i :3000)
+  if [ -n "$PIDS" ]; then
+    kill $PIDS 2>/dev/null || true
+    sleep 2
+    if lsof -i :3000 > /dev/null 2>&1; then
+      warn "정상 종료 실패, 프로세스를 강제 종료합니다 (SIGKILL)..."
+      PIDS=$(lsof -t -i :3000)
+      if [ -n "$PIDS" ]; then
+        kill -9 $PIDS 2>/dev/null || true
+      fi
+      sleep 1
+    fi
+  fi
   success "기존 프로세스 종료 완료"
 fi
 
-docker-compose -f ./docker/docker-compose.prod.yml up -d
+docker compose -f ./docker/docker-compose.prod.yml up -d
 if [ $? -ne 0 ]; then
   error "서버 시작 실패"
   exit 1
