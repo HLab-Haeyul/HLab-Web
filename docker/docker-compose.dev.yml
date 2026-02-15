@@ -3,7 +3,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    image: hlab-web:prod
+    image: hlab-web:dev
     container_name: hlab-web
     restart: unless-stopped
     ports:

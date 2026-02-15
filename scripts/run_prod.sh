@@ -48,7 +48,7 @@ title() {
 title "HLab-Web Production Deploy"
 
 step "프로덕션 빌드 중..."
-make build
+docker compose -f ./docker/docker-compose.prod.yml build
 if [ $? -eq 0 ]; then
   success "빌드 성공"
 else
@@ -59,6 +59,16 @@ fi
 step "서버 시작..."
 
 if lsof -i :3000 > /dev/null 2>&1; then
+  PIDS=$(lsof -t -i :3000)  
+  if [ -n "$PIDS" ]; then  
+    kill $PIDS  
+    sleep 5 
+    if lsof -i :3000 > /dev/null 2>&1; then  
+      warn "정상 종료 실패, 프로세스를 강제 종료합니다 (SIGKILL)..."  
+      kill -9 $PIDS  
+      sleep 2  
+    fi  
+  fi  
   warn "포트 3000이 이미 사용 중입니다. 기존 프로세스 종료 중..."
   kill -9 $(lsof -t -i :3000)
   sleep 2
