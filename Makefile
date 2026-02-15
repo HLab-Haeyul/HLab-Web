@@ -12,7 +12,7 @@ help:
 	@echo " make db-reset		 - 데이터베이스 초기화 및 마이그레이션 실행"
 
 dev:
-	docker-compose -f ./docker/docker-compose.dev.yml up --build
+	./scripts/run_dev.sh
 
 build:
 	docker-compose -f ./docker/docker-compose.prod.yml build

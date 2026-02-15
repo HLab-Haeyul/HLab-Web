@@ -49,8 +49,25 @@ title "HLab-Web Development Server"
 
 if lsof -i :3000 > /dev/null 2>&1; then
   warn "포트 3000이 이미 사용 중입니다. 기존 프로세스 종료 중..."
-  kill -9 $(lsof -t -i :3000)
-  sleep 2
+  PID=$(lsof -t -i :3000)
+  if [-n "$PID"]; then
+    kill -9 $PID 2>/dev/null || true
+    
+    for i in {1...5}; do
+      sleep 1
+      if ! lsof -i :3000 > /dev/null 2>&1; then
+        success "기존 프로세스 종료 완료"
+        break
+      fi
+    done
+
+    if lsof -i :3000 > /dev/null 2>&1; then
+      warn "정상 종료 실패, ㄴSIGKILL 강제 종료합니다..."
+      PIDS=$(lsof -t -i :3000)
+      [-n "$PIDS"] && kill -9 $PIDS 2>/dev/null || true
+      sleep 1
+    fi
+  fi
   success "기존 프로세스 종료 완료"
 fi
 
