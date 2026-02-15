@@ -49,22 +49,16 @@ title "HLab-Web Development Server"
 
 if lsof -i :3000 > /dev/null 2>&1; then
   warn "포트 3000이 이미 사용 중입니다. 기존 프로세스 종료 중..."
-  PID=$(lsof -t -i :3000)
-  if [-n "$PID"]; then
-    kill -9 $PID 2>/dev/null || true
-    
-    for i in {1...5}; do
-      sleep 1
-      if ! lsof -i :3000 > /dev/null 2>&1; then
-        success "기존 프로세스 종료 완료"
-        break
-      fi
-    done
-
+  PIDS=$(lsof -t -i :3000)
+  if [ -n "$PIDS" ]; then
+    kill $PIDS 2>/dev/null || true
+    sleep 2
     if lsof -i :3000 > /dev/null 2>&1; then
-      warn "정상 종료 실패, ㄴSIGKILL 강제 종료합니다..."
+      warn "정상 종료 실패, 프로세스를 강제 종료합니다 (SIGKILL)..."
       PIDS=$(lsof -t -i :3000)
-      [-n "$PIDS"] && kill -9 $PIDS 2>/dev/null || true
+      if [ -n "$PIDS" ]; then
+        kill -9 $PIDS 2>/dev/null || true
+      fi
       sleep 1
     fi
   fi
@@ -72,7 +66,7 @@ if lsof -i :3000 > /dev/null 2>&1; then
 fi
 
 step "개발 서버 시작 중..."
-docker-compose -f ./docker/docker-compose.dev.yml up --build
+docker compose -f ./docker/docker-compose.dev.yml up --build
 if [ $? -ne 0 ]; then
   error "개발 서버 시작 실패"
   exit 1
