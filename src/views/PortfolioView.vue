@@ -15,8 +15,7 @@ const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const workThumbnails = computed(() => workThumbnailsByLocale[locale.value])
 const stackDetailPath = computed(() => (locale.value === 'en' ? '/en/stack' : '/ko/stack'))
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
-const uploadedPhotoSrc = ref('')
-const profilePhotoSrc = computed(() => uploadedPhotoSrc.value || profileShowcase.value.photoSrc)
+const profilePhotoSrc = computed(() => profileShowcase.value.photoSrc)
 const currentYear = new Date().getFullYear()
 const showIntro = ref(false)
 const introKicker = computed(() => (locale.value === 'ko' ? 'INITIAL RENDER' : 'INITIAL RENDER'))
@@ -34,25 +33,6 @@ let introTimer: ReturnType<typeof setTimeout> | undefined
 
 const INTRO_DURATION_MS = 1450
 const INTRO_STORAGE_KEY = 'portfolio_intro_seen'
-
-const revokeUploadedPhotoUrl = () => {
-  if (uploadedPhotoSrc.value.startsWith('blob:')) {
-    URL.revokeObjectURL(uploadedPhotoSrc.value)
-  }
-}
-
-const handleProfilePhotoChange = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-
-  if (!file) {
-    return
-  }
-
-  revokeUploadedPhotoUrl()
-  uploadedPhotoSrc.value = URL.createObjectURL(file)
-  input.value = ''
-}
 
 const syncViewport = () => {
   viewportWidth.value = window.innerWidth
@@ -98,7 +78,6 @@ onBeforeUnmount(() => {
     clearTimeout(introTimer)
   }
 
-  revokeUploadedPhotoUrl()
   document.body.style.overflow = ''
   document.documentElement.style.overflow = ''
 })
@@ -196,14 +175,6 @@ watch(showIntro, (introOpen) => {
             >
               {{ profileShowcase.photoHint }}
             </div>
-
-            <label
-              class="mt-3 inline-flex cursor-pointer items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2.5 text-xs font-semibold text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
-            >
-              <input class="sr-only" type="file" accept="image/*" @change="handleProfilePhotoChange" />
-              {{ profileShowcase.photoUploadLabel }}
-            </label>
-            <p class="mt-2 text-xs text-zinc-500">{{ profileShowcase.photoUploadHint }}</p>
           </article>
         </div>
       </section>
