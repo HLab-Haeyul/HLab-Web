@@ -16,6 +16,7 @@ const workThumbnails = computed(() => workThumbnailsByLocale[locale.value])
 const stackDetailPath = computed(() => (locale.value === 'en' ? '/en/stack' : '/ko/stack'))
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const profilePhotoSrc = computed(() => profileShowcase.value.photoSrc)
+const metricDisplayValues = ref<string[]>([])
 const currentYear = new Date().getFullYear()
 const showIntro = ref(false)
 const introKicker = computed(() => (locale.value === 'ko' ? 'INITIAL RENDER' : 'INITIAL RENDER'))
@@ -30,9 +31,79 @@ const isStandaloneMode = ref(false)
 let displayModeQuery: MediaQueryList | null = null
 let handleDisplayModeChange: ((event: MediaQueryListEvent) => void) | null = null
 let introTimer: ReturnType<typeof setTimeout> | undefined
+let metricRaf: number | undefined
 
 const INTRO_DURATION_MS = 1450
 const INTRO_STORAGE_KEY = 'portfolio_intro_seen'
+const METRIC_DURATION_MS = 1050
+
+const parseMetric = (rawValue: string) => {
+  const match = rawValue.match(/^(.*?)(\d+(?:\.\d+)?)(.*)$/)
+
+  if (!match) {
+    return null
+  }
+
+  const [, prefix = '', numberPart = '0', suffix = ''] = match
+  const decimalDigits = numberPart.includes('.') ? (numberPart.split('.')[1]?.length ?? 0) : 0
+
+  return {
+    prefix,
+    target: Number(numberPart),
+    suffix,
+    decimalDigits,
+  }
+}
+
+const runMetricCounter = () => {
+  if (metricRaf) {
+    cancelAnimationFrame(metricRaf)
+  }
+
+  const parsedMetrics = copy.value.metrics.map((metric) => parseMetric(metric.value))
+  metricDisplayValues.value = copy.value.metrics.map((metric, index) => {
+    const parsed = parsedMetrics[index]
+
+    if (!parsed) {
+      return metric.value
+    }
+
+    const initial = parsed.decimalDigits > 0 ? (0).toFixed(parsed.decimalDigits) : '0'
+    return `${parsed.prefix}${initial}${parsed.suffix}`
+  })
+
+  const start = performance.now()
+
+  const animate = (now: number) => {
+    const progress = Math.min((now - start) / METRIC_DURATION_MS, 1)
+    const eased = 1 - (1 - progress) ** 3
+
+    metricDisplayValues.value = copy.value.metrics.map((metric, index) => {
+      const parsed = parsedMetrics[index]
+
+      if (!parsed) {
+        return metric.value
+      }
+
+      const current =
+        parsed.decimalDigits > 0
+          ? (parsed.target * eased).toFixed(parsed.decimalDigits)
+          : String(Math.round(parsed.target * eased))
+
+      return `${parsed.prefix}${current}${parsed.suffix}`
+    })
+
+    if (progress < 1) {
+      metricRaf = requestAnimationFrame(animate)
+      return
+    }
+
+    metricDisplayValues.value = copy.value.metrics.map((metric) => metric.value)
+    metricRaf = undefined
+  }
+
+  metricRaf = requestAnimationFrame(animate)
+}
 
 const syncViewport = () => {
   viewportWidth.value = window.innerWidth
@@ -78,6 +149,10 @@ onBeforeUnmount(() => {
     clearTimeout(introTimer)
   }
 
+  if (metricRaf) {
+    cancelAnimationFrame(metricRaf)
+  }
+
   document.body.style.overflow = ''
   document.documentElement.style.overflow = ''
 })
@@ -92,6 +167,14 @@ watch(showIntro, (introOpen) => {
   document.body.style.overflow = value
   document.documentElement.style.overflow = value
 })
+
+watch(
+  () => copy.value.metrics.map((metric) => metric.value).join('|'),
+  () => {
+    runMetricCounter()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -182,13 +265,13 @@ watch(showIntro, (introOpen) => {
         :class="isAppLayout ? 'grid-cols-2' : 'grid-cols-1 md:mt-12 md:grid-cols-3'"
       >
         <article
-          v-for="item in copy.metrics"
+          v-for="(item, metricIndex) in copy.metrics"
           :key="item.label"
           class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4"
         >
           <p class="text-sm text-zinc-500">{{ item.label }}</p>
           <strong :class="isAppLayout ? 'text-xl' : 'text-2xl'" class="mt-2 block text-white">
-            {{ item.value }}
+            {{ metricDisplayValues[metricIndex] ?? item.value }}
           </strong>
         </article>
       </section>
