@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-const calligraphyChars = ['一', '目', '瞭', '然']
+const calligraphyChars = ['一', '以', '貫', '之']
 const showIntro = ref(true)
 const mainVisible = ref(false)
 
@@ -112,8 +112,8 @@ const currentYear = new Date().getFullYear()
   <Transition name="intro-fade">
     <section v-if="showIntro" class="intro-screen" aria-label="인트로 애니메이션">
       <div class="intro-frame">
-        <p class="intro-reading">일목요연</p>
-        <div class="calligraphy-line" role="img" aria-label="한자 일목요연">
+        <p class="intro-reading">일이관지</p>
+        <div class="calligraphy-line" role="img" aria-label="한자 일이관지">
           <span
             v-for="(char, index) in calligraphyChars"
             :key="`${char}-${index}`"
