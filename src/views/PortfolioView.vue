@@ -339,7 +339,7 @@ watch(
         <div>
           <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.workKicker }}</p>
           <h2
-            class="mt-3 max-w-[26ch] leading-[1.05] text-zinc-100 [font-family:var(--font-display)]"
+            class="mt-3 max-w-[26ch] break-keep leading-[1.05] text-zinc-100 [font-family:var(--font-display)]"
             :class="isAppLayout ? 'text-[clamp(1.35rem,5.2vw,1.7rem)]' : 'text-[clamp(1.6rem,3.6vw,2.8rem)]'"
           >
             {{ copy.workHeading }}
