@@ -97,12 +97,6 @@ watch(
   },
 )
 
-watch(isAppLayout, (nextIsAppLayout) => {
-  if (!nextIsAppLayout) {
-    closeSidebar()
-  }
-})
-
 watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
   const value = sidebarOpen || introOpen ? 'hidden' : ''
   document.body.style.overflow = value
@@ -137,8 +131,12 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
     </Transition>
 
     <header
-      v-if="isAppLayout"
-      class="sticky top-3 z-20 mb-8 rounded-2xl border border-[#2a2a2a] bg-[#121212e0] px-3 py-2.5 backdrop-blur"
+      class="sticky z-20 rounded-2xl border border-[#2a2a2a] backdrop-blur"
+      :class="
+        isAppLayout
+          ? 'top-3 mb-8 bg-[#121212e0] px-3 py-2.5'
+          : 'top-4 mb-10 bg-[#121212d1] px-4 py-3 md:mb-16'
+      "
     >
       <div class="flex items-center justify-between gap-3">
         <button
@@ -147,7 +145,7 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
           @click="toggleSidebar"
           aria-label="Open sidebar"
           :aria-expanded="isSidebarOpen"
-          aria-controls="mobile-sidebar"
+          aria-controls="site-sidebar"
         >
           <svg
             class="h-4 w-4"
@@ -162,34 +160,43 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
 
         <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
 
-        <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
-          <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="
-              locale === 'ko'
-                ? 'bg-white !text-[#0f0f0f]'
-                : 'text-zinc-400 hover:text-zinc-100'
-            "
-            to="/ko"
+        <div class="flex items-center gap-2">
+          <a
+            v-if="!isAppLayout"
+            class="hidden text-sm text-zinc-400 transition hover:text-zinc-100 lg:block"
+            href="mailto:hello@kimminje.dev"
           >
-            KO
-          </RouterLink>
-          <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="
-              locale === 'en'
-                ? 'bg-white !text-[#0f0f0f]'
-                : 'text-zinc-400 hover:text-zinc-100'
-            "
-            to="/en"
-          >
-            EN
-          </RouterLink>
+            hello@kimminje.dev
+          </a>
+          <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
+            <RouterLink
+              class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+              :class="
+                locale === 'ko'
+                  ? 'bg-white !text-[#0f0f0f]'
+                  : 'text-zinc-400 hover:text-zinc-100'
+              "
+              to="/ko"
+            >
+              KO
+            </RouterLink>
+            <RouterLink
+              class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+              :class="
+                locale === 'en'
+                  ? 'bg-white !text-[#0f0f0f]'
+                  : 'text-zinc-400 hover:text-zinc-100'
+              "
+              to="/en"
+            >
+              EN
+            </RouterLink>
+          </div>
         </div>
       </div>
     </header>
 
-    <div v-if="isAppLayout" class="pointer-events-none fixed inset-0 z-30">
+    <div class="pointer-events-none fixed inset-0 z-30">
       <button
         type="button"
         class="absolute inset-0 bg-black/60 transition-opacity duration-200"
@@ -200,8 +207,8 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
       ></button>
 
       <aside
-        id="mobile-sidebar"
-        class="pointer-events-auto absolute left-0 top-0 h-full w-[78%] max-w-[300px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300"
+        id="site-sidebar"
+        class="pointer-events-auto absolute left-0 top-0 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
         :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
       >
         <div class="mb-5 flex items-center justify-between">
@@ -224,7 +231,7 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
           </button>
         </div>
 
-        <nav class="border-y border-[#222222]" aria-label="Mobile Primary">
+        <nav class="border-y border-[#222222]" aria-label="Primary Sidebar">
           <a
             class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
             href="#work"
@@ -266,75 +273,6 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
         </a>
       </aside>
     </div>
-
-    <header
-      v-else
-      class="sticky top-4 z-20 mb-10 grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-[#2a2a2a] bg-[#121212d1] px-4 py-3 backdrop-blur md:mb-16"
-    >
-      <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
-
-      <nav class="hidden justify-center md:flex" aria-label="Primary">
-        <div class="flex border-y border-[#222222]">
-          <a
-            class="group flex items-center gap-2 border-r border-[#222222] px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
-            href="#work"
-          >
-            <span>{{ copy.navWork }}</span>
-            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >01</span
-            >
-          </a>
-          <a
-            class="group flex items-center gap-2 border-r border-[#222222] px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
-            href="#principles"
-          >
-            <span>{{ copy.navPrinciples }}</span>
-            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >02</span
-            >
-          </a>
-          <a
-            class="group flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
-            href="#contact"
-          >
-            <span>{{ copy.navContact }}</span>
-            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >03</span
-            >
-          </a>
-        </div>
-      </nav>
-
-      <div class="flex items-center gap-2">
-        <a class="hidden text-sm text-zinc-400 transition hover:text-zinc-100 lg:block" href="mailto:hello@kimminje.dev">
-          hello@kimminje.dev
-        </a>
-        <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
-          <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="
-              locale === 'ko'
-                ? 'bg-white !text-[#0f0f0f]'
-                : 'text-zinc-400 hover:text-zinc-100'
-            "
-            to="/ko"
-          >
-            KO
-          </RouterLink>
-          <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="
-              locale === 'en'
-                ? 'bg-white !text-[#0f0f0f]'
-                : 'text-zinc-400 hover:text-zinc-100'
-            "
-            to="/en"
-          >
-            EN
-          </RouterLink>
-        </div>
-      </div>
-    </header>
 
     <main
       :class="
