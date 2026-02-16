@@ -41,14 +41,22 @@ const currentYear = new Date().getFullYear()
         <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
           <RouterLink
             class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="locale === 'ko' ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-zinc-100'"
+            :class="
+              locale === 'ko'
+                ? 'bg-white !text-[#0f0f0f]'
+                : 'text-zinc-400 hover:text-zinc-100'
+            "
             to="/ko"
           >
             KO
           </RouterLink>
           <RouterLink
             class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="locale === 'en' ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-zinc-100'"
+            :class="
+              locale === 'en'
+                ? 'bg-white !text-[#0f0f0f]'
+                : 'text-zinc-400 hover:text-zinc-100'
+            "
             to="/en"
           >
             EN
@@ -68,7 +76,7 @@ const currentYear = new Date().getFullYear()
         <p class="mt-5 max-w-[62ch] text-base text-zinc-300">{{ copy.heroLead }}</p>
         <div class="mt-6 flex flex-wrap gap-3">
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:-translate-y-0.5"
+            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
             href="#work"
           >
             {{ copy.primaryCta }}
@@ -157,7 +165,7 @@ const currentYear = new Date().getFullYear()
         </h2>
         <div class="mt-6 flex flex-wrap gap-3">
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:-translate-y-0.5"
+            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
             href="mailto:hello@kimminje.dev"
           >
             {{ copy.emailCta }}
