@@ -12,6 +12,17 @@ export type MetricItem = {
   value: string
 }
 
+export type StackTickerItem = {
+  icon: string
+  label: string
+}
+
+export type StackTickerCopy = {
+  kicker: string
+  heading: string
+  items: StackTickerItem[]
+}
+
 export type PortfolioCopySet = {
   navWork: string
   navPrinciples: string
