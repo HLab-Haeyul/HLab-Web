@@ -27,9 +27,9 @@ export type StackTickerCopy = {
 }
 
 export type StackDetailCapability = {
-  usedOnce: boolean
-  projectExperience: boolean
-  productionReady: boolean
+  projectUsed: boolean
+  practicalUsed: boolean
+  internalsExplored: boolean
 }
 
 export type StackDetailItem = {
@@ -51,15 +51,15 @@ export type StackDetailCopy = {
   columnSkill: string
   columnCategory: string
   columnProficiency: string
-  columnUsedOnce: string
-  columnProject: string
-  columnReady: string
+  columnProjectUsed: string
+  columnPracticalUsed: string
+  columnInternals: string
   columnNote: string
   yesLabel: string
   noLabel: string
-  summaryUsedOnce: string
-  summaryProject: string
-  summaryReady: string
+  summaryProjectUsed: string
+  summaryPracticalUsed: string
+  summaryInternals: string
   items: StackDetailItem[]
 }
 

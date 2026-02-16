@@ -10,14 +10,14 @@ const stackDetail = computed(() => stackDetailByLocale[locale.value])
 const homePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
 const languageSwapPath = computed(() => (locale.value === 'en' ? '/ko/stack' : '/en/stack'))
 
-const usedOnceCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.usedOnce).length,
+const projectUsedCount = computed(
+  () => stackDetail.value.items.filter((item) => item.capability.projectUsed).length,
 )
-const projectCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.projectExperience).length,
+const practicalUsedCount = computed(
+  () => stackDetail.value.items.filter((item) => item.capability.practicalUsed).length,
 )
-const readyCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.productionReady).length,
+const internalsExploredCount = computed(
+  () => stackDetail.value.items.filter((item) => item.capability.internalsExplored).length,
 )
 
 const yesNoClass = (value: boolean) =>
@@ -64,16 +64,16 @@ const yesNoClass = (value: boolean) =>
 
       <section class="mt-8 grid grid-cols-1 gap-3 md:grid-cols-3">
         <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryUsedOnce }}</p>
-          <p class="mt-2 text-2xl text-white">{{ usedOnceCount }} / {{ stackDetail.items.length }}</p>
+          <p class="text-sm text-zinc-500">{{ stackDetail.summaryProjectUsed }}</p>
+          <p class="mt-2 text-2xl text-white">{{ projectUsedCount }} / {{ stackDetail.items.length }}</p>
         </article>
         <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryProject }}</p>
-          <p class="mt-2 text-2xl text-white">{{ projectCount }} / {{ stackDetail.items.length }}</p>
+          <p class="text-sm text-zinc-500">{{ stackDetail.summaryPracticalUsed }}</p>
+          <p class="mt-2 text-2xl text-white">{{ practicalUsedCount }} / {{ stackDetail.items.length }}</p>
         </article>
         <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryReady }}</p>
-          <p class="mt-2 text-2xl text-white">{{ readyCount }} / {{ stackDetail.items.length }}</p>
+          <p class="text-sm text-zinc-500">{{ stackDetail.summaryInternals }}</p>
+          <p class="mt-2 text-2xl text-white">{{ internalsExploredCount }} / {{ stackDetail.items.length }}</p>
         </article>
       </section>
 
@@ -84,9 +84,9 @@ const yesNoClass = (value: boolean) =>
               <th class="px-4 py-3">{{ stackDetail.columnSkill }}</th>
               <th class="px-4 py-3">{{ stackDetail.columnCategory }}</th>
               <th class="px-4 py-3">{{ stackDetail.columnProficiency }}</th>
-              <th class="px-4 py-3">{{ stackDetail.columnUsedOnce }}</th>
-              <th class="px-4 py-3">{{ stackDetail.columnProject }}</th>
-              <th class="px-4 py-3">{{ stackDetail.columnReady }}</th>
+              <th class="px-4 py-3">{{ stackDetail.columnProjectUsed }}</th>
+              <th class="px-4 py-3">{{ stackDetail.columnPracticalUsed }}</th>
+              <th class="px-4 py-3">{{ stackDetail.columnInternals }}</th>
               <th class="px-4 py-3">{{ stackDetail.columnNote }}</th>
             </tr>
           </thead>
@@ -112,18 +112,18 @@ const yesNoClass = (value: boolean) =>
               <td class="px-4 py-3 text-zinc-300">{{ item.category }}</td>
               <td class="px-4 py-3 text-zinc-100">{{ item.proficiency }}</td>
               <td class="px-4 py-3">
-                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.usedOnce)">
-                  {{ item.capability.usedOnce ? stackDetail.yesLabel : stackDetail.noLabel }}
+                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.projectUsed)">
+                  {{ item.capability.projectUsed ? stackDetail.yesLabel : stackDetail.noLabel }}
                 </span>
               </td>
               <td class="px-4 py-3">
-                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.projectExperience)">
-                  {{ item.capability.projectExperience ? stackDetail.yesLabel : stackDetail.noLabel }}
+                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.practicalUsed)">
+                  {{ item.capability.practicalUsed ? stackDetail.yesLabel : stackDetail.noLabel }}
                 </span>
               </td>
               <td class="px-4 py-3">
-                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.productionReady)">
-                  {{ item.capability.productionReady ? stackDetail.yesLabel : stackDetail.noLabel }}
+                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="yesNoClass(item.capability.internalsExplored)">
+                  {{ item.capability.internalsExplored ? stackDetail.yesLabel : stackDetail.noLabel }}
                 </span>
               </td>
               <td class="px-4 py-3 text-zinc-400">{{ item.note }}</td>
