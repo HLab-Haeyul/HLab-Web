@@ -226,16 +226,7 @@ watch(
               {{ copy.heroLead }}
             </p>
             <div :class="isAppLayout ? 'mt-5' : 'mt-6'">
-              <div class="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ stackTicker.kicker }}</p>
-                  <h2
-                    class="mt-2 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
-                    :class="isAppLayout ? 'text-[clamp(1.1rem,4.5vw,1.35rem)]' : 'text-[clamp(1.25rem,2.5vw,1.8rem)]'"
-                  >
-                    {{ stackTicker.heading }}
-                  </h2>
-                </div>
+              <div class="flex justify-end">
                 <RouterLink
                   :to="stackDetailPath"
                   class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2 text-xs font-semibold tracking-[0.08em] text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
