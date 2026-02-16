@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../features/portfolio/copy'
 import { profileShowcaseByLocale } from '../features/portfolio/profileShowcase'
 import { stackTickerByLocale } from '../features/portfolio/stackTicker'
+import { workThumbnailsByLocale } from '../features/portfolio/workThumbnails'
 import type { Locale } from '../features/portfolio/types'
 
 const route = useRoute()
@@ -11,6 +12,7 @@ const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
+const workThumbnails = computed(() => workThumbnailsByLocale[locale.value])
 const stackDetailPath = computed(() => (locale.value === 'en' ? '/en/stack' : '/ko/stack'))
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const uploadedPhotoSrc = ref('')
@@ -261,10 +263,25 @@ watch(showIntro, (introOpen) => {
         </div>
         <div class="mt-5 grid grid-cols-1 gap-3" :class="isAppLayout ? '' : 'md:grid-cols-2 xl:grid-cols-3'">
           <article
-            v-for="work in copy.works"
+            v-for="(work, workIndex) in copy.works"
             :key="work.title"
-            class="flex flex-col gap-3 rounded-2xl border border-[#2a2a2a] bg-gradient-to-br from-[#151515] to-[#121212] p-4 transition hover:-translate-y-1 hover:border-[#393939]"
+            class="group flex flex-col gap-3 rounded-2xl border border-[#2a2a2a] bg-gradient-to-br from-[#151515] to-[#121212] p-4 transition hover:-translate-y-1 hover:border-[#393939]"
           >
+            <figure class="relative overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#101010]">
+              <img
+                v-if="workThumbnails[workIndex]?.imageSrc"
+                :src="workThumbnails[workIndex].imageSrc"
+                :alt="workThumbnails[workIndex].imageAlt"
+                class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                loading="lazy"
+              />
+              <div
+                v-else
+                class="flex h-36 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
+              >
+                {{ work.title }}
+              </div>
+            </figure>
             <h3 class="text-lg text-white">{{ work.title }}</h3>
             <p class="text-[15px] text-zinc-300">{{ work.summary }}</p>
             <strong class="text-sm text-zinc-200">{{ work.impact }}</strong>

@@ -7,6 +7,11 @@ export type WorkItem = {
   stack: string[]
 }
 
+export type WorkThumbnailItem = {
+  imageSrc: string
+  imageAlt: string
+}
+
 export type MetricItem = {
   label: string
   value: string
