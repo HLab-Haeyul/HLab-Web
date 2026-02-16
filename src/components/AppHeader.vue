@@ -151,8 +151,14 @@ watch(
         :to="item.to"
         @click="closeSidebar"
       >
-        <span class="text-zinc-300 transition-colors group-hover:text-white">{{ item.label }}</span>
-        <span class="text-xs tracking-[0.08em] text-zinc-600 transition-colors group-hover:text-white">
+        <span
+          class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+        >
+          {{ item.label }}
+        </span>
+        <span
+          class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+        >
           {{ item.index }}
         </span>
       </RouterLink>
