@@ -257,33 +257,6 @@ watch(
             </div>
           </article>
 
-          <div class="order-2 min-w-0 lg:order-3 lg:col-span-2">
-            <div class="relative w-full max-w-full overflow-hidden">
-              <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
-              <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
-
-              <div
-                class="stack-ticker-track flex w-max items-center gap-2 py-3"
-                :style="{ animationDuration: isAppLayout ? '20s' : '26s' }"
-              >
-                <article
-                  v-for="(item, index) in tickerLoopItems"
-                  :key="`${item.label}-${index}`"
-                  class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
-                >
-                  <img
-                    v-if="item.imageSrc"
-                    :src="item.imageSrc"
-                    :alt="item.imageAlt ?? item.label"
-                    class="h-4 w-4 object-contain"
-                    loading="lazy"
-                  />
-                  <span v-else class="text-base leading-none">{{ item.icon ?? '•' }}</span>
-                  <span class="text-sm text-zinc-200">{{ item.label }}</span>
-                </article>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -301,6 +274,34 @@ watch(
             {{ metricDisplayValues[metricIndex] ?? item.value }}
           </strong>
         </article>
+      </section>
+
+      <section :class="isAppLayout ? 'mt-5' : 'mt-6'">
+        <div class="relative w-full max-w-full overflow-hidden">
+          <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
+          <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
+
+          <div
+            class="stack-ticker-track flex w-max items-center gap-2 py-3"
+            :style="{ animationDuration: isAppLayout ? '20s' : '26s' }"
+          >
+            <article
+              v-for="(item, index) in tickerLoopItems"
+              :key="`${item.label}-${index}`"
+              class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
+            >
+              <img
+                v-if="item.imageSrc"
+                :src="item.imageSrc"
+                :alt="item.imageAlt ?? item.label"
+                class="h-4 w-4 object-contain"
+                loading="lazy"
+              />
+              <span v-else class="text-base leading-none">{{ item.icon ?? '•' }}</span>
+              <span class="text-sm text-zinc-200">{{ item.label }}</span>
+            </article>
+          </div>
+        </div>
       </section>
 
       <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
