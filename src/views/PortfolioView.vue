@@ -2,11 +2,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../features/portfolio/copy'
+import { stackTickerByLocale } from '../features/portfolio/stackTicker'
 import type { Locale } from '../features/portfolio/types'
 
 const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
 const copy = computed(() => portfolioCopyByLocale[locale.value])
+const stackTicker = computed(() => stackTickerByLocale[locale.value])
+const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const currentYear = new Date().getFullYear()
 const isSidebarOpen = ref(false)
 
@@ -444,6 +447,37 @@ watch(isSidebarOpen, (open) => {
           </a>
         </div>
       </section>
+
+      <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
+        <div>
+          <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ stackTicker.kicker }}</p>
+          <h2
+            class="mt-3 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+            :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.2rem)]'"
+          >
+            {{ stackTicker.heading }}
+          </h2>
+        </div>
+
+        <div class="relative mt-4 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#131313]">
+          <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
+          <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
+
+          <div
+            class="stack-ticker-track flex w-max items-center gap-2 py-3"
+            :style="{ animationDuration: isAppLayout ? '20s' : '26s' }"
+          >
+            <article
+              v-for="(item, index) in tickerLoopItems"
+              :key="`${item.label}-${index}`"
+              class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
+            >
+              <span class="text-base leading-none">{{ item.icon }}</span>
+              <span class="text-sm text-zinc-200">{{ item.label }}</span>
+            </article>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'">
@@ -451,3 +485,26 @@ watch(isSidebarOpen, (open) => {
     </footer>
   </div>
 </template>
+
+<style scoped>
+.stack-ticker-track {
+  animation-name: ticker-marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes ticker-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-ticker-track {
+    animation: none;
+  }
+}
+</style>
