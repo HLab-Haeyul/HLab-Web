@@ -120,7 +120,8 @@ const currentYear = new Date().getFullYear()
             class="calligraphy-char"
             :style="{ '--char-delay': `${index * 0.58}s` }"
           >
-            {{ char }}
+            <span class="char-outline" aria-hidden="true">{{ char }}</span>
+            <span class="char-fill" aria-hidden="true">{{ char }}</span>
           </span>
         </div>
         <p class="intro-caption">한눈에 질서를 세우는 화면 설계</p>
@@ -347,33 +348,56 @@ const currentYear = new Date().getFullYear()
 
 .calligraphy-char {
   position: relative;
-  display: inline-block;
-  min-width: 1em;
-  color: #201913;
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.05em;
   font-family: var(--font-display);
   font-size: clamp(2.8rem, 9vw, 6.8rem);
   letter-spacing: 0.02em;
-  text-shadow: 0 2px 3px rgba(31, 25, 19, 0.18);
+  line-height: 1;
+}
+
+.char-outline,
+.char-fill {
+  grid-area: 1 / 1;
+}
+
+.char-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.25px rgba(46, 34, 24, 0.72);
   opacity: 0;
-  filter: blur(4px);
   clip-path: inset(0 100% 0 0);
-  animation: brush-write 760ms cubic-bezier(0.16, 0.82, 0.19, 1) forwards;
+  animation: outline-write 620ms steps(7, end) forwards;
   animation-delay: var(--char-delay);
+}
+
+.char-fill {
+  color: #201913;
+  text-shadow: 0 2px 3px rgba(31, 25, 19, 0.22);
+  opacity: 0;
+  filter: blur(3px);
+  clip-path: inset(0 100% 0 0);
+  animation: fill-write 820ms steps(10, end) forwards;
+  animation-delay: calc(var(--char-delay) + 0.14s);
 }
 
 .calligraphy-char::after {
   content: '';
   position: absolute;
-  top: 4%;
-  bottom: 7%;
-  left: -0.1em;
-  width: 0.42em;
-  background: linear-gradient(180deg, rgba(32, 25, 19, 0.05), rgba(32, 25, 19, 0.38));
+  top: 18%;
+  left: -0.12em;
+  width: 0.36em;
+  height: 0.82em;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(28, 21, 15, 0.52), rgba(28, 21, 15, 0) 68%),
+    linear-gradient(180deg, rgba(28, 21, 15, 0.42), rgba(28, 21, 15, 0.12));
   border-radius: 999px;
-  filter: blur(3px);
+  filter: blur(1.8px);
   opacity: 0;
-  animation: brush-tip 760ms cubic-bezier(0.16, 0.82, 0.19, 1) forwards;
-  animation-delay: var(--char-delay);
+  transform: translateX(0) rotate(-12deg);
+  transform-origin: center;
+  animation: brush-head 860ms cubic-bezier(0.16, 0.82, 0.19, 1) forwards;
+  animation-delay: calc(var(--char-delay) + 0.08s);
 }
 
 .intro-caption {
@@ -940,14 +964,28 @@ const currentYear = new Date().getFullYear()
   animation-delay: var(--delay, 0s);
 }
 
-@keyframes brush-write {
+@keyframes outline-write {
   0% {
     opacity: 0;
-    filter: blur(5px);
     clip-path: inset(0 100% 0 0);
   }
-  18% {
-    opacity: 1;
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.38;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fill-write {
+  0% {
+    opacity: 0;
+    filter: blur(3px);
+    clip-path: inset(0 100% 0 0);
+  }
+  22% {
+    opacity: 0.92;
   }
   100% {
     opacity: 1;
@@ -956,18 +994,21 @@ const currentYear = new Date().getFullYear()
   }
 }
 
-@keyframes brush-tip {
+@keyframes brush-head {
   0% {
-    opacity: 0.78;
-    transform: translateX(0);
+    opacity: 0.85;
+    transform: translateX(0) rotate(-12deg);
+  }
+  40% {
+    opacity: 0.72;
   }
   82% {
-    opacity: 0.4;
-    transform: translateX(1em);
+    opacity: 0.32;
+    transform: translateX(0.86em) rotate(-4deg);
   }
   100% {
     opacity: 0;
-    transform: translateX(1.12em);
+    transform: translateX(1.05em) rotate(0deg);
   }
 }
 
