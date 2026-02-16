@@ -292,26 +292,26 @@ watch(
           <div class="relative mt-4">
             <span
               aria-hidden="true"
-              class="pointer-events-none absolute inset-y-1 left-3 w-px bg-[#2a2a2a] md:left-1/2 md:-translate-x-1/2"
+              class="pointer-events-none absolute inset-y-6 left-3 w-px bg-gradient-to-b from-transparent via-[#3a3a3a] to-transparent md:left-1/2 md:-translate-x-1/2"
             ></span>
             <ul>
             <li
               v-for="(award, awardIndex) in profileShowcase.awards"
               :key="`${award.year}-${award.title}`"
-              class="relative pl-7 pb-4 last:pb-0 md:pl-0"
+              class="relative pl-7 pb-5 last:pb-0 md:pl-0 md:pb-6"
             >
               <span
                 aria-hidden="true"
-                class="absolute left-3 top-4 h-3.5 w-3.5 -translate-x-1/2 rounded-full border border-[#4a4a4a] bg-zinc-200 md:left-1/2"
+                class="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#666666] bg-zinc-200 shadow-[0_0_0_4px_#131313] md:left-1/2"
               ></span>
               <span
                 aria-hidden="true"
-                class="pointer-events-none absolute top-[1.35rem] hidden h-px bg-[#2a2a2a] md:block"
-                :class="awardIndex % 2 === 0 ? 'left-1/2 w-6' : 'right-1/2 w-6'"
+                class="pointer-events-none absolute top-6 hidden h-px -translate-y-1/2 bg-[#3a3a3a] md:block"
+                :class="awardIndex % 2 === 0 ? 'right-1/2 w-8' : 'left-1/2 w-8'"
               ></span>
               <div
                 class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
-                :class="awardIndex % 2 === 0 ? 'md:mr-[calc(50%+1.5rem)]' : 'md:ml-[calc(50%+1.5rem)]'"
+                :class="awardIndex % 2 === 0 ? 'md:mr-[calc(50%+2rem)]' : 'md:ml-[calc(50%+2rem)]'"
               >
                 <div class="flex items-start justify-between gap-3">
                   <p class="text-sm font-medium text-zinc-200">{{ award.title }}</p>
