@@ -2,12 +2,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../features/portfolio/copy'
+import { profileShowcaseByLocale } from '../features/portfolio/profileShowcase'
 import { stackTickerByLocale } from '../features/portfolio/stackTicker'
 import type { Locale } from '../features/portfolio/types'
 
 const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
 const copy = computed(() => portfolioCopyByLocale[locale.value])
+const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const currentYear = new Date().getFullYear()
@@ -314,6 +316,54 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
         </article>
       </section>
 
+      <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
+        <div>
+          <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ profileShowcase.kicker }}</p>
+          <h2
+            class="mt-3 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+            :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.2rem)]'"
+          >
+            {{ profileShowcase.heading }}
+          </h2>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-3" :class="isAppLayout ? '' : 'lg:grid-cols-[0.7fr_1.3fr]'">
+          <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
+            <p class="text-sm text-zinc-400">{{ profileShowcase.photoTitle }}</p>
+
+            <img
+              v-if="profileShowcase.photoSrc"
+              :src="profileShowcase.photoSrc"
+              :alt="profileShowcase.photoAlt"
+              class="mt-3 h-56 w-full rounded-xl object-cover"
+            />
+            <div
+              v-else
+              class="mt-3 flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[#313131] bg-[#101010] px-4 text-center text-sm text-zinc-500"
+            >
+              {{ profileShowcase.photoHint }}
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
+            <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
+            <ul class="mt-3 grid gap-3">
+              <li
+                v-for="award in profileShowcase.awards"
+                :key="`${award.year}-${award.title}`"
+                class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <p class="text-sm text-zinc-200">{{ award.title }}</p>
+                  <span class="text-xs text-zinc-500">{{ award.year }}</span>
+                </div>
+                <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
       <section id="work" :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-20'">
         <div>
           <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.workKicker }}</p>
@@ -388,14 +438,14 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
         </h2>
         <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
           <a
-            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:!text-[#0f0f0f]"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="mailto:hello@kimminje.dev"
           >
             {{ copy.emailCta }}
           </a>
           <a
-            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="https://github.com"
             target="_blank"
@@ -430,7 +480,14 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
               :key="`${item.label}-${index}`"
               class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
             >
-              <span class="text-base leading-none">{{ item.icon }}</span>
+              <img
+                v-if="item.imageSrc"
+                :src="item.imageSrc"
+                :alt="item.imageAlt ?? item.label"
+                class="h-4 w-4 object-contain"
+                loading="lazy"
+              />
+              <span v-else class="text-base leading-none">{{ item.icon ?? '•' }}</span>
               <span class="text-sm text-zinc-200">{{ item.label }}</span>
             </article>
           </div>
