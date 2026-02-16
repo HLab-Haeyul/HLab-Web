@@ -260,6 +260,16 @@ watch(showIntro, (introOpen) => {
               >02</span
             >
           </a>
+          <RouterLink
+            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
+            :to="stackDetailPath"
+            @click="closeSidebar"
+          >
+            <span>{{ stackTicker.kicker }}</span>
+            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >03</span
+            >
+          </RouterLink>
           <a
             class="group flex items-center justify-between py-3 text-[15px] text-zinc-300 transition hover:text-white"
             href="#contact"
@@ -267,7 +277,7 @@ watch(showIntro, (introOpen) => {
           >
             <span>{{ copy.navContact }}</span>
             <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >03</span
+              >04</span
             >
           </a>
         </nav>
