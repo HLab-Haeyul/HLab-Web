@@ -47,7 +47,7 @@ title() {
 
 title "HLab-Web Development Server"
 
-if docker ps -q -f "name=hlab-web-dev" > /dev/null 2>&1; then
+if [ -n "$(docker ps -q --filter 'name=hlab-web-dev')" ]; then
   warn "개발 서버가 이미 실행 중입니다. 기존 컨테이너를 종료 중..."
   docker compose -f ./docker/docker-compose.dev.yml down
   sleep 2
