@@ -58,6 +58,13 @@ fi
 
 step "서버 시작..."
 
+if docker ps -q -f "name=hlab-web-prod" > /dev/null 2>&1; then
+  warn "프로덕션 서버가 이미 실행 중입니다. 기존 컨테이너를 종료 중..."
+  docker compose -f ./docker/docker-compose.prod.yml down
+  sleep 2
+  success "기존 컨테이너 종료 완료"
+fi
+
 if lsof -i :3000 > /dev/null 2>&1; then
   warn "포트 3000이 이미 사용 중입니다. 기존 프로세스 종료 중..."
   PIDS=$(lsof -t -i :3000)
