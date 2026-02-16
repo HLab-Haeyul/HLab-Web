@@ -16,9 +16,13 @@ const sectionGroupTitle = computed(() =>
 )
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
 const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
+const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
+const stackSummaryLabel = computed(() => (locale.value === 'en' ? 'Status Summary' : '판정 요약'))
+const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
 
 const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
 const stackPath = computed(() => `${basePath.value}/stack`)
+const isStackPage = computed(() => route.path.endsWith('/stack'))
 const koPath = computed(() => (route.path.endsWith('/stack') ? '/ko/stack' : '/ko'))
 const enPath = computed(() => (route.path.endsWith('/stack') ? '/en/stack' : '/en'))
 
@@ -35,40 +39,71 @@ const pageLinks = computed(() => [
   },
 ])
 
-const sectionLinks = computed(() => [
-  {
-    label: profileNavLabel.value,
-    to: {
-      path: basePath.value,
-      hash: '#profile',
+const sectionLinks = computed(() => {
+  if (isStackPage.value) {
+    return [
+      {
+        label: stackOverviewLabel.value,
+        to: {
+          path: stackPath.value,
+          hash: '#stack-overview',
+        },
+        index: '01',
+      },
+      {
+        label: stackSummaryLabel.value,
+        to: {
+          path: stackPath.value,
+          hash: '#stack-summary',
+        },
+        index: '02',
+      },
+      {
+        label: stackMatrixLabel.value,
+        to: {
+          path: stackPath.value,
+          hash: '#stack-matrix',
+        },
+        index: '03',
+      },
+    ]
+  }
+
+  return [
+    {
+      label: profileNavLabel.value,
+      to: {
+        path: basePath.value,
+        hash: '#profile',
+      },
+      index: '01',
     },
-    index: '01',
-  },
-  {
-    label: copy.value.navWork,
-    to: {
-      path: basePath.value,
-      hash: '#work',
+    {
+      label: copy.value.navWork,
+      to: {
+        path: basePath.value,
+        hash: '#work',
+      },
+      index: '02',
     },
-    index: '02',
-  },
-  {
-    label: copy.value.navPrinciples,
-    to: {
-      path: basePath.value,
-      hash: '#principles',
+    {
+      label: copy.value.navPrinciples,
+      to: {
+        path: basePath.value,
+        hash: '#principles',
+      },
+      index: '03',
     },
-    index: '03',
-  },
-  {
-    label: copy.value.navContact,
-    to: {
-      path: basePath.value,
-      hash: '#contact',
+    {
+      label: copy.value.navContact,
+      to: {
+        path: basePath.value,
+        hash: '#contact',
+      },
+      index: '04',
     },
-    index: '04',
-  },
-])
+  ]
+})
 
 const closeSidebar = () => {
   isSidebarOpen.value = false
