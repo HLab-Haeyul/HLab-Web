@@ -13,7 +13,6 @@ const copy = computed(() => portfolioCopyByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const workThumbnails = computed(() => workThumbnailsByLocale[locale.value])
-const stackDetailPath = computed(() => (locale.value === 'en' ? '/en/stack' : '/ko/stack'))
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const profilePhotoSrc = computed(() => profileShowcase.value.photoSrc)
 const metricDisplayValues = ref<string[]>([])
@@ -242,16 +241,7 @@ watch(
               </a>
             </div>
             <div :class="isAppLayout ? 'mt-5' : 'mt-6 w-full max-w-[460px]'">
-              <div class="flex justify-end">
-                <RouterLink
-                  :to="stackDetailPath"
-                  class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2 text-xs font-semibold tracking-[0.08em] text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
-                >
-                  {{ stackTicker.viewAllCta }}
-                </RouterLink>
-              </div>
-
-              <div class="relative mt-3 overflow-hidden">
+              <div class="relative overflow-hidden">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
                 <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
 
