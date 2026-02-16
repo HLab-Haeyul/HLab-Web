@@ -8,16 +8,6 @@ const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
 const stackDetail = computed(() => stackDetailByLocale[locale.value])
 
-const projectUsedCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.projectUsed).length,
-)
-const practicalUsedCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.practicalUsed).length,
-)
-const internalsExploredCount = computed(
-  () => stackDetail.value.items.filter((item) => item.capability.internalsExplored).length,
-)
-
 const yesNoClass = (value: boolean) =>
   value
     ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-300'
@@ -38,21 +28,6 @@ const yesNoClass = (value: boolean) =>
           {{ stackDetail.heading }}
         </h1>
         <p class="mt-4 max-w-[72ch] text-zinc-300">{{ stackDetail.description }}</p>
-      </section>
-
-      <section id="stack-summary" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-        <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryProjectUsed }}</p>
-          <p class="mt-2 text-2xl text-white">{{ projectUsedCount }} / {{ stackDetail.items.length }}</p>
-        </article>
-        <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryPracticalUsed }}</p>
-          <p class="mt-2 text-2xl text-white">{{ practicalUsedCount }} / {{ stackDetail.items.length }}</p>
-        </article>
-        <article class="col-span-2 rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4 md:col-span-1">
-          <p class="text-sm text-zinc-500">{{ stackDetail.summaryInternals }}</p>
-          <p class="mt-2 text-2xl text-white">{{ internalsExploredCount }} / {{ stackDetail.items.length }}</p>
-        </article>
       </section>
 
       <section id="stack-matrix" class="mt-8">

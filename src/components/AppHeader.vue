@@ -17,7 +17,6 @@ const sectionGroupTitle = computed(() =>
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
 const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
 const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
-const stackSummaryLabel = computed(() => (locale.value === 'en' ? 'Status Summary' : '판정 요약'))
 const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
 
 const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
@@ -51,20 +50,12 @@ const sectionLinks = computed(() => {
         index: '01',
       },
       {
-        label: stackSummaryLabel.value,
-        to: {
-          path: stackPath.value,
-          hash: '#stack-summary',
-        },
-        index: '02',
-      },
-      {
         label: stackMatrixLabel.value,
         to: {
           path: stackPath.value,
           hash: '#stack-matrix',
         },
-        index: '03',
+        index: '02',
       },
     ]
   }
