@@ -32,7 +32,7 @@ const yesNoClass = (value: boolean) =>
     ></div>
 
     <main>
-      <section>
+      <section id="stack-overview">
         <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ stackDetail.kicker }}</p>
         <h1 class="mt-3 text-[clamp(1.8rem,5vw,3rem)] leading-[1.03] text-zinc-100 [font-family:var(--font-display)]">
           {{ stackDetail.heading }}
@@ -40,7 +40,7 @@ const yesNoClass = (value: boolean) =>
         <p class="mt-4 max-w-[72ch] text-zinc-300">{{ stackDetail.description }}</p>
       </section>
 
-      <section class="mt-8 grid grid-cols-1 gap-3 md:grid-cols-3">
+      <section id="stack-summary" class="mt-8 grid grid-cols-1 gap-3 md:grid-cols-3">
         <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
           <p class="text-sm text-zinc-500">{{ stackDetail.summaryProjectUsed }}</p>
           <p class="mt-2 text-2xl text-white">{{ projectUsedCount }} / {{ stackDetail.items.length }}</p>
@@ -55,7 +55,7 @@ const yesNoClass = (value: boolean) =>
         </article>
       </section>
 
-      <section class="mt-8 overflow-x-auto rounded-2xl border border-[#2a2a2a] bg-[#131313]">
+      <section id="stack-matrix" class="mt-8 overflow-x-auto rounded-2xl border border-[#2a2a2a] bg-[#131313]">
         <table class="min-w-[980px] w-full border-collapse">
           <thead class="bg-[#151515]">
             <tr class="text-left text-xs uppercase tracking-[0.09em] text-zinc-500">
