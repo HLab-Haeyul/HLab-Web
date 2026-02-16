@@ -261,22 +261,6 @@ watch(
                 </div>
               </div>
             </div>
-            <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
-              <a
-                class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
-                :class="isAppLayout ? 'w-full' : 'min-w-40'"
-                href="#work"
-              >
-                {{ copy.primaryCta }}
-              </a>
-              <a
-                class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
-                :class="isAppLayout ? 'w-full' : 'min-w-40'"
-                href="#contact"
-              >
-                {{ copy.secondaryCta }}
-              </a>
-            </div>
           </div>
 
           <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
@@ -293,6 +277,23 @@ watch(
               {{ profileShowcase.photoHint }}
             </div>
           </article>
+        </div>
+
+        <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-7 flex flex-wrap gap-3'">
+          <a
+            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
+            href="#work"
+          >
+            {{ copy.primaryCta }}
+          </a>
+          <a
+            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
+            href="#contact"
+          >
+            {{ copy.secondaryCta }}
+          </a>
         </div>
       </section>
 
