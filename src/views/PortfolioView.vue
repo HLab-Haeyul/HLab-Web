@@ -16,7 +16,6 @@ const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTick
 const uploadedPhotoSrc = ref('')
 const profilePhotoSrc = computed(() => uploadedPhotoSrc.value || profileShowcase.value.photoSrc)
 const currentYear = new Date().getFullYear()
-const isSidebarOpen = ref(false)
 const showIntro = ref(false)
 const introKicker = computed(() => (locale.value === 'ko' ? 'INITIAL RENDER' : 'INITIAL RENDER'))
 const introSubtitle = computed(() =>
@@ -107,21 +106,6 @@ const isAppLayout = computed(
     isStandaloneMode.value || (viewportWidth.value <= 560 && viewportHeight.value >= 620),
 )
 
-const closeSidebar = () => {
-  isSidebarOpen.value = false
-}
-
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value
-}
-
-watch(
-  () => route.fullPath,
-  () => {
-    closeSidebar()
-  },
-)
-
 watch(showIntro, (introOpen) => {
   const value = introOpen ? 'hidden' : ''
   document.body.style.overflow = value
@@ -154,135 +138,6 @@ watch(showIntro, (introOpen) => {
         </div>
       </section>
     </Transition>
-
-    <header
-      class="sticky z-20 rounded-2xl border border-[#2a2a2a] backdrop-blur"
-      :class="
-        isAppLayout
-          ? 'top-3 mb-8 bg-[#121212e0] px-3 py-2.5'
-          : 'top-4 mb-10 bg-[#121212d1] px-4 py-3 md:mb-16'
-      "
-    >
-      <div class="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-200"
-          @click="toggleSidebar"
-          aria-label="Open sidebar"
-          :aria-expanded="isSidebarOpen"
-          aria-controls="site-sidebar"
-        >
-          <svg
-            class="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
-        </button>
-
-        <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
-
-        <div class="flex items-center gap-2">
-          <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
-            <RouterLink
-              class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-              :class="
-                locale === 'ko'
-                  ? 'bg-white !text-[#0f0f0f]'
-                  : 'text-zinc-400 hover:text-zinc-100'
-              "
-              to="/ko"
-            >
-              KO
-            </RouterLink>
-            <RouterLink
-              class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-              :class="
-                locale === 'en'
-                  ? 'bg-white !text-[#0f0f0f]'
-                  : 'text-zinc-400 hover:text-zinc-100'
-              "
-              to="/en"
-            >
-              EN
-            </RouterLink>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <aside
-      id="site-sidebar"
-      class="fixed left-0 top-0 z-40 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
-      :class="isSidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'"
-    >
-        <div class="mb-5 flex items-center justify-between">
-          <p class="text-xs tracking-[0.14em] text-zinc-400">MENU</p>
-          <button
-            type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-300"
-            @click="closeSidebar"
-            aria-label="Close sidebar"
-          >
-            <svg
-              class="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
-          </button>
-        </div>
-
-        <nav class="border-y border-[#222222]" aria-label="Primary Sidebar">
-          <a
-            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
-            href="#work"
-            @click="closeSidebar"
-          >
-            <span>{{ copy.navWork }}</span>
-            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >01</span
-            >
-          </a>
-          <a
-            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
-            href="#principles"
-            @click="closeSidebar"
-          >
-            <span>{{ copy.navPrinciples }}</span>
-            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >02</span
-            >
-          </a>
-          <RouterLink
-            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
-            :to="stackDetailPath"
-            @click="closeSidebar"
-          >
-            <span>{{ stackTicker.kicker }}</span>
-            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >03</span
-            >
-          </RouterLink>
-          <a
-            class="group flex items-center justify-between py-3 text-[15px] text-zinc-300 transition hover:text-white"
-            href="#contact"
-            @click="closeSidebar"
-          >
-            <span>{{ copy.navContact }}</span>
-            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
-              >04</span
-            >
-          </a>
-        </nav>
-
-    </aside>
 
     <main
       :class="

@@ -7,8 +7,6 @@ import type { Locale } from '../features/portfolio/types'
 const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
 const stackDetail = computed(() => stackDetailByLocale[locale.value])
-const homePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
-const languageSwapPath = computed(() => (locale.value === 'en' ? '/ko/stack' : '/en/stack'))
 
 const projectUsedCount = computed(
   () => stackDetail.value.items.filter((item) => item.capability.projectUsed).length,
@@ -32,26 +30,6 @@ const yesNoClass = (value: boolean) =>
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
     ></div>
-
-    <header class="sticky top-4 z-20 mb-10 rounded-2xl border border-[#2a2a2a] bg-[#121212d1] px-4 py-3 backdrop-blur">
-      <div class="flex items-center justify-between gap-3">
-        <RouterLink
-          class="inline-flex items-center rounded-full border border-[#2a2a2a] px-3 py-1.5 text-xs tracking-[0.08em] text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
-          :to="homePath"
-        >
-          {{ stackDetail.backCta }}
-        </RouterLink>
-
-        <p class="text-xs font-bold tracking-[0.14em] text-zinc-100">KIMMINJAE</p>
-
-        <RouterLink
-          class="inline-flex min-w-10 items-center justify-center rounded-full border border-[#2a2a2a] px-3 py-1.5 text-xs tracking-[0.08em] text-zinc-300 transition hover:text-white"
-          :to="languageSwapPath"
-        >
-          {{ locale === 'ko' ? 'EN' : 'KO' }}
-        </RouterLink>
-      </div>
-    </header>
 
     <main>
       <section>
