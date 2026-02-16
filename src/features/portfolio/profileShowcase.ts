@@ -5,11 +5,9 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     kicker: 'Awards',
     heading: '수상 경력',
     photoTitle: '내 사진',
-    photoHint: '여기에 본인 사진 경로를 넣으세요 (예: /images/profile.jpg)',
-    photoUploadLabel: '얼굴 사진 업로드',
-    photoUploadHint: '또는 profileShowcase.ts의 photoSrc에 이미지 경로를 넣으세요.',
-    photoSrc: '',
-    photoAlt: 'Kim Minjae profile photo',
+    photoHint: '프로필 사진 준비 중',
+    photoSrc: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80',
+    photoAlt: 'Sample profile portrait',
     awardsTitle: '수상 경력',
     awards: [
       {
@@ -33,11 +31,9 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     kicker: 'Awards',
     heading: 'Awards',
     photoTitle: 'My Photo',
-    photoHint: 'Set your photo path here (e.g. /images/profile.jpg)',
-    photoUploadLabel: 'Upload profile photo',
-    photoUploadHint: 'Or set an image path in profileShowcase.ts photoSrc.',
-    photoSrc: '',
-    photoAlt: 'Kim Minjae profile photo',
+    photoHint: 'Profile photo coming soon',
+    photoSrc: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80',
+    photoAlt: 'Sample profile portrait',
     awardsTitle: 'Awards',
     awards: [
       {
