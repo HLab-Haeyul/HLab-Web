@@ -2,8 +2,8 @@ import type { Locale, ProfileShowcaseCopy } from './types'
 
 export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
   ko: {
-    kicker: 'Profile',
-    heading: '사진과 수상 경력',
+    kicker: 'Awards',
+    heading: '수상 경력',
     photoTitle: '내 사진',
     photoHint: '여기에 본인 사진 경로를 넣으세요 (예: /images/profile.jpg)',
     photoUploadLabel: '얼굴 사진 업로드',
@@ -30,8 +30,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     ],
   },
   en: {
-    kicker: 'Profile',
-    heading: 'Photo and Awards',
+    kicker: 'Awards',
+    heading: 'Awards',
     photoTitle: 'My Photo',
     photoHint: 'Set your photo path here (e.g. /images/profile.jpg)',
     photoUploadLabel: 'Upload profile photo',

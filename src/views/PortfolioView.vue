@@ -148,65 +148,39 @@ watch(showIntro, (introOpen) => {
           : ''
       "
     >
-      <section :class="isAppLayout ? 'pt-1' : 'pt-2'">
-        <p :class="isAppLayout ? 'text-[11px]' : 'text-xs'" class="uppercase tracking-[0.13em] text-zinc-500">
-          {{ copy.eyebrow }}
-        </p>
-        <h1
-          class="mt-3 max-w-[17ch] leading-[0.97] tracking-[-0.02em] text-white [font-family:var(--font-display)]"
-          :class="isAppLayout ? 'text-[clamp(1.9rem,8vw,2.6rem)]' : 'text-[clamp(2.3rem,6vw,5.2rem)]'"
-        >
-          {{ copy.heroTitle }}
-        </h1>
-        <p :class="isAppLayout ? 'mt-4 text-[15px]' : 'mt-5 text-base'" class="max-w-[62ch] text-zinc-300">
-          {{ copy.heroLead }}
-        </p>
-        <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
-          <a
-            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
-            :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="#work"
-          >
-            {{ copy.primaryCta }}
-          </a>
-          <a
-            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
-            :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="#contact"
-          >
-            {{ copy.secondaryCta }}
-          </a>
-        </div>
-      </section>
+      <section id="profile" :class="isAppLayout ? 'pt-1' : 'pt-2'">
+        <div class="grid grid-cols-1 gap-4" :class="isAppLayout ? '' : 'lg:grid-cols-[1.2fr_0.8fr] lg:items-start'">
+          <div>
+            <p :class="isAppLayout ? 'text-[11px]' : 'text-xs'" class="uppercase tracking-[0.13em] text-zinc-500">
+              {{ copy.eyebrow }}
+            </p>
+            <h1
+              class="mt-3 max-w-[17ch] leading-[0.97] tracking-[-0.02em] text-white [font-family:var(--font-display)]"
+              :class="isAppLayout ? 'text-[clamp(1.9rem,8vw,2.6rem)]' : 'text-[clamp(2.3rem,6vw,5.2rem)]'"
+            >
+              {{ copy.heroTitle }}
+            </h1>
+            <p :class="isAppLayout ? 'mt-4 text-[15px]' : 'mt-5 text-base'" class="max-w-[62ch] text-zinc-300">
+              {{ copy.heroLead }}
+            </p>
+            <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
+              <a
+                class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+                :class="isAppLayout ? 'w-full' : 'min-w-40'"
+                href="#work"
+              >
+                {{ copy.primaryCta }}
+              </a>
+              <a
+                class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+                :class="isAppLayout ? 'w-full' : 'min-w-40'"
+                href="#contact"
+              >
+                {{ copy.secondaryCta }}
+              </a>
+            </div>
+          </div>
 
-      <section
-        class="mt-8 grid gap-3"
-        :class="isAppLayout ? 'grid-cols-2' : 'grid-cols-1 md:mt-12 md:grid-cols-3'"
-      >
-        <article
-          v-for="item in copy.metrics"
-          :key="item.label"
-          class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4"
-        >
-          <p class="text-sm text-zinc-500">{{ item.label }}</p>
-          <strong :class="isAppLayout ? 'text-xl' : 'text-2xl'" class="mt-2 block text-white">
-            {{ item.value }}
-          </strong>
-        </article>
-      </section>
-
-      <section id="profile" :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
-        <div>
-          <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ profileShowcase.kicker }}</p>
-          <h2
-            class="mt-3 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
-            :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.2rem)]'"
-          >
-            {{ profileShowcase.heading }}
-          </h2>
-        </div>
-
-        <div class="mt-4 grid grid-cols-1 gap-3" :class="isAppLayout ? '' : 'lg:grid-cols-[0.7fr_1.3fr]'">
           <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
             <p class="text-sm text-zinc-400">{{ profileShowcase.photoTitle }}</p>
 
@@ -231,24 +205,52 @@ watch(showIntro, (introOpen) => {
             </label>
             <p class="mt-2 text-xs text-zinc-500">{{ profileShowcase.photoUploadHint }}</p>
           </article>
-
-          <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
-            <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
-            <ul class="mt-3 grid gap-3">
-              <li
-                v-for="award in profileShowcase.awards"
-                :key="`${award.year}-${award.title}`"
-                class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <p class="text-sm text-zinc-200">{{ award.title }}</p>
-                  <span class="text-xs text-zinc-500">{{ award.year }}</span>
-                </div>
-                <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
-              </li>
-            </ul>
-          </article>
         </div>
+      </section>
+
+      <section
+        class="mt-8 grid gap-3"
+        :class="isAppLayout ? 'grid-cols-2' : 'grid-cols-1 md:mt-12 md:grid-cols-3'"
+      >
+        <article
+          v-for="item in copy.metrics"
+          :key="item.label"
+          class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4"
+        >
+          <p class="text-sm text-zinc-500">{{ item.label }}</p>
+          <strong :class="isAppLayout ? 'text-xl' : 'text-2xl'" class="mt-2 block text-white">
+            {{ item.value }}
+          </strong>
+        </article>
+      </section>
+
+      <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
+        <div>
+          <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ profileShowcase.kicker }}</p>
+          <h2
+            class="mt-3 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+            :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.2rem)]'"
+          >
+            {{ profileShowcase.heading }}
+          </h2>
+        </div>
+
+        <article class="mt-4 rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
+          <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
+          <ul class="mt-3 grid gap-3">
+            <li
+              v-for="award in profileShowcase.awards"
+              :key="`${award.year}-${award.title}`"
+              class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <p class="text-sm text-zinc-200">{{ award.title }}</p>
+                <span class="text-xs text-zinc-500">{{ award.year }}</span>
+              </div>
+              <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
+            </li>
+          </ul>
+        </article>
       </section>
 
       <section id="work" :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-20'">
