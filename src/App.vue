@@ -38,7 +38,7 @@ const currentYear = new Date().getFullYear()
     <div class="grid-overlay" aria-hidden="true"></div>
 
     <header class="topbar reveal" style="--delay: 0.04s">
-      <a class="brand" href="#">KIM MINJE</a>
+      <a class="brand" href="#">KIMMINJAE</a>
       <nav class="menu" aria-label="Primary">
         <a href="#work">Work</a>
         <a href="#principles">Principles</a>
