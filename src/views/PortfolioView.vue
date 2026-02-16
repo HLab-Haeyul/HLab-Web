@@ -161,13 +161,6 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
         <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
 
         <div class="flex items-center gap-2">
-          <a
-            v-if="!isAppLayout"
-            class="hidden text-sm text-zinc-400 transition hover:text-zinc-100 lg:block"
-            href="mailto:hello@kimminje.dev"
-          >
-            hello@kimminje.dev
-          </a>
           <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
             <RouterLink
               class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
@@ -264,13 +257,6 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
           </a>
         </nav>
 
-        <a
-          class="mt-6 block border-t border-[#222222] pt-3 text-sm text-zinc-400 transition hover:text-zinc-200"
-          href="mailto:hello@kimminje.dev"
-          @click="closeSidebar"
-        >
-          hello@kimminje.dev
-        </a>
       </aside>
     </div>
 
