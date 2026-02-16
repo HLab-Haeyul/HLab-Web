@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../features/portfolio/copy'
 import type { Locale } from '../features/portfolio/types'
@@ -8,16 +8,221 @@ const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const currentYear = new Date().getFullYear()
+const isSidebarOpen = ref(false)
+
+const viewportWidth = ref(1280)
+const viewportHeight = ref(800)
+const isStandaloneMode = ref(false)
+
+let displayModeQuery: MediaQueryList | null = null
+let handleDisplayModeChange: ((event: MediaQueryListEvent) => void) | null = null
+
+const syncViewport = () => {
+  viewportWidth.value = window.innerWidth
+  viewportHeight.value = window.innerHeight
+}
+
+onMounted(() => {
+  syncViewport()
+
+  displayModeQuery = window.matchMedia('(display-mode: standalone)')
+  const iosStandalone = Boolean(
+    (window.navigator as Navigator & { standalone?: boolean }).standalone,
+  )
+
+  isStandaloneMode.value = displayModeQuery.matches || iosStandalone
+
+  handleDisplayModeChange = (event) => {
+    isStandaloneMode.value = event.matches
+  }
+
+  displayModeQuery.addEventListener?.('change', handleDisplayModeChange)
+  window.addEventListener('resize', syncViewport)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncViewport)
+
+  if (displayModeQuery && handleDisplayModeChange) {
+    displayModeQuery.removeEventListener?.('change', handleDisplayModeChange)
+  }
+
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
+})
+
+const isAppLayout = computed(
+  () =>
+    isStandaloneMode.value || (viewportWidth.value <= 560 && viewportHeight.value >= 620),
+)
+
+const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+watch(
+  () => route.fullPath,
+  () => {
+    closeSidebar()
+  },
+)
+
+watch(isAppLayout, (nextIsAppLayout) => {
+  if (!nextIsAppLayout) {
+    closeSidebar()
+  }
+})
+
+watch(isSidebarOpen, (open) => {
+  const value = open ? 'hidden' : ''
+  document.body.style.overflow = value
+  document.documentElement.style.overflow = value
+})
 </script>
 
 <template>
-  <div class="relative isolate mx-auto w-full max-w-[1220px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div
+    class="relative isolate mx-auto w-full px-4 pt-5"
+    :class="isAppLayout ? 'max-w-[430px] pb-24 sm:px-4' : 'max-w-[1220px] pb-14 sm:px-8 lg:px-12'"
+  >
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
+      class="pointer-events-none fixed inset-0 -z-10 [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
+      :class="
+        isAppLayout
+          ? 'bg-[radial-gradient(circle_at_50%_-10%,rgba(255,255,255,0.09),transparent_36%),radial-gradient(circle_at_50%_110%,rgba(255,255,255,0.06),transparent_34%)]'
+          : 'bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)]'
+      "
     ></div>
 
     <header
+      v-if="isAppLayout"
+      class="sticky top-3 z-20 mb-8 rounded-2xl border border-[#2a2a2a] bg-[#121212e0] px-3 py-2.5 backdrop-blur"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-200"
+          @click="toggleSidebar"
+          aria-label="Open sidebar"
+          :aria-expanded="isSidebarOpen"
+          aria-controls="mobile-sidebar"
+        >
+          <svg
+            class="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+
+        <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
+
+        <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
+          <RouterLink
+            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+            :class="
+              locale === 'ko'
+                ? 'bg-white !text-[#0f0f0f]'
+                : 'text-zinc-400 hover:text-zinc-100'
+            "
+            to="/ko"
+          >
+            KO
+          </RouterLink>
+          <RouterLink
+            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+            :class="
+              locale === 'en'
+                ? 'bg-white !text-[#0f0f0f]'
+                : 'text-zinc-400 hover:text-zinc-100'
+            "
+            to="/en"
+          >
+            EN
+          </RouterLink>
+        </div>
+      </div>
+    </header>
+
+    <div v-if="isAppLayout" class="pointer-events-none fixed inset-0 z-30">
+      <button
+        type="button"
+        class="absolute inset-0 bg-black/60 transition-opacity duration-200"
+        :class="isSidebarOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'"
+        :tabindex="isSidebarOpen ? 0 : -1"
+        aria-label="Close sidebar overlay"
+        @click="closeSidebar"
+      ></button>
+
+      <aside
+        id="mobile-sidebar"
+        class="pointer-events-auto absolute left-0 top-0 h-full w-[78%] max-w-[300px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300"
+        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+      >
+        <div class="mb-5 flex items-center justify-between">
+          <p class="text-xs tracking-[0.14em] text-zinc-400">MENU</p>
+          <button
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-300"
+            @click="closeSidebar"
+            aria-label="Close sidebar"
+          >
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="grid gap-2" aria-label="Mobile Primary">
+          <a
+            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            href="#work"
+            @click="closeSidebar"
+          >
+            {{ copy.navWork }}
+          </a>
+          <a
+            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            href="#principles"
+            @click="closeSidebar"
+          >
+            {{ copy.navPrinciples }}
+          </a>
+          <a
+            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            href="#contact"
+            @click="closeSidebar"
+          >
+            {{ copy.navContact }}
+          </a>
+        </nav>
+
+        <a
+          class="mt-6 block rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-400"
+          href="mailto:hello@kimminje.dev"
+          @click="closeSidebar"
+        >
+          hello@kimminje.dev
+        </a>
+      </aside>
+    </div>
+
+    <header
+      v-else
       class="sticky top-4 z-20 mb-10 grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-[#2a2a2a] bg-[#121212d1] px-4 py-3 backdrop-blur md:mb-16"
     >
       <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
@@ -65,24 +270,37 @@ const currentYear = new Date().getFullYear()
       </div>
     </header>
 
-    <main>
-      <section class="pt-2">
-        <p class="text-xs uppercase tracking-[0.13em] text-zinc-500">{{ copy.eyebrow }}</p>
+    <main
+      :class="
+        isAppLayout
+          ? 'rounded-[26px] border border-[#2a2a2a] bg-[#111111cf] p-3 shadow-[0_22px_60px_rgba(0,0,0,0.45)]'
+          : ''
+      "
+    >
+      <section :class="isAppLayout ? 'pt-1' : 'pt-2'">
+        <p :class="isAppLayout ? 'text-[11px]' : 'text-xs'" class="uppercase tracking-[0.13em] text-zinc-500">
+          {{ copy.eyebrow }}
+        </p>
         <h1
-          class="mt-3 max-w-[17ch] text-[clamp(2.3rem,6vw,5.2rem)] leading-[0.97] tracking-[-0.02em] text-white [font-family:var(--font-display)]"
+          class="mt-3 max-w-[17ch] leading-[0.97] tracking-[-0.02em] text-white [font-family:var(--font-display)]"
+          :class="isAppLayout ? 'text-[clamp(1.9rem,8vw,2.6rem)]' : 'text-[clamp(2.3rem,6vw,5.2rem)]'"
         >
           {{ copy.heroTitle }}
         </h1>
-        <p class="mt-5 max-w-[62ch] text-base text-zinc-300">{{ copy.heroLead }}</p>
-        <div class="mt-6 flex flex-wrap gap-3">
+        <p :class="isAppLayout ? 'mt-4 text-[15px]' : 'mt-5 text-base'" class="max-w-[62ch] text-zinc-300">
+          {{ copy.heroLead }}
+        </p>
+        <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="#work"
           >
             {{ copy.primaryCta }}
           </a>
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="#contact"
           >
             {{ copy.secondaryCta }}
@@ -90,27 +308,33 @@ const currentYear = new Date().getFullYear()
         </div>
       </section>
 
-      <section class="mt-8 grid grid-cols-1 gap-3 md:mt-12 md:grid-cols-3">
+      <section
+        class="mt-8 grid gap-3"
+        :class="isAppLayout ? 'grid-cols-2' : 'grid-cols-1 md:mt-12 md:grid-cols-3'"
+      >
         <article
           v-for="item in copy.metrics"
           :key="item.label"
           class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4"
         >
           <p class="text-sm text-zinc-500">{{ item.label }}</p>
-          <strong class="mt-2 block text-2xl text-white">{{ item.value }}</strong>
+          <strong :class="isAppLayout ? 'text-xl' : 'text-2xl'" class="mt-2 block text-white">
+            {{ item.value }}
+          </strong>
         </article>
       </section>
 
-      <section id="work" class="mt-12 md:mt-20">
+      <section id="work" :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-20'">
         <div>
           <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.workKicker }}</p>
           <h2
-            class="mt-3 max-w-[26ch] text-[clamp(1.6rem,3.6vw,2.8rem)] leading-[1.05] text-zinc-100 [font-family:var(--font-display)]"
+            class="mt-3 max-w-[26ch] leading-[1.05] text-zinc-100 [font-family:var(--font-display)]"
+            :class="isAppLayout ? 'text-[clamp(1.35rem,5.2vw,1.7rem)]' : 'text-[clamp(1.6rem,3.6vw,2.8rem)]'"
           >
             {{ copy.workHeading }}
           </h2>
         </div>
-        <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-5 grid grid-cols-1 gap-3" :class="isAppLayout ? '' : 'md:grid-cols-2 xl:grid-cols-3'">
           <article
             v-for="work in copy.works"
             :key="work.title"
@@ -132,10 +356,17 @@ const currentYear = new Date().getFullYear()
         </div>
       </section>
 
-      <section id="principles" class="mt-12 grid grid-cols-1 gap-3 md:mt-20 lg:grid-cols-[1.2fr_0.8fr]">
+      <section
+        id="principles"
+        class="mt-12 grid grid-cols-1 gap-3"
+        :class="isAppLayout ? '' : 'md:mt-20 lg:grid-cols-[1.2fr_0.8fr]'"
+      >
         <article class="rounded-2xl border border-[#2a2a2a] bg-[#141414] p-4">
           <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.principlesKicker }}</p>
-          <h2 class="mt-3 text-[clamp(1.5rem,3.1vw,2.3rem)] text-zinc-100 [font-family:var(--font-display)]">
+          <h2
+            class="mt-3 text-zinc-100 [font-family:var(--font-display)]"
+            :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.3rem)]'"
+          >
             {{ copy.principlesHeading }}
           </h2>
           <p class="mt-4 max-w-[58ch] text-zinc-300">{{ copy.principlesBody }}</p>
@@ -155,23 +386,27 @@ const currentYear = new Date().getFullYear()
 
       <section
         id="contact"
-        class="mt-12 rounded-2xl border border-[#303030] bg-gradient-to-br from-[#141414] to-[#101010] p-5 md:mt-20"
+        class="mt-12 rounded-2xl border border-[#303030] bg-gradient-to-br from-[#141414] to-[#101010] p-5"
+        :class="isAppLayout ? '' : 'md:mt-20'"
       >
         <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.contactKicker }}</p>
         <h2
-          class="mt-3 max-w-[26ch] text-[clamp(1.5rem,3.1vw,2.3rem)] leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+          class="mt-3 max-w-[26ch] leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+          :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.3rem)]'"
         >
           {{ copy.contactHeading }}
         </h2>
-        <div class="mt-6 flex flex-wrap gap-3">
+        <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="mailto:hello@kimminje.dev"
           >
             {{ copy.emailCta }}
           </a>
           <a
-            class="inline-flex min-w-40 items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
+            :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="https://github.com"
             target="_blank"
             rel="noopener"
@@ -182,7 +417,7 @@ const currentYear = new Date().getFullYear()
       </section>
     </main>
 
-    <footer class="mt-5 text-center">
+    <footer :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'">
       <p class="text-sm text-zinc-500">© {{ currentYear }} {{ copy.footerName }}</p>
     </footer>
   </div>
