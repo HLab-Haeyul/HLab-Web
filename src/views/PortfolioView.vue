@@ -99,8 +99,8 @@ watch(
   },
 )
 
-watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
-  const value = sidebarOpen || introOpen ? 'hidden' : ''
+watch(showIntro, (introOpen) => {
+  const value = introOpen ? 'hidden' : ''
   document.body.style.overflow = value
   document.documentElement.style.overflow = value
 })
@@ -192,14 +192,11 @@ watch([isSidebarOpen, showIntro], ([sidebarOpen, introOpen]) => {
     </header>
 
     <div class="pointer-events-none fixed inset-0 z-30">
-      <button
-        type="button"
+      <div
+        aria-hidden="true"
         class="absolute inset-0 bg-black/60 transition-opacity duration-200"
-        :class="isSidebarOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'"
-        :tabindex="isSidebarOpen ? 0 : -1"
-        aria-label="Close sidebar overlay"
-        @click="closeSidebar"
-      ></button>
+        :class="isSidebarOpen ? 'opacity-100' : 'opacity-0'"
+      ></div>
 
       <aside
         id="site-sidebar"
