@@ -4,6 +4,7 @@ export const stackTickerByLocale: Record<Locale, StackTickerCopy> = {
   ko: {
     kicker: '기술 스택',
     heading: '실무에서 사용하는 도구와 기술',
+    viewAllCta: '더보기',
     items: [
       { icon: '🧠', label: 'Malware Analysis' },
       {
@@ -50,6 +51,7 @@ export const stackTickerByLocale: Record<Locale, StackTickerCopy> = {
   en: {
     kicker: 'Tech Stack',
     heading: 'Tools and technologies I use in production',
+    viewAllCta: 'View all',
     items: [
       { icon: '🧠', label: 'Malware Analysis' },
       {

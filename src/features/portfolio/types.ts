@@ -22,7 +22,45 @@ export type StackTickerItem = {
 export type StackTickerCopy = {
   kicker: string
   heading: string
+  viewAllCta: string
   items: StackTickerItem[]
+}
+
+export type StackDetailCapability = {
+  usedOnce: boolean
+  projectExperience: boolean
+  productionReady: boolean
+}
+
+export type StackDetailItem = {
+  icon?: string
+  imageSrc?: string
+  imageAlt?: string
+  label: string
+  category: string
+  proficiency: string
+  capability: StackDetailCapability
+  note: string
+}
+
+export type StackDetailCopy = {
+  kicker: string
+  heading: string
+  description: string
+  backCta: string
+  columnSkill: string
+  columnCategory: string
+  columnProficiency: string
+  columnUsedOnce: string
+  columnProject: string
+  columnReady: string
+  columnNote: string
+  yesLabel: string
+  noLabel: string
+  summaryUsedOnce: string
+  summaryProject: string
+  summaryReady: string
+  items: StackDetailItem[]
 }
 
 export type AwardItem = {
