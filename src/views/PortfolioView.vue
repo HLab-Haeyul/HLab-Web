@@ -211,7 +211,7 @@ watch(
     >
       <section id="profile" :class="isAppLayout ? 'pt-1' : 'pt-2'">
         <div class="grid grid-cols-1 gap-4" :class="isAppLayout ? '' : 'lg:grid-cols-[1.2fr_0.8fr] lg:items-start'">
-          <div>
+          <div class="min-w-0">
             <p :class="isAppLayout ? 'text-[11px]' : 'text-xs'" class="uppercase tracking-[0.13em] text-zinc-500">
               {{ copy.eyebrow }}
             </p>
@@ -241,7 +241,7 @@ watch(
               </a>
             </div>
             <div :class="isAppLayout ? 'mt-5' : 'mt-6 w-full'">
-              <div class="relative overflow-hidden">
+              <div class="relative w-full max-w-full overflow-hidden">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
                 <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
 
