@@ -10,6 +10,11 @@ const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
+const pageGroupTitle = computed(() => (locale.value === 'en' ? 'Page Navigation' : '페이지 이동'))
+const sectionGroupTitle = computed(() =>
+  locale.value === 'en' ? 'Section Navigation' : '페이지 내 위치 이동',
+)
+const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
 const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
 
 const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
@@ -17,7 +22,20 @@ const stackPath = computed(() => `${basePath.value}/stack`)
 const koPath = computed(() => (route.path.endsWith('/stack') ? '/ko/stack' : '/ko'))
 const enPath = computed(() => (route.path.endsWith('/stack') ? '/en/stack' : '/en'))
 
-const navLinks = computed(() => [
+const pageLinks = computed(() => [
+  {
+    label: homeNavLabel.value,
+    to: basePath.value,
+    index: '01',
+  },
+  {
+    label: stackTicker.value.kicker,
+    to: stackPath.value,
+    index: '02',
+  },
+])
+
+const sectionLinks = computed(() => [
   {
     label: profileNavLabel.value,
     to: {
@@ -43,17 +61,12 @@ const navLinks = computed(() => [
     index: '03',
   },
   {
-    label: stackTicker.value.kicker,
-    to: stackPath.value,
-    index: '04',
-  },
-  {
     label: copy.value.navContact,
     to: {
       path: basePath.value,
       hash: '#contact',
     },
-    index: '05',
+    index: '04',
   },
 ])
 
@@ -143,25 +156,54 @@ watch(
       </button>
     </div>
 
-    <nav class="border-y border-[#222222]" aria-label="Primary Sidebar">
-      <RouterLink
-        v-for="item in navLinks"
-        :key="item.index"
-        class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
-        :to="item.to"
-        @click="closeSidebar"
-      >
-        <span
-          class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-        >
-          {{ item.label }}
-        </span>
-        <span
-          class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-        >
-          {{ item.index }}
-        </span>
-      </RouterLink>
-    </nav>
+    <div class="space-y-5">
+      <section>
+        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ pageGroupTitle }}</p>
+        <nav class="border-y border-[#222222]" aria-label="Page Navigation">
+          <RouterLink
+            v-for="item in pageLinks"
+            :key="`page-${item.index}`"
+            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
+            :to="item.to"
+            @click="closeSidebar"
+          >
+            <span
+              class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+            >
+              {{ item.label }}
+            </span>
+            <span
+              class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+            >
+              {{ item.index }}
+            </span>
+          </RouterLink>
+        </nav>
+      </section>
+
+      <section>
+        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ sectionGroupTitle }}</p>
+        <nav class="border-y border-[#222222]" aria-label="Section Navigation">
+          <RouterLink
+            v-for="item in sectionLinks"
+            :key="`section-${item.index}`"
+            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
+            :to="item.to"
+            @click="closeSidebar"
+          >
+            <span
+              class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+            >
+              {{ item.label }}
+            </span>
+            <span
+              class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
+            >
+              {{ item.index }}
+            </span>
+          </RouterLink>
+        </nav>
+      </section>
+    </div>
   </aside>
 </template>
