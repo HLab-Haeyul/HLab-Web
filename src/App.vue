@@ -1,4 +1,36 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
+const calligraphyChars = ['一', '目', '瞭', '然']
+const showIntro = ref(true)
+const mainVisible = ref(false)
+
+let introTimer: ReturnType<typeof setTimeout> | undefined
+
+const openMainScene = () => {
+  mainVisible.value = true
+  showIntro.value = false
+}
+
+onMounted(() => {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (reducedMotion) {
+    openMainScene()
+    return
+  }
+
+  introTimer = setTimeout(() => {
+    openMainScene()
+  }, 3600)
+})
+
+onBeforeUnmount(() => {
+  if (introTimer) {
+    clearTimeout(introTimer)
+  }
+})
+
 const curriculum = [
   {
     title: '한지 인터페이스 공방',
@@ -77,7 +109,26 @@ const currentYear = new Date().getFullYear()
 </script>
 
 <template>
-  <div class="academy-page">
+  <Transition name="intro-fade">
+    <section v-if="showIntro" class="intro-screen" aria-label="인트로 애니메이션">
+      <div class="intro-frame">
+        <p class="intro-reading">일목요연</p>
+        <div class="calligraphy-line" role="img" aria-label="한자 일목요연">
+          <span
+            v-for="(char, index) in calligraphyChars"
+            :key="`${char}-${index}`"
+            class="calligraphy-char"
+            :style="{ '--char-delay': `${index * 0.58}s` }"
+          >
+            {{ char }}
+          </span>
+        </div>
+        <p class="intro-caption">한눈에 질서를 세우는 화면 설계</p>
+      </div>
+    </section>
+  </Transition>
+
+  <div class="academy-page" :class="{ 'academy-page--ready': mainVisible }">
     <div class="paper-noise" aria-hidden="true"></div>
     <div class="light light-left" aria-hidden="true"></div>
     <div class="light light-right" aria-hidden="true"></div>
@@ -230,6 +281,124 @@ const currentYear = new Date().getFullYear()
 </template>
 
 <style scoped>
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(165, 72, 46, 0.16), transparent 38%),
+    radial-gradient(circle at 88% 4%, rgba(47, 111, 99, 0.14), transparent 32%),
+    linear-gradient(140deg, #fcf7ec 0%, #f5ebd8 52%, #efe2cb 100%);
+}
+
+.intro-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(108, 88, 71, 0.06) 0px,
+      rgba(108, 88, 71, 0.06) 1px,
+      transparent 1px,
+      transparent 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(108, 88, 71, 0.04) 0px,
+      rgba(108, 88, 71, 0.04) 1px,
+      transparent 1px,
+      transparent 32px
+    );
+}
+
+.intro-frame {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  width: min(680px, 100%);
+  padding: clamp(1.6rem, 5vw, 2.6rem) 1rem;
+  border: 1px solid rgba(76, 61, 47, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.75);
+  box-shadow: 0 18px 42px rgba(35, 29, 22, 0.12);
+}
+
+.intro-reading {
+  margin: 0;
+  color: #706354;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.calligraphy-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 1.4vw, 1.1rem);
+  line-height: 1;
+}
+
+.calligraphy-char {
+  position: relative;
+  display: inline-block;
+  min-width: 1em;
+  color: #201913;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 9vw, 6.8rem);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 3px rgba(31, 25, 19, 0.18);
+  opacity: 0;
+  filter: blur(4px);
+  clip-path: inset(0 100% 0 0);
+  animation: brush-write 760ms cubic-bezier(0.16, 0.82, 0.19, 1) forwards;
+  animation-delay: var(--char-delay);
+}
+
+.calligraphy-char::after {
+  content: '';
+  position: absolute;
+  top: 4%;
+  bottom: 7%;
+  left: -0.1em;
+  width: 0.42em;
+  background: linear-gradient(180deg, rgba(32, 25, 19, 0.05), rgba(32, 25, 19, 0.38));
+  border-radius: 999px;
+  filter: blur(3px);
+  opacity: 0;
+  animation: brush-tip 760ms cubic-bezier(0.16, 0.82, 0.19, 1) forwards;
+  animation-delay: var(--char-delay);
+}
+
+.intro-caption {
+  margin: 0.2rem 0 0;
+  color: #716252;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+}
+
+.intro-fade-leave-active {
+  transition:
+    opacity 620ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 620ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.intro-fade-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.intro-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.015);
+}
+
 .academy-page {
   position: relative;
   isolation: isolate;
@@ -237,6 +406,13 @@ const currentYear = new Date().getFullYear()
   margin: 0 auto;
   padding: 1.2rem clamp(1rem, 3.2vw, 2.7rem) 3rem;
   color: var(--ink);
+  opacity: 0;
+  transform: translateY(20px);
+  filter: blur(1px);
+  transition:
+    opacity 740ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 740ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter 740ms cubic-bezier(0.2, 0.7, 0.2, 1);
   --paper: #f6efdf;
   --paper-soft: #f9f3e7;
   --paper-deep: #efe3ce;
@@ -247,6 +423,12 @@ const currentYear = new Date().getFullYear()
   --stamp: #a5482e;
   --jade: #2f6f63;
   --gold: #b68a4b;
+}
+
+.academy-page--ready {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
 .paper-noise {
@@ -750,8 +932,43 @@ const currentYear = new Date().getFullYear()
 
 .reveal {
   opacity: 0;
+  transform: translateY(14px);
+}
+
+.academy-page--ready .reveal {
   animation: rise 760ms cubic-bezier(0.2, 0.78, 0.2, 1) forwards;
   animation-delay: var(--delay, 0s);
+}
+
+@keyframes brush-write {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+    clip-path: inset(0 100% 0 0);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes brush-tip {
+  0% {
+    opacity: 0.78;
+    transform: translateX(0);
+  }
+  82% {
+    opacity: 0.4;
+    transform: translateX(1em);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(1.12em);
+  }
 }
 
 @keyframes rise {
@@ -762,6 +979,31 @@ const currentYear = new Date().getFullYear()
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-screen {
+    display: none;
+  }
+
+  .academy-page {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .reveal,
+  .academy-page--ready .reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .work-card,
+  .btn {
+    transition: none;
   }
 }
 
