@@ -45,7 +45,6 @@ export type StackDetailItem = {
   category: string
   proficiency: string
   capability: StackDetailCapability
-  note: string
 }
 
 export type StackDetailCopy = {
