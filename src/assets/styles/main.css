@@ -26,7 +26,8 @@
 
 html {
   scroll-behavior: smooth;
-  background: var(--bg-gradient);
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient);
 }
 
 body {
@@ -34,13 +35,18 @@ body {
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--text-strong);
-  background: var(--bg-gradient);
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
 #app {
   min-height: 100vh;
+  background-color: var(--bg-base);
 }
 
 a {
