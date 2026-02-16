@@ -225,6 +225,51 @@ watch(
             <p :class="isAppLayout ? 'mt-4 text-[15px]' : 'mt-5 text-base'" class="max-w-[62ch] text-zinc-300">
               {{ copy.heroLead }}
             </p>
+            <div :class="isAppLayout ? 'mt-5' : 'mt-6'">
+              <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ stackTicker.kicker }}</p>
+                  <h2
+                    class="mt-2 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+                    :class="isAppLayout ? 'text-[clamp(1.1rem,4.5vw,1.35rem)]' : 'text-[clamp(1.25rem,2.5vw,1.8rem)]'"
+                  >
+                    {{ stackTicker.heading }}
+                  </h2>
+                </div>
+                <RouterLink
+                  :to="stackDetailPath"
+                  class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2 text-xs font-semibold tracking-[0.08em] text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
+                >
+                  {{ stackTicker.viewAllCta }}
+                </RouterLink>
+              </div>
+
+              <div class="relative mt-3 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#131313]">
+                <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
+                <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
+
+                <div
+                  class="stack-ticker-track flex w-max items-center gap-2 py-3"
+                  :style="{ animationDuration: isAppLayout ? '20s' : '26s' }"
+                >
+                  <article
+                    v-for="(item, index) in tickerLoopItems"
+                    :key="`${item.label}-${index}`"
+                    class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
+                  >
+                    <img
+                      v-if="item.imageSrc"
+                      :src="item.imageSrc"
+                      :alt="item.imageAlt ?? item.label"
+                      class="h-4 w-4 object-contain"
+                      loading="lazy"
+                    />
+                    <span v-else class="text-base leading-none">{{ item.icon ?? '•' }}</span>
+                    <span class="text-sm text-zinc-200">{{ item.label }}</span>
+                  </article>
+                </div>
+              </div>
+            </div>
             <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
               <a
                 class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
@@ -442,51 +487,6 @@ watch(
         </div>
       </section>
 
-      <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ stackTicker.kicker }}</p>
-            <h2
-              class="mt-3 leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
-              :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.2rem)]'"
-            >
-              {{ stackTicker.heading }}
-            </h2>
-          </div>
-          <RouterLink
-            :to="stackDetailPath"
-            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2 text-xs font-semibold tracking-[0.08em] text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
-          >
-            {{ stackTicker.viewAllCta }}
-          </RouterLink>
-        </div>
-
-        <div class="relative mt-4 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#131313]">
-          <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
-          <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
-
-          <div
-            class="stack-ticker-track flex w-max items-center gap-2 py-3"
-            :style="{ animationDuration: isAppLayout ? '20s' : '26s' }"
-          >
-            <article
-              v-for="(item, index) in tickerLoopItems"
-              :key="`${item.label}-${index}`"
-              class="shrink-0 flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#111111] px-3 py-1.5"
-            >
-              <img
-                v-if="item.imageSrc"
-                :src="item.imageSrc"
-                :alt="item.imageAlt ?? item.label"
-                class="h-4 w-4 object-contain"
-                loading="lazy"
-              />
-              <span v-else class="text-base leading-none">{{ item.icon ?? '•' }}</span>
-              <span class="text-sm text-zinc-200">{{ item.label }}</span>
-            </article>
-          </div>
-        </div>
-      </section>
     </main>
 
     <footer :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'">
