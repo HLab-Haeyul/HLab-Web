@@ -12,6 +12,8 @@ const copy = computed(() => portfolioCopyByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
+const uploadedPhotoSrc = ref('')
+const profilePhotoSrc = computed(() => uploadedPhotoSrc.value || profileShowcase.value.photoSrc)
 const currentYear = new Date().getFullYear()
 const isSidebarOpen = ref(false)
 const showIntro = ref(false)
@@ -30,6 +32,25 @@ let introTimer: ReturnType<typeof setTimeout> | undefined
 
 const INTRO_DURATION_MS = 1450
 const INTRO_STORAGE_KEY = 'portfolio_intro_seen'
+
+const revokeUploadedPhotoUrl = () => {
+  if (uploadedPhotoSrc.value.startsWith('blob:')) {
+    URL.revokeObjectURL(uploadedPhotoSrc.value)
+  }
+}
+
+const handleProfilePhotoChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) {
+    return
+  }
+
+  revokeUploadedPhotoUrl()
+  uploadedPhotoSrc.value = URL.createObjectURL(file)
+  input.value = ''
+}
 
 const syncViewport = () => {
   viewportWidth.value = window.innerWidth
@@ -75,6 +96,7 @@ onBeforeUnmount(() => {
     clearTimeout(introTimer)
   }
 
+  revokeUploadedPhotoUrl()
   document.body.style.overflow = ''
   document.documentElement.style.overflow = ''
 })
@@ -329,8 +351,8 @@ watch(showIntro, (introOpen) => {
             <p class="text-sm text-zinc-400">{{ profileShowcase.photoTitle }}</p>
 
             <img
-              v-if="profileShowcase.photoSrc"
-              :src="profileShowcase.photoSrc"
+              v-if="profilePhotoSrc"
+              :src="profilePhotoSrc"
               :alt="profileShowcase.photoAlt"
               class="mt-3 h-56 w-full rounded-xl object-cover"
             />
@@ -340,6 +362,14 @@ watch(showIntro, (introOpen) => {
             >
               {{ profileShowcase.photoHint }}
             </div>
+
+            <label
+              class="mt-3 inline-flex cursor-pointer items-center justify-center rounded-full border border-[#2a2a2a] bg-[#101010] px-4 py-2.5 text-xs font-semibold text-zinc-200 transition hover:border-[#3a3a3a] hover:text-white"
+            >
+              <input class="sr-only" type="file" accept="image/*" @change="handleProfilePhotoChange" />
+              {{ profileShowcase.photoUploadLabel }}
+            </label>
+            <p class="mt-2 text-xs text-zinc-500">{{ profileShowcase.photoUploadHint }}</p>
           </article>
 
           <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
