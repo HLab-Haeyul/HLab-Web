@@ -289,24 +289,22 @@ watch(
 
         <article class="mt-4 rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
           <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
-          <ul class="mt-3 grid gap-3">
+          <ul class="mt-4 ml-1 border-l border-[#2a2a2a]">
             <li
               v-for="award in profileShowcase.awards"
               :key="`${award.year}-${award.title}`"
-              class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
+              class="relative pl-5 pb-4 last:pb-0"
             >
-              <img
-                v-if="award.imageSrc"
-                :src="award.imageSrc"
-                :alt="award.imageAlt ?? award.title"
-                class="mb-3 h-32 w-full rounded-lg border border-[#2a2a2a] object-cover"
-                loading="lazy"
-              />
-              <div class="flex items-start justify-between gap-3">
-                <p class="text-sm text-zinc-200">{{ award.title }}</p>
-                <span class="text-xs text-zinc-500">{{ award.year }}</span>
+              <span class="absolute -left-[7px] top-2 h-3.5 w-3.5 rounded-full border border-[#4a4a4a] bg-zinc-200"></span>
+              <div class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3">
+                <div class="flex items-start justify-between gap-3">
+                  <p class="text-sm font-medium text-zinc-200">{{ award.title }}</p>
+                  <span class="shrink-0 rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-500">
+                    {{ award.year }}
+                  </span>
+                </div>
+                <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
               </div>
-              <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
             </li>
           </ul>
         </article>
