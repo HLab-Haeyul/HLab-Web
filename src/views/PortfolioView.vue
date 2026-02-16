@@ -295,6 +295,13 @@ watch(
               :key="`${award.year}-${award.title}`"
               class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
             >
+              <img
+                v-if="award.imageSrc"
+                :src="award.imageSrc"
+                :alt="award.imageAlt ?? award.title"
+                class="mb-3 h-32 w-full rounded-lg border border-[#2a2a2a] object-cover"
+                loading="lazy"
+              />
               <div class="flex items-start justify-between gap-3">
                 <p class="text-sm text-zinc-200">{{ award.title }}</p>
                 <span class="text-xs text-zinc-500">{{ award.year }}</span>

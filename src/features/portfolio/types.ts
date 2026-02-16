@@ -72,6 +72,8 @@ export type AwardItem = {
   year: string
   title: string
   organizer: string
+  imageSrc?: string
+  imageAlt?: string
 }
 
 export type ProfileShowcaseCopy = {
