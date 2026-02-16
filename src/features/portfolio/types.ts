@@ -36,6 +36,8 @@ export type ProfileShowcaseCopy = {
   heading: string
   photoTitle: string
   photoHint: string
+  photoUploadLabel: string
+  photoUploadHint: string
   photoSrc: string
   photoAlt: string
   awardsTitle: string
