@@ -6,6 +6,10 @@
   --font-display: 'Playfair Display', 'Times New Roman', serif;
 
   --bg-base: #0f0f0f;
+  --bg-gradient:
+    radial-gradient(circle at 16% -5%, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 84% 110%, rgba(255, 255, 255, 0.06), transparent 28%),
+    linear-gradient(160deg, #0f0f0f 0%, #111111 52%, #121212 100%);
   --bg-soft: #141414;
   --line-soft: #2a2a2a;
 
@@ -22,6 +26,7 @@
 
 html {
   scroll-behavior: smooth;
+  background: var(--bg-gradient);
 }
 
 body {
@@ -29,10 +34,7 @@ body {
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--text-strong);
-  background:
-    radial-gradient(circle at 16% -5%, rgba(255, 255, 255, 0.08), transparent 34%),
-    radial-gradient(circle at 84% 110%, rgba(255, 255, 255, 0.06), transparent 28%),
-    linear-gradient(160deg, #0f0f0f 0%, #111111 52%, #121212 100%);
+  background: var(--bg-gradient);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
