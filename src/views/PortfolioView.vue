@@ -289,14 +289,30 @@ watch(
 
         <article class="mt-4 rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
           <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
-          <ul class="mt-4 ml-1 border-l border-[#2a2a2a]">
+          <div class="relative mt-4">
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-y-1 left-3 w-px bg-[#2a2a2a] md:left-1/2 md:-translate-x-1/2"
+            ></span>
+            <ul>
             <li
-              v-for="award in profileShowcase.awards"
+              v-for="(award, awardIndex) in profileShowcase.awards"
               :key="`${award.year}-${award.title}`"
-              class="relative pl-5 pb-4 last:pb-0"
+              class="relative pl-7 pb-4 last:pb-0 md:pl-0"
             >
-              <span class="absolute -left-[7px] top-2 h-3.5 w-3.5 rounded-full border border-[#4a4a4a] bg-zinc-200"></span>
-              <div class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3">
+              <span
+                aria-hidden="true"
+                class="absolute left-3 top-4 h-3.5 w-3.5 -translate-x-1/2 rounded-full border border-[#4a4a4a] bg-zinc-200 md:left-1/2"
+              ></span>
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute top-[1.35rem] hidden h-px bg-[#2a2a2a] md:block"
+                :class="awardIndex % 2 === 0 ? 'left-1/2 w-6' : 'right-1/2 w-6'"
+              ></span>
+              <div
+                class="rounded-xl border border-[#242424] bg-[#101010] px-3 py-3"
+                :class="awardIndex % 2 === 0 ? 'md:mr-[calc(50%+1.5rem)]' : 'md:ml-[calc(50%+1.5rem)]'"
+              >
                 <div class="flex items-start justify-between gap-3">
                   <p class="text-sm font-medium text-zinc-200">{{ award.title }}</p>
                   <span class="shrink-0 rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-500">
@@ -306,7 +322,8 @@ watch(
                 <p class="mt-1 text-xs text-zinc-500">{{ award.organizer }}</p>
               </div>
             </li>
-          </ul>
+            </ul>
+          </div>
         </article>
       </section>
 
