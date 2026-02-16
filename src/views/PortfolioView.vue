@@ -187,32 +187,41 @@ watch(isSidebarOpen, (open) => {
           </button>
         </div>
 
-        <nav class="grid gap-2" aria-label="Mobile Primary">
+        <nav class="border-y border-[#222222]" aria-label="Mobile Primary">
           <a
-            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
             href="#work"
             @click="closeSidebar"
           >
-            {{ copy.navWork }}
+            <span>{{ copy.navWork }}</span>
+            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >01</span
+            >
           </a>
           <a
-            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white"
             href="#principles"
             @click="closeSidebar"
           >
-            {{ copy.navPrinciples }}
+            <span>{{ copy.navPrinciples }}</span>
+            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >02</span
+            >
           </a>
           <a
-            class="rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-200"
+            class="group flex items-center justify-between py-3 text-[15px] text-zinc-300 transition hover:text-white"
             href="#contact"
             @click="closeSidebar"
           >
-            {{ copy.navContact }}
+            <span>{{ copy.navContact }}</span>
+            <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >03</span
+            >
           </a>
         </nav>
 
         <a
-          class="mt-6 block rounded-xl border border-[#2a2a2a] px-3 py-3 text-sm text-zinc-400"
+          class="mt-6 block border-t border-[#222222] pt-3 text-sm text-zinc-400 transition hover:text-zinc-200"
           href="mailto:hello@kimminje.dev"
           @click="closeSidebar"
         >
