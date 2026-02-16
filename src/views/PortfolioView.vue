@@ -236,16 +236,36 @@ watch(isSidebarOpen, (open) => {
     >
       <a class="text-xs font-bold tracking-[0.14em] text-zinc-100" href="#">KIMMINJAE</a>
 
-      <nav class="hidden items-center justify-center gap-5 md:flex" aria-label="Primary">
-        <a class="text-sm text-zinc-400 transition hover:text-zinc-100" href="#work">
-          {{ copy.navWork }}
-        </a>
-        <a class="text-sm text-zinc-400 transition hover:text-zinc-100" href="#principles">
-          {{ copy.navPrinciples }}
-        </a>
-        <a class="text-sm text-zinc-400 transition hover:text-zinc-100" href="#contact">
-          {{ copy.navContact }}
-        </a>
+      <nav class="hidden justify-center md:flex" aria-label="Primary">
+        <div class="flex border-y border-[#222222]">
+          <a
+            class="group flex items-center gap-2 border-r border-[#222222] px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
+            href="#work"
+          >
+            <span>{{ copy.navWork }}</span>
+            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >01</span
+            >
+          </a>
+          <a
+            class="group flex items-center gap-2 border-r border-[#222222] px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
+            href="#principles"
+          >
+            <span>{{ copy.navPrinciples }}</span>
+            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >02</span
+            >
+          </a>
+          <a
+            class="group flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 transition hover:text-white"
+            href="#contact"
+          >
+            <span>{{ copy.navContact }}</span>
+            <span class="text-[11px] tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400"
+              >03</span
+            >
+          </a>
+        </div>
       </nav>
 
       <div class="flex items-center gap-2">
