@@ -225,7 +225,7 @@ watch(
             <p :class="isAppLayout ? 'mt-4 text-[15px]' : 'mt-5 text-base'" class="max-w-[62ch] text-zinc-300">
               {{ copy.heroLead }}
             </p>
-            <div :class="isAppLayout ? 'mt-5' : 'mt-6'">
+            <div :class="isAppLayout ? 'mt-5' : 'mt-6 w-full max-w-[460px]'">
               <div class="flex justify-end">
                 <RouterLink
                   :to="stackDetailPath"
