@@ -213,18 +213,11 @@ watch(showIntro, (introOpen) => {
       </div>
     </header>
 
-    <div class="pointer-events-none fixed inset-0 z-30">
-      <div
-        aria-hidden="true"
-        class="absolute inset-0 bg-black/60 transition-opacity duration-200"
-        :class="isSidebarOpen ? 'opacity-100' : 'opacity-0'"
-      ></div>
-
-      <aside
-        id="site-sidebar"
-        class="pointer-events-auto absolute left-0 top-0 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
-        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      >
+    <aside
+      id="site-sidebar"
+      class="fixed left-0 top-0 z-40 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
+      :class="isSidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'"
+    >
         <div class="mb-5 flex items-center justify-between">
           <p class="text-xs tracking-[0.14em] text-zinc-400">MENU</p>
           <button
@@ -278,8 +271,7 @@ watch(showIntro, (introOpen) => {
           </a>
         </nav>
 
-      </aside>
-    </div>
+    </aside>
 
     <main
       :class="
