@@ -251,7 +251,7 @@ watch(
                 </RouterLink>
               </div>
 
-              <div class="relative mt-3 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#131313]">
+              <div class="relative mt-3 overflow-hidden">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
                 <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
 
