@@ -292,7 +292,7 @@ watch(
           <div class="relative mt-4">
             <span
               aria-hidden="true"
-              class="pointer-events-none absolute inset-y-6 left-3 z-0 w-px bg-gradient-to-b from-transparent via-[#3a3a3a] to-transparent md:left-1/2 md:-translate-x-1/2"
+              class="pointer-events-none absolute inset-y-6 left-3 z-0 w-px bg-gradient-to-b from-transparent via-[#343434] to-transparent md:left-1/2 md:-translate-x-1/2"
             ></span>
             <ul>
             <li
@@ -302,7 +302,7 @@ watch(
             >
               <span
                 aria-hidden="true"
-                class="absolute left-3 top-6 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8a8a8a] bg-[#131313] md:left-1/2"
+                class="absolute left-3 top-6 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8a8a8a] bg-[#131313] shadow-[0_0_0_6px_#131313] md:left-1/2"
               ></span>
               <span
                 aria-hidden="true"
@@ -313,8 +313,8 @@ watch(
                 class="pointer-events-none absolute top-6 z-0 hidden h-px -translate-y-1/2 bg-[#3a3a3a] md:block"
                 :class="
                   awardIndex % 2 === 0
-                    ? 'right-[calc(50%+0.45rem)] w-7'
-                    : 'left-[calc(50%+0.45rem)] w-7'
+                    ? 'right-[calc(50%+0.65rem)] w-6'
+                    : 'left-[calc(50%+0.65rem)] w-6'
                 "
               ></span>
               <div
