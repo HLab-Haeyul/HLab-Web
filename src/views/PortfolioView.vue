@@ -193,7 +193,7 @@ watch(showIntro, (introOpen) => {
         </article>
       </section>
 
-      <section :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
+      <section id="profile" :class="isAppLayout ? 'mt-10' : 'mt-12 md:mt-16'">
         <div>
           <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ profileShowcase.kicker }}</p>
           <h2

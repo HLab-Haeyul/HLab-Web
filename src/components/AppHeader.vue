@@ -10,6 +10,7 @@ const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
+const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
 
 const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
 const stackPath = computed(() => `${basePath.value}/stack`)
@@ -18,12 +19,20 @@ const enPath = computed(() => (route.path.endsWith('/stack') ? '/en/stack' : '/e
 
 const navLinks = computed(() => [
   {
+    label: profileNavLabel.value,
+    to: {
+      path: basePath.value,
+      hash: '#profile',
+    },
+    index: '01',
+  },
+  {
     label: copy.value.navWork,
     to: {
       path: basePath.value,
       hash: '#work',
     },
-    index: '01',
+    index: '02',
   },
   {
     label: copy.value.navPrinciples,
@@ -31,12 +40,12 @@ const navLinks = computed(() => [
       path: basePath.value,
       hash: '#principles',
     },
-    index: '02',
+    index: '03',
   },
   {
     label: stackTicker.value.kicker,
     to: stackPath.value,
-    index: '03',
+    index: '04',
   },
   {
     label: copy.value.navContact,
@@ -44,7 +53,7 @@ const navLinks = computed(() => [
       path: basePath.value,
       hash: '#contact',
     },
-    index: '04',
+    index: '05',
   },
 ])
 
