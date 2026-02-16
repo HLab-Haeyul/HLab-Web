@@ -240,7 +240,7 @@ watch(
                 {{ copy.secondaryCta }}
               </a>
             </div>
-            <div :class="isAppLayout ? 'mt-5' : 'mt-6 w-full max-w-[460px]'">
+            <div :class="isAppLayout ? 'mt-5' : 'mt-6 w-full max-w-[520px] lg:max-w-[560px]'">
               <div class="relative overflow-hidden">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#131313] to-transparent"></div>
                 <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#131313] to-transparent"></div>
