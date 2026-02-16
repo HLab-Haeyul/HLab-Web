@@ -138,12 +138,12 @@ watch(
       <RouterLink
         v-for="item in navLinks"
         :key="item.index"
-        class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] text-zinc-300 transition hover:text-white last:border-b-0"
+        class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
         :to="item.to"
         @click="closeSidebar"
       >
-        <span>{{ item.label }}</span>
-        <span class="text-xs tracking-[0.08em] text-zinc-600 transition group-hover:text-zinc-400">
+        <span class="text-zinc-300 transition-colors group-hover:text-white">{{ item.label }}</span>
+        <span class="text-xs tracking-[0.08em] text-zinc-600 transition-colors group-hover:text-white">
           {{ item.index }}
         </span>
       </RouterLink>
