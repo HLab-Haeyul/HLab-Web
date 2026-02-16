@@ -13,7 +13,9 @@ export type MetricItem = {
 }
 
 export type StackTickerItem = {
-  icon: string
+  icon?: string
+  imageSrc?: string
+  imageAlt?: string
   label: string
 }
 
@@ -21,6 +23,23 @@ export type StackTickerCopy = {
   kicker: string
   heading: string
   items: StackTickerItem[]
+}
+
+export type AwardItem = {
+  year: string
+  title: string
+  organizer: string
+}
+
+export type ProfileShowcaseCopy = {
+  kicker: string
+  heading: string
+  photoTitle: string
+  photoHint: string
+  photoSrc: string
+  photoAlt: string
+  awardsTitle: string
+  awards: AwardItem[]
 }
 
 export type PortfolioCopySet = {
