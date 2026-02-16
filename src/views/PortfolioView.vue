@@ -161,17 +161,15 @@ watch(showIntro, (introOpen) => {
           </div>
 
           <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
-            <p class="text-sm text-zinc-400">{{ profileShowcase.photoTitle }}</p>
-
             <img
               v-if="profilePhotoSrc"
               :src="profilePhotoSrc"
               :alt="profileShowcase.photoAlt"
-              class="mt-3 h-56 w-full rounded-xl object-cover"
+              class="h-56 w-full rounded-xl object-cover"
             />
             <div
               v-else
-              class="mt-3 flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[#313131] bg-[#101010] px-4 text-center text-sm text-zinc-500"
+              class="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[#313131] bg-[#101010] px-4 text-center text-sm text-zinc-500"
             >
               {{ profileShowcase.photoHint }}
             </div>
