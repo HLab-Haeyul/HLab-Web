@@ -135,7 +135,15 @@ watch(
           </svg>
         </button>
 
-        <RouterLink class="text-xs font-bold tracking-[0.14em] text-zinc-100" :to="basePath">KIMMINJAE</RouterLink>
+        <RouterLink class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] text-zinc-100" :to="basePath">
+          <img
+            src="/kimminjae-logo.svg"
+            alt="KIMMINJAE logo"
+            class="h-5 w-5 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-6 sm:w-6"
+            loading="eager"
+          />
+          <span>KIMMINJAE</span>
+        </RouterLink>
 
         <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
           <RouterLink
