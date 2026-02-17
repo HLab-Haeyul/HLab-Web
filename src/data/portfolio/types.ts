@@ -5,11 +5,8 @@ export type WorkItem = {
   summary: string
   impact: string
   stack: string[]
-}
-
-export type WorkThumbnailItem = {
-  imageSrc: string
-  imageAlt: string
+  imageSrc?: string
+  imageAlt?: string
 }
 
 export type MetricItem = {

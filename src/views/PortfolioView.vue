@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../data/portfolio/copy'
 import { profileShowcaseByLocale } from '../data/portfolio/profileShowcase'
 import { stackTickerByLocale } from '../data/stack/stackTicker'
-import { workThumbnailsByLocale } from '../data/portfolio/workThumbnails'
 import type { Locale } from '../data/portfolio/types'
 
 const route = useRoute()
@@ -12,7 +11,6 @@ const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
-const workThumbnails = computed(() => workThumbnailsByLocale[locale.value])
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const profilePhotoSrc = computed(() => profileShowcase.value.photoSrc)
 const metricDisplayValues = ref<string[]>([])
@@ -375,15 +373,15 @@ watch(
         </div>
         <div class="mt-5 grid grid-cols-1 gap-3" :class="isAppLayout ? '' : 'md:grid-cols-2 xl:grid-cols-3'">
           <article
-            v-for="(work, workIndex) in copy.works"
+            v-for="work in copy.works"
             :key="work.title"
             class="group flex flex-col gap-3 rounded-2xl border border-[#2a2a2a] bg-gradient-to-br from-[#151515] to-[#121212] p-4 transition hover:-translate-y-1 hover:border-[#393939]"
           >
             <figure class="relative overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#101010]">
               <img
-                v-if="workThumbnails[workIndex]?.imageSrc"
-                :src="workThumbnails[workIndex].imageSrc"
-                :alt="workThumbnails[workIndex].imageAlt"
+                v-if="work.imageSrc"
+                :src="work.imageSrc"
+                :alt="work.imageAlt ?? work.title"
                 class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 loading="lazy"
               />
