@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { stackDetailByLocale } from '../features/portfolio/stackDetail'
-import type { Locale, StackDetailItem } from '../features/portfolio/types'
+import { stackDetailByLocale } from '../data/portfolio/stackDetail'
+import type { Locale, StackDetailItem } from '../data/portfolio/types'
 
 const route = useRoute()
 const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
