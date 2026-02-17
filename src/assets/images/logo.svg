@@ -1,0 +1,27 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="flask-liquid" x1="74" y1="72" x2="104" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5F5F5" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#A1A1AA" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#111111" />
+  <rect x="8.5" y="8.5" width="111" height="111" rx="27.5" stroke="#2A2A2A" />
+
+  <path d="M28 34V94" stroke="#F5F5F5" stroke-width="9" stroke-linecap="round" />
+  <path d="M56 34V94" stroke="#F5F5F5" stroke-width="9" stroke-linecap="round" />
+  <path d="M28 64H56" stroke="#F5F5F5" stroke-width="9" stroke-linecap="round" />
+
+  <path
+    d="M84 34V55L73.5 79.5C70.5 86.4 75.6 94 83.1 94H98.9C106.4 94 111.5 86.4 108.5 79.5L98 55V34"
+    stroke="#F5F5F5"
+    stroke-width="8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M75.5 80H106.5" stroke="#F5F5F5" stroke-width="5" stroke-linecap="round" />
+  <path d="M77.5 86.5C79.5 90 82.3 92 85.5 92H95.5C99 92 101.8 89.7 103.8 86.2" stroke="url(#flask-liquid)" stroke-width="5" stroke-linecap="round" />
+  <circle cx="93.5" cy="46.5" r="2.5" fill="#F5F5F5" />
+  <circle cx="88.5" cy="41.5" r="1.8" fill="#A1A1AA" />
+</svg>

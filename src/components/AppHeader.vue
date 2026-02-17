@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { portfolioCopyByLocale } from '../data/portfolio/copy'
-import { stackTickerByLocale } from '../data/portfolio/stackTicker'
+import { stackTickerByLocale } from '../data/stack/stackTicker'
 import type { Locale } from '../data/portfolio/types'
 
 const route = useRoute()
@@ -114,7 +114,9 @@ watch(
 
 <template>
   <div class="sticky top-3 z-30 mx-auto w-full max-w-[1220px] px-4 pt-5 sm:px-8 lg:px-12">
-    <header class="rounded-2xl border border-[#2a2a2a] bg-[#121212d6] px-3 py-2.5 backdrop-blur sm:px-4 sm:py-3">
+    <header
+      class="rounded-2xl border border-[#2a2a2a] bg-[#121212d6] px-3 py-2.5 backdrop-blur sm:px-4 sm:py-3"
+    >
       <div class="flex items-center justify-between gap-3">
         <button
           type="button"
@@ -131,14 +133,22 @@ watch(
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path
+              d="M4 7H20M4 12H20M4 17H20"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
 
-        <RouterLink class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] text-zinc-100" :to="basePath">
+        <RouterLink
+          class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] text-zinc-100"
+          :to="basePath"
+        >
           <img
-            src="/kimminjae-logo.svg"
-            alt="KIMMINJAE logo"
+            src="../assets/images/logo.svg"
+            alt="HLab logo"
             class="h-5 w-5 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-6 sm:w-6"
             loading="eager"
           />
@@ -148,14 +158,18 @@ watch(
         <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
           <RouterLink
             class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="locale === 'ko' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'"
+            :class="
+              locale === 'ko' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
+            "
             :to="koPath"
           >
             KO
           </RouterLink>
           <RouterLink
             class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
-            :class="locale === 'en' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'"
+            :class="
+              locale === 'en' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
+            "
             :to="enPath"
           >
             EN
@@ -168,7 +182,9 @@ watch(
   <aside
     id="site-sidebar"
     class="fixed left-0 top-0 z-40 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
-    :class="isSidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'"
+    :class="
+      isSidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+    "
   >
     <div class="mb-5 flex items-center justify-between">
       <p class="text-xs tracking-[0.14em] text-zinc-400">MENU</p>
@@ -185,14 +201,21 @@ watch(
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-          <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <path
+            d="M6 6L18 18M18 6L6 18"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
         </svg>
       </button>
     </div>
 
     <div class="space-y-5">
       <section>
-        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ pageGroupTitle }}</p>
+        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">
+          {{ pageGroupTitle }}
+        </p>
         <nav class="border-y border-[#222222]" aria-label="Page Navigation">
           <RouterLink
             v-for="item in pageLinks"
@@ -216,7 +239,9 @@ watch(
       </section>
 
       <section>
-        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ sectionGroupTitle }}</p>
+        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">
+          {{ sectionGroupTitle }}
+        </p>
         <nav class="border-y border-[#222222]" aria-label="Section Navigation">
           <RouterLink
             v-for="item in sectionLinks"
