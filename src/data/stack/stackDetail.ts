@@ -3,30 +3,30 @@ import type { Locale, StackDetailCopy } from './types'
 export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
   ko: {
     kicker: 'Stack Matrix',
-    heading: '기술 스택 상세',
+    heading: 'Tech Stack Details',
     description:
-      '각 기술을 프로젝트에서 사용했는지, 실무에서 사용해봤는지, 내부 구조를 뜯어봤는지 기준으로 정리했습니다.',
-    backCta: '메인으로',
-    columnSkill: '기술',
-    columnCategory: '분야',
-    columnProficiency: '숙련도',
-    columnProjectUsed: '프로젝트에서 사용',
-    columnPracticalUsed: '실무에서 사용해봄',
-    columnInternals: '내부 구조를 뜯어봄',
-    columnNote: '요약',
-    yesLabel: '가능',
-    noLabel: '아직',
-    summaryProjectUsed: '프로젝트에서 사용',
-    summaryPracticalUsed: '실무에서 사용',
-    summaryInternals: '내부 구조 분석',
+      'A matrix of each skill by project usage, practical workplace usage, and whether internals have been explored.',
+    backCta: 'Back to main',
+    columnSkill: 'Skill',
+    columnCategory: 'Category',
+    columnProficiency: 'Proficiency',
+    columnProjectUsed: 'Used in projects',
+    columnPracticalUsed: 'Used in practical work',
+    columnInternals: 'Internals explored',
+    columnNote: 'Notes',
+    yesLabel: 'Yes',
+    noLabel: 'No',
+    summaryProjectUsed: 'Used in projects',
+    summaryPracticalUsed: 'Used in practical work',
+    summaryInternals: 'Internals explored',
     items: [
       {
         icon: '🧠',
         imageSrc: 'https://api.iconify.design/lucide/bug.svg?color=%23ef4444',
         imageAlt: 'Malware Analysis',
         label: 'Window Malware Analysis',
-        category: '보안',
-        proficiency: '중',
+        category: 'Security',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -38,8 +38,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://api.iconify.design/lucide/binary.svg?color=%2394a3b8',
         imageAlt: 'Reverse Engineering',
         label: 'Window Program Reverse Engineering',
-        category: '보안',
-        proficiency: '중',
+        category: 'Security',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -50,8 +50,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg',
         imageAlt: 'Python',
         label: 'Python',
-        category: '언어',
-        proficiency: '하',
+        category: 'Language',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -62,8 +62,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg',
         imageAlt: 'Linux',
         label: 'Debian Linux',
-        category: '인프라',
-        proficiency: '중상',
+        category: 'Infrastructure',
+        proficiency: 'Upper-intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -74,8 +74,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg',
         imageAlt: 'Docker',
         label: 'Docker',
-        category: '인프라',
-        proficiency: '중상',
+        category: 'Infrastructure',
+        proficiency: 'Upper-intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -83,11 +83,12 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-original.svg',
         imageAlt: 'Kubernetes',
         label: 'Kubernetes',
-        category: '인프라',
-        proficiency: '하',
+        category: 'Infrastructure',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -98,8 +99,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.simpleicons.org/proxmox/ef7a2d',
         imageAlt: 'Proxmox',
         label: 'Proxmox',
-        category: '인프라',
-        proficiency: '하',
+        category: 'Infrastructure',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -112,8 +113,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
           'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg',
         imageAlt: 'AWS',
         label: 'AWS',
-        category: '클라우드',
-        proficiency: '중',
+        category: 'Cloud',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -125,8 +126,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.simpleicons.org/googlecloud/4285f4',
         imageAlt: 'GCP',
         label: 'GCP',
-        category: '클라우드',
-        proficiency: '중',
+        category: 'Cloud',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -138,8 +139,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
           'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original-wordmark.svg',
         imageAlt: 'MySQL',
         label: 'MySQL',
-        category: '데이터베이스',
-        proficiency: '하',
+        category: 'Database',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -147,11 +148,12 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
         imageAlt: 'Postgresql',
         label: 'Postgresql',
-        category: '데이터베이스',
-        proficiency: '하',
+        category: 'Database',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -162,8 +164,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg',
         imageAlt: 'Redis',
         label: 'Redis',
-        category: '데이터베이스',
-        proficiency: '하',
+        category: 'Database',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -174,8 +176,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg',
         imageAlt: 'Spring Boot',
         label: 'Spring Boot',
-        category: '백엔드',
-        proficiency: '중',
+        category: 'Backend',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -186,8 +188,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg',
         imageAlt: 'FastAPI',
         label: 'FastAPI',
-        category: '백엔드',
-        proficiency: '하',
+        category: 'Backend',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -199,8 +201,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
           'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
         imageAlt: 'TypeScript',
         label: 'TypeScript',
-        category: '언어',
-        proficiency: '하',
+        category: 'Language',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -208,11 +210,12 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
         imageAlt: 'JavaScript',
         label: 'JavaScript',
-        category: '언어',
-        proficiency: '하',
+        category: 'Language',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -223,8 +226,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg',
         imageAlt: 'Java',
         label: 'Java',
-        category: '언어',
-        proficiency: '중',
+        category: 'Language',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -232,11 +235,12 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
         imageAlt: 'C++',
         label: 'C++',
-        category: '언어',
-        proficiency: '상',
+        category: 'Language',
+        proficiency: 'Advanced',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -247,8 +251,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg',
         imageAlt: 'C',
         label: 'C',
-        category: '언어',
-        proficiency: '상',
+        category: 'Language',
+        proficiency: 'Advanced',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -259,8 +263,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://api.iconify.design/lucide/cpu.svg?color=%239ca3af',
         imageAlt: 'Assembly',
         label: 'Assembly',
-        category: '언어',
-        proficiency: '상',
+        category: 'Language',
+        proficiency: 'Advanced',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -271,8 +275,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
         imageAlt: 'Vue 3',
         label: 'Vue 3',
-        category: '웹 개발',
-        proficiency: '하',
+        category: 'Web Development',
+        proficiency: 'Beginner',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -283,8 +287,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
         imageAlt: 'React',
         label: 'React',
-        category: '웹 개발',
-        proficiency: '중',
+        category: 'Web Development',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: false,
           practicalUsed: false,
@@ -295,8 +299,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg',
         imageAlt: 'Next',
         label: 'Next',
-        category: '웹 개발',
-        proficiency: '중',
+        category: 'Web Development',
+        proficiency: 'Intermediate',
         capability: {
           projectUsed: true,
           practicalUsed: false,
@@ -387,7 +391,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-original.svg',
         imageAlt: 'Kubernetes',
         label: 'Kubernetes',
         category: 'Infrastructure',
@@ -451,7 +456,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
         imageAlt: 'Postgresql',
         label: 'Postgresql',
         category: 'Database',
@@ -512,7 +518,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
         imageAlt: 'JavaScript',
         label: 'JavaScript',
         category: 'Language',
@@ -536,7 +543,8 @@ export const stackDetailByLocale: Record<Locale, StackDetailCopy> = {
         },
       },
       {
-        imageSrc: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
+        imageSrc:
+          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
         imageAlt: 'C++',
         label: 'C++',
         category: 'Language',
