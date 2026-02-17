@@ -11,9 +11,9 @@ const toTickerItems = (locale: Locale): StackTickerItem[] =>
 
 export const stackTickerByLocale: Record<Locale, StackTickerCopy> = {
   ko: {
-    kicker: 'Tech Stack',
-    heading: 'Tools and technologies I use in production',
-    viewAllCta: 'View all',
+    kicker: '기술 스택',
+    heading: '실무에서 사용하는 도구와 기술',
+    viewAllCta: '더보기',
     items: toTickerItems('ko'),
   },
   en: {
