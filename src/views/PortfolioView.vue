@@ -452,14 +452,14 @@ watch(
           <a
             class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:!text-[#0f0f0f]"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="mailto:hello@kimminje.dev"
+            href="kimminje661@outlook.kr"
           >
             {{ copy.emailCta }}
           </a>
           <a
             class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="https://github.com"
+            href="https://github.com/fixgramwork"
             target="_blank"
             rel="noopener"
           >
