@@ -6,7 +6,7 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     heading: '수상 경력',
     photoTitle: '내 사진',
     photoHint: '프로필 사진 준비 중',
-    photoSrc: './assets/images/MyPicture.jpg',
+    photoSrc: './src/assets/images/MyPicture.jpeg',
     photoAlt: 'Sample profile portrait',
     awardsTitle: '수상 경력',
     awards: [
@@ -44,7 +44,7 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2024',
         title: 'BSSM 2024 하계 해커톤 (인기상, 4등)',
         organizer: 'BSSM',
-      }
+      },
     ],
   },
   en: {
@@ -52,7 +52,7 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     heading: 'Awards & Achievements',
     photoTitle: 'My Photo',
     photoHint: 'Profile photo coming soon',
-    photoSrc: './assets/images/MyPicture.jpg',
+    photoSrc: './src/assets/images/MyPicture.jpeg',
     photoAlt: 'Sample profile portrait',
     awardsTitle: 'Awards & Achievements',
     awards: [
@@ -83,7 +83,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
       },
       {
         year: '2024',
-        title: '2024 Pukyong National University Information Security Gifted Program (Outstanding Student)',
+        title:
+          '2024 Pukyong National University Information Security Gifted Program (Outstanding Student)',
         organizer: 'Pukyong National University Gifted Education Center',
       },
       {
