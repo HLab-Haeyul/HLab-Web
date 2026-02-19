@@ -8,16 +8,65 @@ export const useLocale = () => {
   const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
   const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
   const isStackPage = computed(() => route.path.endsWith('/stack'))
+  const blogPrefix = computed(() => `${basePath.value}/blog`)
+  const isBlogPage = computed(
+    () => route.path === blogPrefix.value || route.path.startsWith(`${blogPrefix.value}/`),
+  )
   const stackPath = computed(() => `${basePath.value}/stack`)
-  const koPath = computed(() => (isStackPage.value ? '/ko/stack' : '/ko'))
-  const enPath = computed(() => (isStackPage.value ? '/en/stack' : '/en'))
+  const blogPath = computed(() => `${basePath.value}/blog`)
+  const blogSlug = computed(() => {
+    if (!isBlogPage.value) {
+      return null
+    }
+
+    const prefixWithSlash = `${blogPrefix.value}/`
+
+    if (!route.path.startsWith(prefixWithSlash)) {
+      return null
+    }
+
+    return route.path.slice(prefixWithSlash.length) || null
+  })
+  const koPath = computed(() => {
+    if (isStackPage.value) {
+      return '/ko/stack'
+    }
+
+    if (blogSlug.value) {
+      return `/ko/blog/${blogSlug.value}`
+    }
+
+    if (isBlogPage.value) {
+      return '/ko/blog'
+    }
+
+    return '/ko'
+  })
+  const enPath = computed(() => {
+    if (isStackPage.value) {
+      return '/en/stack'
+    }
+
+    if (blogSlug.value) {
+      return `/en/blog/${blogSlug.value}`
+    }
+
+    if (isBlogPage.value) {
+      return '/en/blog'
+    }
+
+    return '/en'
+  })
 
   return {
     route,
     locale,
     basePath,
     isStackPage,
+    isBlogPage,
     stackPath,
+    blogPath,
+    blogSlug,
     koPath,
     enPath,
   }

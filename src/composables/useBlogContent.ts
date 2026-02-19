@@ -1,0 +1,91 @@
+import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
+import { blogPageCopyByLocale, type BlogPageCopySet } from '../data/blog/content'
+import type { Locale } from '../data/portfolio/types'
+import { fetchBlogPageCopy } from '../services/blogApi'
+
+type BlogDataSource = 'api' | 'fallback'
+
+export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
+  const copy = ref<BlogPageCopySet>(blogPageCopyByLocale[locale.value])
+  const dataSource = ref<BlogDataSource>('fallback')
+  const isLoading = ref(false)
+  const errorMessage = ref<string | null>(null)
+
+  let currentController: AbortController | null = null
+
+  const abortCurrentRequest = () => {
+    if (currentController) {
+      currentController.abort()
+      currentController = null
+    }
+  }
+
+  const getFetchFailedMessage = (currentLocale: Locale) =>
+    currentLocale === 'en'
+      ? 'Failed to load posts from API. Showing local fallback data.'
+      : 'API에서 글을 불러오지 못해 로컬 fallback 데이터를 표시합니다.'
+
+  const load = async () => {
+    abortCurrentRequest()
+
+    const controller = new AbortController()
+    currentController = controller
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      const apiCopy = await fetchBlogPageCopy(locale.value, { signal: controller.signal })
+
+      if (controller.signal.aborted) {
+        return
+      }
+
+      if (apiCopy) {
+        copy.value = apiCopy
+        dataSource.value = 'api'
+        return
+      }
+
+      copy.value = blogPageCopyByLocale[locale.value]
+      dataSource.value = 'fallback'
+      errorMessage.value = getFetchFailedMessage(locale.value)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return
+      }
+
+      copy.value = blogPageCopyByLocale[locale.value]
+      dataSource.value = 'fallback'
+      errorMessage.value = getFetchFailedMessage(locale.value)
+    } finally {
+      if (!controller.signal.aborted && currentController === controller) {
+        isLoading.value = false
+        currentController = null
+      }
+    }
+  }
+
+  const reload = () => {
+    void load()
+  }
+
+  watch(
+    () => locale.value,
+    () => {
+      void load()
+    },
+    { immediate: true },
+  )
+
+  onBeforeUnmount(() => {
+    abortCurrentRequest()
+  })
+
+  return {
+    copy: computed(() => copy.value),
+    dataSource: computed(() => dataSource.value),
+    isLoading: computed(() => isLoading.value),
+    errorMessage: computed(() => errorMessage.value),
+    reload,
+  }
+}

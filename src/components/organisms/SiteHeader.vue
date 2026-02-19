@@ -6,7 +6,18 @@ import { stackTickerByLocale } from '../../data/stack/stackTicker'
 import { useLocale } from '../../composables/useLocale'
 import SidebarNavSection from '../molecules/SidebarNavSection.vue'
 
-const { route, locale, basePath, stackPath, isStackPage, koPath, enPath } = useLocale()
+const {
+  route,
+  locale,
+  basePath,
+  stackPath,
+  blogPath,
+  blogSlug,
+  isStackPage,
+  isBlogPage,
+  koPath,
+  enPath,
+} = useLocale()
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
@@ -16,9 +27,21 @@ const sectionGroupTitle = computed(() =>
   locale.value === 'en' ? 'Section Navigation' : '페이지 내 위치 이동',
 )
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
+const blogNavLabel = computed(() => (locale.value === 'en' ? 'Blog' : '블로그'))
 const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
 const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
 const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
+const blogPopularLabel = computed(() => (locale.value === 'en' ? 'Popular Posts' : '인기 글'))
+const blogCategoryTabsLabel = computed(() =>
+  locale.value === 'en' ? 'Category Tabs' : '카테고리 탭',
+)
+const blogSearchLabel = computed(() => (locale.value === 'en' ? 'Search' : '검색'))
+const blogSyncLabel = computed(() => (locale.value === 'en' ? 'API Status' : 'API 상태'))
+const blogPostOverviewLabel = computed(() =>
+  locale.value === 'en' ? 'Post Overview' : '글 개요',
+)
+const blogPostContentLabel = computed(() => (locale.value === 'en' ? 'Post Content' : '본문'))
+const blogPostListLabel = computed(() => (locale.value === 'en' ? 'Back to List' : '목록으로'))
 
 type SidebarLinkItem = {
   label: string
@@ -36,6 +59,11 @@ const pageLinks = computed<SidebarLinkItem[]>(() => [
     label: stackTicker.value.kicker,
     to: stackPath.value,
     index: '02',
+  },
+  {
+    label: blogNavLabel.value,
+    to: blogPath.value,
+    index: '03',
   },
 ])
 
@@ -57,6 +85,69 @@ const sectionLinks = computed<SidebarLinkItem[]>(() => {
           hash: '#stack-matrix',
         },
         index: '02',
+      },
+    ]
+  }
+
+  if (isBlogPage.value) {
+    if (blogSlug.value) {
+      return [
+        {
+          label: blogPostOverviewLabel.value,
+          to: {
+            path: route.path,
+            hash: '#post-overview',
+          },
+          index: '01',
+        },
+        {
+          label: blogPostContentLabel.value,
+          to: {
+            path: route.path,
+            hash: '#post-content',
+          },
+          index: '02',
+        },
+        {
+          label: blogPostListLabel.value,
+          to: blogPath.value,
+          index: '03',
+        },
+      ]
+    }
+
+    return [
+      {
+        label: blogPopularLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#popular',
+        },
+        index: '01',
+      },
+      {
+        label: blogCategoryTabsLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#blog-categories',
+        },
+        index: '02',
+      },
+      {
+        label: blogSearchLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#blog-search',
+        },
+        index: '03',
+      },
+      {
+        label: blogSyncLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#blog-sync',
+        },
+        index: '04',
       },
     ]
   }
