@@ -16,8 +16,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: '클라우드 기반 통합 교육 서비스',
       impact: '기존 서비스 대비 사용자 30% 시간 절약',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
-      imageSrc:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+      imageSrc: './src/assets/images/CLUE-MAIN.svg',
       imageAlt: '캠페인 랜딩 페이지 화면',
     },
     {
@@ -45,8 +44,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: 'Cloud-based integrated education service',
       impact: 'Users save 30% more time than with the previous service',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
-      imageSrc:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+      imageSrc: './src/assets/images/CLUE-MAIN.svg',
       imageAlt: 'Campaign landing page interface',
     },
     {

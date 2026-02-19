@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PortfolioView from '../views/PortfolioView.vue'
 import StackDetailView from '../views/StackDetailView.vue'
+import BlogView from '../views/BlogView.vue'
+import BlogPostView from '../views/BlogPostView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +40,22 @@ const router = createRouter({
       },
     },
     {
+      path: '/ko/blog',
+      name: 'blog-ko',
+      component: BlogView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/blog/:slug',
+      name: 'blog-post-ko',
+      component: BlogPostView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
       path: '/en',
       name: 'portfolio-en',
       component: PortfolioView,
@@ -49,6 +67,22 @@ const router = createRouter({
       path: '/en/stack',
       name: 'stack-en',
       component: StackDetailView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/blog',
+      name: 'blog-en',
+      component: BlogView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/blog/:slug',
+      name: 'blog-post-en',
+      component: BlogPostView,
       meta: {
         locale: 'en',
       },
