@@ -8,6 +8,7 @@ import {
   type BlogPostVideo,
 } from '@/data/blog/types'
 import type { Locale } from '@/data/portfolio/types'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 
 type FetchBlogOptions = {
   signal?: AbortSignal
@@ -204,6 +205,10 @@ export const fetchBlogPageCopy = async (
   locale: Locale,
   options: FetchBlogOptions = {},
 ): Promise<BlogPageCopySet | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const response = await fetch(resolveBlogListApiUrl(locale), {
     method: 'GET',
     headers: {
@@ -231,6 +236,10 @@ export const fetchBlogPostDetail = async (
   slug: string,
   options: FetchBlogOptions = {},
 ): Promise<BlogPostDetail | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const response = await fetch(resolveBlogPostApiUrl(locale, slug), {
     method: 'GET',
     headers: {
@@ -277,6 +286,10 @@ export const updateBlogMainPageCopy = async (
   input: BlogMainPagePatchInput,
   options: FetchBlogOptions = {},
 ): Promise<BlogPageCopySet | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const response = await fetch(resolveBlogMainPageApiUrl(locale), {
     method: 'PATCH',
     headers: {

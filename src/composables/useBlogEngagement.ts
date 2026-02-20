@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import type { BlogComment } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { createBlogComment, fetchBlogEngagement, toggleBlogLike } from '@/services/blogInteractionApi'
 
 type EngagementDataSource = 'api' | 'fallback'
@@ -142,6 +143,12 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, slug: Readonly<
     errorMessage.value = null
     isLoading.value = true
 
+    if (!isBlogApiEnabled()) {
+      writeToStorage(locale.value, currentSlug, baseSnapshot)
+      isLoading.value = false
+      return
+    }
+
     const controller = new AbortController()
     currentController = controller
 
@@ -200,6 +207,11 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, slug: Readonly<
     setSnapshot(optimisticSnapshot)
     writeToStorage(locale.value, slug.value, optimisticSnapshot)
     errorMessage.value = null
+
+    if (!isBlogApiEnabled()) {
+      dataSource.value = 'fallback'
+      return
+    }
 
     try {
       const synced = await toggleBlogLike(locale.value, slug.value, nextLiked)
@@ -260,6 +272,12 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, slug: Readonly<
     writeToStorage(locale.value, slug.value, optimisticSnapshot)
     isSubmitting.value = true
     errorMessage.value = null
+
+    if (!isBlogApiEnabled()) {
+      dataSource.value = 'fallback'
+      isSubmitting.value = false
+      return
+    }
 
     try {
       const created = await createBlogComment(

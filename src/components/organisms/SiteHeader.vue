@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useBlogContent } from '@/composables/useBlogContent'
 import { portfolioCopyByLocale } from '@/data/portfolio/copy'
 import { stackTickerByLocale } from '@/data/stack/stackTicker'
 import { useLocale } from '@/composables/useLocale'
@@ -21,7 +20,6 @@ const {
 } = useLocale()
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
-const { copy: blogCopy } = useBlogContent(locale)
 const isSidebarOpen = ref(false)
 
 const pageGroupTitle = computed(() => (locale.value === 'en' ? 'Page Navigation' : '페이지 이동'))
@@ -34,7 +32,6 @@ const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프
 const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
 const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
 const blogPopularLabel = computed(() => (locale.value === 'en' ? 'Popular Posts' : '인기 글'))
-const blogTrendLabel = computed(() => (locale.value === 'en' ? 'Today Trend' : '오늘 지표'))
 const blogSearchLabel = computed(() => (locale.value === 'en' ? 'Search Box' : '검색창'))
 const blogSyncLabel = computed(() => (locale.value === 'en' ? 'Sync Status' : '동기화 상태'))
 const blogPostOverviewLabel = computed(() =>
@@ -49,66 +46,6 @@ type SidebarLinkItem = {
   to: RouteLocationRaw
   index: string
 }
-
-type BlogTagStat = {
-  tag: string
-  count: number
-}
-
-const formatIndex = (value: number) => value.toString().padStart(2, '0')
-
-const blogTagStats = computed<BlogTagStat[]>(() => {
-  const postList = blogCopy.value.posts
-  const counter = new Map<string, BlogTagStat>()
-
-  postList.forEach((post) => {
-    const uniqueTags = new Set(
-      post.tags
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0),
-    )
-
-    uniqueTags.forEach((tag) => {
-      const key = tag.toLocaleLowerCase()
-      const current = counter.get(key)
-
-      if (!current) {
-        counter.set(key, {
-          tag,
-          count: 1,
-        })
-        return
-      }
-
-      current.count += 1
-    })
-  })
-
-  return [...counter.values()].sort((a, b) => {
-    if (a.count !== b.count) {
-      return b.count - a.count
-    }
-
-    return a.tag.localeCompare(b.tag)
-  })
-})
-
-const blogTagLinks = computed<SidebarLinkItem[]>(() =>
-  blogTagStats.value.map((item, index) => ({
-    label:
-      locale.value === 'en'
-        ? `#${item.tag} (${item.count})`
-        : `#${item.tag} (${item.count}개)`,
-    to: {
-      path: blogPath.value,
-      query: {
-        tag: item.tag,
-      },
-      hash: '#blog-search',
-    },
-    index: formatIndex(index + 3),
-  })),
-)
 
 const pageLinks = computed<SidebarLinkItem[]>(() => [
   {
@@ -185,8 +122,6 @@ const sectionLinks = computed<SidebarLinkItem[]>(() => {
       ]
     }
 
-    const tagLinks = blogTagLinks.value
-
     return [
       {
         label: blogPopularLabel.value,
@@ -197,21 +132,12 @@ const sectionLinks = computed<SidebarLinkItem[]>(() => {
         index: '01',
       },
       {
-        label: blogTrendLabel.value,
-        to: {
-          path: blogPath.value,
-          hash: '#blog-trend',
-        },
-        index: '02',
-      },
-      ...tagLinks,
-      {
         label: blogSearchLabel.value,
         to: {
           path: blogPath.value,
           hash: '#blog-search',
         },
-        index: formatIndex(tagLinks.length + 3),
+        index: '02',
       },
       {
         label: blogSyncLabel.value,
@@ -219,7 +145,7 @@ const sectionLinks = computed<SidebarLinkItem[]>(() => {
           path: blogPath.value,
           hash: '#blog-sync',
         },
-        index: formatIndex(tagLinks.length + 4),
+        index: '03',
       },
     ]
   }

@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { blogPageCopyByLocale, type BlogPageCopySet } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { fetchBlogPageCopy, type BlogMainPagePatchInput, updateBlogMainPageCopy } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
@@ -28,6 +29,14 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
 
   const load = async () => {
     abortCurrentRequest()
+
+    if (!isBlogApiEnabled()) {
+      copy.value = blogPageCopyByLocale[locale.value]
+      dataSource.value = 'fallback'
+      errorMessage.value = null
+      isLoading.value = false
+      return
+    }
 
     const controller = new AbortController()
     currentController = controller
@@ -76,6 +85,10 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
       : '메인 페이지 내용 수정에 실패했습니다.'
 
   const updateMainPageCopy = async (input: BlogMainPagePatchInput) => {
+    if (!isBlogApiEnabled()) {
+      return false
+    }
+
     isUpdating.value = true
     errorMessage.value = null
 
