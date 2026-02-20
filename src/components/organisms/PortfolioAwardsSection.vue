@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProfileShowcaseCopy } from '../../data/portfolio/types'
+import type { ProfileShowcaseCopy } from '@/data/portfolio/types'
 
 defineProps<{
   profileShowcase: ProfileShowcaseCopy

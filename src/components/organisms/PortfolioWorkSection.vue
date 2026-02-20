@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PortfolioCopySet } from '../../data/portfolio/types'
-import PortfolioWorkCard from '../molecules/PortfolioWorkCard.vue'
+import type { PortfolioCopySet } from '@/data/portfolio/types'
+import PortfolioWorkCard from '@/components/molecules/PortfolioWorkCard.vue'
 
 defineProps<{
   copy: PortfolioCopySet

@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import { blogPageCopyByLocale, type BlogPageCopySet } from '../data/blog/content'
-import type { Locale } from '../data/portfolio/types'
-import { fetchBlogPageCopy } from '../services/blogApi'
+import { blogPageCopyByLocale, type BlogPageCopySet } from '@/data/blog/content'
+import type { Locale } from '@/data/portfolio/types'
+import { fetchBlogPageCopy, type BlogMainPagePatchInput, updateBlogMainPageCopy } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
 
@@ -9,6 +9,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
   const copy = ref<BlogPageCopySet>(blogPageCopyByLocale[locale.value])
   const dataSource = ref<BlogDataSource>('fallback')
   const isLoading = ref(false)
+  const isUpdating = ref(false)
   const errorMessage = ref<string | null>(null)
 
   let currentController: AbortController | null = null
@@ -69,6 +70,38 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     void load()
   }
 
+  const getUpdateFailedMessage = (currentLocale: Locale) =>
+    currentLocale === 'en'
+      ? 'Failed to update main page content.'
+      : '메인 페이지 내용 수정에 실패했습니다.'
+
+  const updateMainPageCopy = async (input: BlogMainPagePatchInput) => {
+    isUpdating.value = true
+    errorMessage.value = null
+
+    try {
+      const updated = await updateBlogMainPageCopy(locale.value, input)
+
+      if (!updated) {
+        errorMessage.value = getUpdateFailedMessage(locale.value)
+        return false
+      }
+
+      copy.value = updated
+      dataSource.value = 'api'
+      return true
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return false
+      }
+
+      errorMessage.value = getUpdateFailedMessage(locale.value)
+      return false
+    } finally {
+      isUpdating.value = false
+    }
+  }
+
   watch(
     () => locale.value,
     () => {
@@ -85,7 +118,9 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     copy: computed(() => copy.value),
     dataSource: computed(() => dataSource.value),
     isLoading: computed(() => isLoading.value),
+    isUpdating: computed(() => isUpdating.value),
     errorMessage: computed(() => errorMessage.value),
     reload,
+    updateMainPageCopy,
   }
 }

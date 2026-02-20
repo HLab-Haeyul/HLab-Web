@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { StackDetailCopy, StackDetailItem } from '../../data/stack/types'
-import type { StackSortOption, StackUiCopy } from '../../utils/stackFilters'
-import CapabilityBadge from '../atoms/CapabilityBadge.vue'
-import SkillIcon from '../atoms/SkillIcon.vue'
+import type { StackDetailCopy, StackDetailItem } from '@/data/stack/types'
+import type { StackSortOption, StackUiCopy } from '@/utils/stackFilters'
+import CapabilityBadge from '@/components/atoms/CapabilityBadge.vue'
+import SkillIcon from '@/components/atoms/SkillIcon.vue'
 
 const props = defineProps<{
   stackDetail: StackDetailCopy

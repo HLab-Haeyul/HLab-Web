@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkItem } from '../../data/portfolio/types'
+import type { WorkItem } from '@/data/portfolio/types'
 
 defineProps<{
   work: WorkItem

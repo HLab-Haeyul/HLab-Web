@@ -1,23 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import PortfolioView from '../views/PortfolioView.vue'
-import StackDetailView from '../views/StackDetailView.vue'
-import BlogView from '../views/BlogView.vue'
-import BlogPostView from '../views/BlogPostView.vue'
+import PortfolioView from '@/views/PortfolioView.vue'
+import StackDetailView from '@/views/StackDetailView.vue'
+import BlogView from '@/views/BlogView.vue'
+import BlogPostView from '@/views/BlogPostView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior(to) {
-    if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: 'smooth',
-      }
-    }
+  // scrollBehavior(to) {
+  //   if (to.hash) {
+  //     return {
+  //       el: to.hash,
+  //       behavior: 'smooth',
+  //     }
+  //   }
 
-    return {
-      top: 0,
-    }
-  },
+  //   return {
+  //     top: 0,
+  //   }
+  // }, --- IGNORE ---
   routes: [
     {
       path: '/',

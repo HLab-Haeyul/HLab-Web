@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PortfolioCopySet, ProfileShowcaseCopy } from '../../data/portfolio/types'
+import type { PortfolioCopySet, ProfileShowcaseCopy } from '@/data/portfolio/types'
 
 const props = defineProps<{
   copy: PortfolioCopySet

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { stackDetailByLocale } from '../../data/stack/stackDetail'
-import { useLocale } from '../../composables/useLocale'
+import { stackDetailByLocale } from '@/data/stack/stackDetail'
+import { useLocale } from '@/composables/useLocale'
 import {
   buildCategoryOptions,
   buildStackSortOptions,
   buildStackUiCopy,
   filterAndSortStackItems,
   type StackSortOption,
-} from '../../utils/stackFilters'
-import StackMatrix from '../organisms/StackMatrix.vue'
+} from '@/utils/stackFilters'
+import StackMatrix from '@/components/organisms/StackMatrix.vue'
 
 const { locale } = useLocale()
 const stackDetail = computed(() => stackDetailByLocale[locale.value])

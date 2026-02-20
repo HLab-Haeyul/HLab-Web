@@ -1,5 +1,5 @@
-import type { BlogComment } from '../data/blog/content'
-import type { Locale } from '../data/portfolio/types'
+import type { BlogComment } from '@/data/blog/content'
+import type { Locale } from '@/data/portfolio/types'
 
 type FetchOptions = {
   signal?: AbortSignal

@@ -1,13 +1,40 @@
 import {
   BLOG_CATEGORY_KEYS,
+  type BlogCategoryCopy,
   type BlogPageCopySet,
   type BlogPost,
   type BlogPostDetail,
-} from '../data/blog/content'
-import type { Locale } from '../data/portfolio/types'
+  type BlogPostImage,
+  type BlogPostVideo,
+} from '@/data/blog/types'
+import type { Locale } from '@/data/portfolio/types'
 
 type FetchBlogOptions = {
   signal?: AbortSignal
+}
+
+export type BlogMainPagePatchInput = Partial<
+  Pick<
+    BlogPageCopySet,
+    | 'kicker'
+    | 'heading'
+    | 'description'
+    | 'popularKicker'
+    | 'popularHeading'
+    | 'popularDescription'
+    | 'readLabel'
+    | 'popularPosts'
+    | 'posts'
+  >
+> & {
+  categories?: Partial<Record<(typeof BLOG_CATEGORY_KEYS)[number], Partial<BlogCategoryCopy>>>
+}
+
+type BlogPostDetailPayload = Omit<BlogPostDetail, 'markdown' | 'images' | 'videos'> & {
+  markdown?: string
+  content?: string[]
+  images?: BlogPostImage[]
+  videos?: BlogPostVideo[]
 }
 
 const DEFAULT_API_PATH = '/api/blog'
@@ -17,6 +44,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string')
+
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
 
 const isBlogCategoryKey = (value: unknown): value is (typeof BLOG_CATEGORY_KEYS)[number] =>
   typeof value === 'string' && BLOG_CATEGORY_KEYS.some((key) => key === value)
@@ -67,7 +96,34 @@ const isPopularPost = (value: unknown) => {
   )
 }
 
-const isBlogPostDetail = (value: unknown): value is BlogPostDetail => {
+const isBlogPostImage = (value: unknown): value is BlogPostImage => {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  return (
+    typeof value.src === 'string' &&
+    (typeof value.alt === 'undefined' || typeof value.alt === 'string') &&
+    (typeof value.caption === 'undefined' || typeof value.caption === 'string')
+  )
+}
+
+const isBlogPostVideo = (value: unknown): value is BlogPostVideo => {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  return (
+    typeof value.src === 'string' &&
+    (typeof value.title === 'undefined' || typeof value.title === 'string') &&
+    (typeof value.poster === 'undefined' || typeof value.poster === 'string') &&
+    (typeof value.autoplay === 'undefined' || isBoolean(value.autoplay)) &&
+    (typeof value.muted === 'undefined' || isBoolean(value.muted)) &&
+    (typeof value.loop === 'undefined' || isBoolean(value.loop))
+  )
+}
+
+const isBlogPostDetailPayload = (value: unknown): value is BlogPostDetailPayload => {
   if (!isBlogPost(value) || !isRecord(value)) {
     return false
   }
@@ -77,7 +133,11 @@ const isBlogPostDetail = (value: unknown): value is BlogPostDetail => {
   return (
     typeof candidate.heroTag === 'string' &&
     typeof candidate.authorName === 'string' &&
-    isStringArray(candidate.content)
+    (typeof candidate.markdown === 'string' || isStringArray(candidate.content)) &&
+    (typeof candidate.images === 'undefined' ||
+      (Array.isArray(candidate.images) && candidate.images.every((item) => isBlogPostImage(item)))) &&
+    (typeof candidate.videos === 'undefined' ||
+      (Array.isArray(candidate.videos) && candidate.videos.every((item) => isBlogPostVideo(item))))
   )
 }
 
@@ -122,6 +182,19 @@ const resolveBlogPostApiUrl = (locale: Locale, slug: string) => {
 
   const url = absoluteUrl ? new URL(absoluteUrl) : new URL(apiPath, baseUrl || origin)
   url.pathname = `${url.pathname.replace(/\/$/, '')}/${encodeURIComponent(slug)}`
+  url.searchParams.set('locale', locale)
+
+  return url.toString()
+}
+
+const resolveBlogMainPageApiUrl = (locale: Locale) => {
+  const absoluteUrl = (import.meta.env.VITE_BLOG_API_URL as string | undefined)?.trim()
+  const baseUrl = (import.meta.env.VITE_BLOG_API_BASE_URL as string | undefined)?.trim()
+  const apiPath = (import.meta.env.VITE_BLOG_API_PATH as string | undefined)?.trim() || DEFAULT_API_PATH
+  const origin = globalThis.location?.origin ?? 'http://localhost'
+
+  const url = absoluteUrl ? new URL(absoluteUrl) : new URL(apiPath, baseUrl || origin)
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/page-content`
   url.searchParams.set('locale', locale)
 
   return url.toString()
@@ -173,7 +246,55 @@ export const fetchBlogPostDetail = async (
   const payload = (await response.json()) as unknown
   const normalized = isRecord(payload) && 'data' in payload ? payload.data : payload
 
-  if (!isBlogPostDetail(normalized)) {
+  if (!isBlogPostDetailPayload(normalized)) {
+    return null
+  }
+
+  const images = Array.isArray(normalized.images) ? normalized.images : undefined
+  const videos = Array.isArray(normalized.videos) ? normalized.videos : undefined
+
+  if (typeof normalized.markdown === 'string') {
+    return {
+      ...normalized,
+      markdown: normalized.markdown,
+      images,
+      videos,
+    }
+  }
+
+  const legacyContent = isStringArray(normalized.content) ? normalized.content.join('\n\n') : ''
+
+  return {
+    ...normalized,
+    markdown: legacyContent,
+    images,
+    videos,
+  }
+}
+
+export const updateBlogMainPageCopy = async (
+  locale: Locale,
+  input: BlogMainPagePatchInput,
+  options: FetchBlogOptions = {},
+): Promise<BlogPageCopySet | null> => {
+  const response = await fetch(resolveBlogMainPageApiUrl(locale), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(input),
+    signal: options.signal,
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const payload = (await response.json()) as unknown
+  const normalized = isRecord(payload) && 'data' in payload ? payload.data : payload
+
+  if (!isBlogPageCopySet(normalized)) {
     return null
   }
 

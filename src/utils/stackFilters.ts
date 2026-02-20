@@ -1,4 +1,4 @@
-import type { Locale, StackDetailItem } from '../data/stack/types'
+import type { Locale, StackDetailItem } from '@/data/stack/types'
 
 export type StackSortOption =
   | 'default'
