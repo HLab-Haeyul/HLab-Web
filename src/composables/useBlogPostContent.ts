@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { getFallbackBlogPostDetail, type BlogPostDetail } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { fetchBlogPostDetail } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
@@ -30,6 +31,14 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
 
     if (!slug.value) {
       post.value = null
+      errorMessage.value = null
+      isLoading.value = false
+      return
+    }
+
+    if (!isBlogApiEnabled()) {
+      post.value = getFallbackBlogPostDetail(locale.value, slug.value)
+      dataSource.value = 'fallback'
       errorMessage.value = null
       isLoading.value = false
       return

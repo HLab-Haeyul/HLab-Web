@@ -1,5 +1,6 @@
 import type { BlogComment } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 
 type FetchOptions = {
   signal?: AbortSignal
@@ -67,6 +68,10 @@ export const fetchBlogEngagement = async (
   slug: string,
   options: FetchOptions = {},
 ): Promise<InteractionPayload | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const url = resolvePostBaseUrl(locale, slug)
   url.pathname = `${url.pathname}/engagement`
 
@@ -97,6 +102,10 @@ export const toggleBlogLike = async (
   liked: boolean,
   options: FetchOptions = {},
 ): Promise<Pick<InteractionPayload, 'likes' | 'liked'> | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const url = resolvePostBaseUrl(locale, slug)
   url.pathname = `${url.pathname}/like`
 
@@ -132,6 +141,10 @@ export const createBlogComment = async (
   input: CommentCreateInput,
   options: FetchOptions = {},
 ): Promise<BlogComment | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
   const url = resolvePostBaseUrl(locale, slug)
   url.pathname = `${url.pathname}/comments`
 
