@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePageTransition } from '../composables/usePageTransition'
-import SiteHeader from '../components/organisms/SiteHeader.vue'
+import { usePageTransition } from '@/composables/usePageTransition'
+import SiteHeader from '@/components/organisms/SiteHeader.vue'
 
 const { transitionName } = usePageTransition()
 </script>

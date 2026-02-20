@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import { getFallbackBlogPostDetail, type BlogPostDetail } from '../data/blog/content'
-import type { Locale } from '../data/portfolio/types'
-import { fetchBlogPostDetail } from '../services/blogApi'
+import { getFallbackBlogPostDetail, type BlogPostDetail } from '@/data/blog/content'
+import type { Locale } from '@/data/portfolio/types'
+import { fetchBlogPostDetail } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
 

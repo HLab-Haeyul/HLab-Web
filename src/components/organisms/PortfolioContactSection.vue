@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PortfolioCopySet } from '../../data/portfolio/types'
+import type { PortfolioCopySet } from '@/data/portfolio/types'
 
 defineProps<{
   copy: PortfolioCopySet

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { MetricItem } from '../../data/portfolio/types'
-import PortfolioMetricCard from '../molecules/PortfolioMetricCard.vue'
+import type { MetricItem } from '@/data/portfolio/types'
+import PortfolioMetricCard from '@/components/molecules/PortfolioMetricCard.vue'
 
 defineProps<{
   metrics: MetricItem[]

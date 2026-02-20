@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { StackTickerItem } from '../../data/stack/types'
-import SkillIcon from '../atoms/SkillIcon.vue'
+import type { StackTickerItem } from '@/data/stack/types'
+import SkillIcon from '@/components/atoms/SkillIcon.vue'
 
 defineProps<{
   tickerLoopItems: StackTickerItem[]

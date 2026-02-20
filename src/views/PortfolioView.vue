@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PortfolioPageTemplate from '../components/templates/PortfolioPageTemplate.vue'
+import PortfolioPageTemplate from '@/components/templates/PortfolioPageTemplate.vue'
 </script>
 
 <template>

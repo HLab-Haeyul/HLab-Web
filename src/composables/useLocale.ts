@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import type { Locale } from '../data/portfolio/types'
+import type { Locale } from '@/data/portfolio/types'
 
 export const useLocale = () => {
   const route = useRoute()

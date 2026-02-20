@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { portfolioCopyByLocale } from '../../data/portfolio/copy'
-import { profileShowcaseByLocale } from '../../data/portfolio/profileShowcase'
-import { stackTickerByLocale } from '../../data/stack/stackTicker'
-import { useLocale } from '../../composables/useLocale'
-import PortfolioAwardsSection from '../organisms/PortfolioAwardsSection.vue'
-import PortfolioContactSection from '../organisms/PortfolioContactSection.vue'
-import PortfolioHeroSection from '../organisms/PortfolioHeroSection.vue'
-import PortfolioMetricsSection from '../organisms/PortfolioMetricsSection.vue'
-import PortfolioPrinciplesSection from '../organisms/PortfolioPrinciplesSection.vue'
-import PortfolioStackTickerSection from '../organisms/PortfolioStackTickerSection.vue'
-import PortfolioWorkSection from '../organisms/PortfolioWorkSection.vue'
+import { portfolioCopyByLocale } from '@/data/portfolio/copy'
+import { profileShowcaseByLocale } from '@/data/portfolio/profileShowcase'
+import { stackTickerByLocale } from '@/data/stack/stackTicker'
+import { useLocale } from '@/composables/useLocale'
+import PortfolioAwardsSection from '@/components/organisms/PortfolioAwardsSection.vue'
+import PortfolioContactSection from '@/components/organisms/PortfolioContactSection.vue'
+import PortfolioHeroSection from '@/components/organisms/PortfolioHeroSection.vue'
+import PortfolioMetricsSection from '@/components/organisms/PortfolioMetricsSection.vue'
+import PortfolioPrinciplesSection from '@/components/organisms/PortfolioPrinciplesSection.vue'
+import PortfolioStackTickerSection from '@/components/organisms/PortfolioStackTickerSection.vue'
+import PortfolioWorkSection from '@/components/organisms/PortfolioWorkSection.vue'
 
 const { locale } = useLocale()
 
