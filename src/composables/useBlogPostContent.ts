@@ -6,7 +6,7 @@ import { fetchBlogPostDetail } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
 
-export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly<Ref<string>>) => {
+export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<Ref<string>>) => {
   const post = ref<BlogPostDetail | null>(null)
   const dataSource = ref<BlogDataSource>('fallback')
   const isLoading = ref(false)
@@ -29,7 +29,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
   const load = async () => {
     abortCurrentRequest()
 
-    if (!slug.value) {
+    if (!id.value) {
       post.value = null
       errorMessage.value = null
       isLoading.value = false
@@ -37,7 +37,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
     }
 
     if (!isBlogApiEnabled()) {
-      post.value = getFallbackBlogPostDetail(locale.value, slug.value)
+      post.value = getFallbackBlogPostDetail(locale.value, id.value)
       dataSource.value = 'fallback'
       errorMessage.value = null
       isLoading.value = false
@@ -50,7 +50,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
     errorMessage.value = null
 
     try {
-      const apiPost = await fetchBlogPostDetail(locale.value, slug.value, {
+      const apiPost = await fetchBlogPostDetail(locale.value, id.value, {
         signal: controller.signal,
       })
 
@@ -64,7 +64,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
         return
       }
 
-      post.value = getFallbackBlogPostDetail(locale.value, slug.value)
+      post.value = getFallbackBlogPostDetail(locale.value, id.value)
       dataSource.value = 'fallback'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } catch (error) {
@@ -72,7 +72,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
         return
       }
 
-      post.value = getFallbackBlogPostDetail(locale.value, slug.value)
+      post.value = getFallbackBlogPostDetail(locale.value, id.value)
       dataSource.value = 'fallback'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } finally {
@@ -88,7 +88,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, slug: Readonly
   }
 
   watch(
-    [() => locale.value, () => slug.value],
+    [() => locale.value, () => id.value],
     () => {
       void load()
     },

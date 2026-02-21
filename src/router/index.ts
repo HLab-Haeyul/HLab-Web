@@ -48,7 +48,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/ko/blog/:slug',
+      path: '/ko/blog/:id',
       name: 'blog-post-ko',
       component: BlogPostView,
       meta: {
@@ -80,7 +80,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/en/blog/:slug',
+      path: '/en/blog/:id',
       name: 'blog-post-en',
       component: BlogPostView,
       meta: {

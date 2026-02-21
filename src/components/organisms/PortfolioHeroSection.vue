@@ -35,13 +35,6 @@ const profilePhotoSrc = computed(() => props.profileShowcase.photoSrc)
           >
             {{ copy.primaryCta }}
           </a>
-          <a
-            class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5"
-            :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="#contact"
-          >
-            {{ copy.secondaryCta }}
-          </a>
         </div>
       </div>
 

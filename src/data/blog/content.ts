@@ -17,7 +17,7 @@ export { BLOG_CATEGORY_KEYS } from './types'
 
 const koPosts: BlogPost[] = [
   {
-    slug: 'vue-state-pitfalls',
+    id: 'vue-state-pitfalls',
     title: 'Vue 상태 관리에서 자주 놓치는 경계선',
     excerpt: '컴포넌트 분리와 상태 소유권을 기준으로 유지보수 비용을 줄인 사례를 정리했습니다.',
     publishedAt: '2026.02.11',
@@ -26,7 +26,7 @@ const koPosts: BlogPost[] = [
     category: 'tech',
   },
   {
-    slug: 'express-error-handling',
+    id: 'express-error-handling',
     title: 'Express 에러 핸들링 레이어 표준화',
     excerpt: '에러 응답 포맷을 통일해 디버깅 시간을 줄인 API 구조를 정리했습니다.',
     publishedAt: '2026.01.26',
@@ -35,7 +35,7 @@ const koPosts: BlogPost[] = [
     category: 'tech',
   },
   {
-    slug: 'docker-deploy-retro',
+    id: 'docker-deploy-retro',
     title: '첫 배포 파이프라인 회고: Docker 기반 자동화',
     excerpt: '배포 실패 원인을 단계별로 추적하고 안정화한 체크리스트를 담았습니다.',
     publishedAt: '2026.02.07',
@@ -44,7 +44,7 @@ const koPosts: BlogPost[] = [
     category: 'retrospective',
   },
   {
-    slug: 'portfolio-v1-retro',
+    id: 'portfolio-v1-retro',
     title: '포트폴리오 V1 제작 회고와 V2 개선 계획',
     excerpt: '초기 버전의 한계와 다음 릴리스에서 우선순위로 잡은 개선 항목을 기록했습니다.',
     publishedAt: '2026.01.20',
@@ -53,7 +53,7 @@ const koPosts: BlogPost[] = [
     category: 'retrospective',
   },
   {
-    slug: 'deep-work-routine',
+    id: 'deep-work-routine',
     title: '하루 2시간 집중 학습 루틴 설계 방법',
     excerpt: '방해 요소를 줄이고 꾸준함을 만든 개인 학습 시스템을 소개합니다.',
     publishedAt: '2026.02.01',
@@ -62,7 +62,7 @@ const koPosts: BlogPost[] = [
     category: 'selfDev',
   },
   {
-    slug: 'reading-note-system',
+    id: 'reading-note-system',
     title: '기술 서적을 실무 자산으로 바꾸는 독서 노트 구조',
     excerpt: '읽고 끝나는 독서가 아니라 구현으로 이어지는 정리 템플릿을 공유합니다.',
     publishedAt: '2026.01.15',
@@ -74,7 +74,7 @@ const koPosts: BlogPost[] = [
 
 const enPosts: BlogPost[] = [
   {
-    slug: 'vue-state-pitfalls',
+    id: 'vue-state-pitfalls',
     title: 'Boundaries People Miss in Vue State Management',
     excerpt: 'A practical note on reducing maintenance cost by clarifying component ownership.',
     publishedAt: '2026.02.11',
@@ -83,7 +83,7 @@ const enPosts: BlogPost[] = [
     category: 'tech',
   },
   {
-    slug: 'express-error-handling',
+    id: 'express-error-handling',
     title: 'Standardizing Express Error Handling Layers',
     excerpt: 'A backend pattern that made API debugging faster in production.',
     publishedAt: '2026.01.26',
@@ -92,7 +92,7 @@ const enPosts: BlogPost[] = [
     category: 'tech',
   },
   {
-    slug: 'docker-deploy-retro',
+    id: 'docker-deploy-retro',
     title: 'First Deployment Pipeline Retro: Docker Automation',
     excerpt: 'How we tracked failure points and built a stable release checklist step by step.',
     publishedAt: '2026.02.07',
@@ -101,7 +101,7 @@ const enPosts: BlogPost[] = [
     category: 'retrospective',
   },
   {
-    slug: 'portfolio-v1-retro',
+    id: 'portfolio-v1-retro',
     title: 'Portfolio V1 Retrospective and V2 Upgrade Plan',
     excerpt: 'A release journal of limitations, priorities, and next-step decisions.',
     publishedAt: '2026.01.20',
@@ -110,7 +110,7 @@ const enPosts: BlogPost[] = [
     category: 'retrospective',
   },
   {
-    slug: 'deep-work-routine',
+    id: 'deep-work-routine',
     title: 'How I Designed a 2-Hour Daily Deep Work Routine',
     excerpt: 'A personal system to remove distractions and stay consistent.',
     publishedAt: '2026.02.01',
@@ -119,7 +119,7 @@ const enPosts: BlogPost[] = [
     category: 'selfDev',
   },
   {
-    slug: 'reading-note-system',
+    id: 'reading-note-system',
     title: 'Turning Reading Notes into Practical Assets',
     excerpt: 'A template to turn books into implementation-ready knowledge.',
     publishedAt: '2026.01.15',
@@ -420,14 +420,14 @@ export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDeta
   },
 }
 
-export const getFallbackBlogPostDetail = (locale: Locale, slug: string): BlogPostDetail | null => {
-  const fromDetails = blogPostDetailsByLocale[locale][slug]
+export const getFallbackBlogPostDetail = (locale: Locale, id: string): BlogPostDetail | null => {
+  const fromDetails = blogPostDetailsByLocale[locale][id]
 
   if (fromDetails) {
     return fromDetails
   }
 
-  const fallbackPost = blogPageCopyByLocale[locale].posts.find((post) => post.slug === slug)
+  const fallbackPost = blogPageCopyByLocale[locale].posts.find((post) => post.id === id)
 
   if (!fallbackPost) {
     return null

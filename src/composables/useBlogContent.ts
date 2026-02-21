@@ -1,8 +1,17 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import { blogPageCopyByLocale, type BlogPageCopySet } from '@/data/blog/content'
+import { blogPageCopyByLocale, type BlogPageCopySet, type BlogPost } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
-import { fetchBlogPageCopy, type BlogMainPagePatchInput, updateBlogMainPageCopy } from '@/services/blogApi'
+import {
+  createBlogPost,
+  deleteBlogPost,
+  fetchBlogPageCopy,
+  type BlogMainPagePatchInput,
+  type BlogPostCreateInput,
+  type BlogPostUpdateInput,
+  updateBlogMainPageCopy,
+  updateBlogPost,
+} from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
 
@@ -11,6 +20,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
   const dataSource = ref<BlogDataSource>('fallback')
   const isLoading = ref(false)
   const isUpdating = ref(false)
+  const isManagingPost = ref(false)
   const errorMessage = ref<string | null>(null)
 
   let currentController: AbortController | null = null
@@ -115,6 +125,211 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     }
   }
 
+  const toListPost = (input: {
+    id: string
+    title: string
+    excerpt: string
+    publishedAt: string
+    readTime: string
+    tags: string[]
+    category: BlogPost['category']
+  }): BlogPost => ({
+    id: input.id,
+    title: input.title,
+    excerpt: input.excerpt,
+    publishedAt: input.publishedAt,
+    readTime: input.readTime,
+    tags: input.tags,
+    category: input.category,
+  })
+
+  const upsertListPost = (post: BlogPost) => {
+    const nextPosts = [...copy.value.posts]
+    const targetIndex = nextPosts.findIndex((item) => item.id === post.id)
+
+    if (targetIndex === -1) {
+      nextPosts.unshift(post)
+    } else {
+      nextPosts[targetIndex] = post
+    }
+
+    const nextPopularPosts = copy.value.popularPosts.map((popularPost) =>
+      popularPost.id === post.id
+        ? {
+            ...popularPost,
+            ...post,
+          }
+        : popularPost,
+    )
+
+    copy.value = {
+      ...copy.value,
+      posts: nextPosts,
+      popularPosts: nextPopularPosts,
+    }
+  }
+
+  const removeListPost = (id: string) => {
+    copy.value = {
+      ...copy.value,
+      posts: copy.value.posts.filter((post) => post.id !== id),
+      popularPosts: copy.value.popularPosts.filter((post) => post.id !== id),
+    }
+  }
+
+  const getPostManageFailedMessage = (currentLocale: Locale) =>
+    currentLocale === 'en' ? 'Failed to manage blog post.' : '게시글 관리에 실패했습니다.'
+
+  const createPost = async (input: BlogPostCreateInput) => {
+    isManagingPost.value = true
+    errorMessage.value = null
+
+    if (!isBlogApiEnabled()) {
+      upsertListPost(
+        toListPost({
+          id: input.id,
+          title: input.title,
+          excerpt: input.excerpt,
+          publishedAt: input.publishedAt,
+          readTime: input.readTime,
+          tags: input.tags,
+          category: input.category,
+        }),
+      )
+      dataSource.value = 'fallback'
+      isManagingPost.value = false
+      return true
+    }
+
+    try {
+      const created = await createBlogPost(locale.value, input)
+
+      if (!created) {
+        errorMessage.value = getPostManageFailedMessage(locale.value)
+        return false
+      }
+
+      upsertListPost(
+        toListPost({
+          id: created.id,
+          title: created.title,
+          excerpt: created.excerpt,
+          publishedAt: created.publishedAt,
+          readTime: created.readTime,
+          tags: created.tags,
+          category: created.category,
+        }),
+      )
+      dataSource.value = 'api'
+      return true
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return false
+      }
+
+      errorMessage.value = getPostManageFailedMessage(locale.value)
+      return false
+    } finally {
+      isManagingPost.value = false
+    }
+  }
+
+  const updatePost = async (id: string, input: BlogPostUpdateInput) => {
+    isManagingPost.value = true
+    errorMessage.value = null
+
+    if (!isBlogApiEnabled()) {
+      const currentPost = copy.value.posts.find((post) => post.id === id)
+
+      if (!currentPost) {
+        errorMessage.value = getPostManageFailedMessage(locale.value)
+        isManagingPost.value = false
+        return false
+      }
+
+      upsertListPost(
+        toListPost({
+          id: currentPost.id,
+          title: input.title ?? currentPost.title,
+          excerpt: input.excerpt ?? currentPost.excerpt,
+          publishedAt: input.publishedAt ?? currentPost.publishedAt,
+          readTime: input.readTime ?? currentPost.readTime,
+          tags: input.tags ?? currentPost.tags,
+          category: input.category ?? currentPost.category,
+        }),
+      )
+      dataSource.value = 'fallback'
+      isManagingPost.value = false
+      return true
+    }
+
+    try {
+      const updated = await updateBlogPost(locale.value, id, input)
+
+      if (!updated) {
+        errorMessage.value = getPostManageFailedMessage(locale.value)
+        return false
+      }
+
+      upsertListPost(
+        toListPost({
+          id: updated.id,
+          title: updated.title,
+          excerpt: updated.excerpt,
+          publishedAt: updated.publishedAt,
+          readTime: updated.readTime,
+          tags: updated.tags,
+          category: updated.category,
+        }),
+      )
+      dataSource.value = 'api'
+      return true
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return false
+      }
+
+      errorMessage.value = getPostManageFailedMessage(locale.value)
+      return false
+    } finally {
+      isManagingPost.value = false
+    }
+  }
+
+  const removePost = async (id: string) => {
+    isManagingPost.value = true
+    errorMessage.value = null
+
+    if (!isBlogApiEnabled()) {
+      removeListPost(id)
+      dataSource.value = 'fallback'
+      isManagingPost.value = false
+      return true
+    }
+
+    try {
+      const deleted = await deleteBlogPost(locale.value, id)
+
+      if (!deleted) {
+        errorMessage.value = getPostManageFailedMessage(locale.value)
+        return false
+      }
+
+      removeListPost(id)
+      dataSource.value = 'api'
+      return true
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return false
+      }
+
+      errorMessage.value = getPostManageFailedMessage(locale.value)
+      return false
+    } finally {
+      isManagingPost.value = false
+    }
+  }
+
   watch(
     () => locale.value,
     () => {
@@ -132,8 +347,12 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     dataSource: computed(() => dataSource.value),
     isLoading: computed(() => isLoading.value),
     isUpdating: computed(() => isUpdating.value),
+    isManagingPost: computed(() => isManagingPost.value),
     errorMessage: computed(() => errorMessage.value),
     reload,
     updateMainPageCopy,
+    createPost,
+    updatePost,
+    removePost,
   }
 }
