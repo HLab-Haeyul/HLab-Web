@@ -12,7 +12,7 @@ const {
   basePath,
   stackPath,
   blogPath,
-  blogSlug,
+  blogId,
   isStackPage,
   isBlogPage,
   koPath,
@@ -88,7 +88,7 @@ const sectionLinks = computed<SidebarLinkItem[]>(() => {
   }
 
   if (isBlogPage.value) {
-    if (blogSlug.value) {
+    if (blogId.value) {
       return [
         {
           label: blogPostOverviewLabel.value,

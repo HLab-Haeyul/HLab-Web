@@ -1,4 +1,4 @@
-import type { BlogComment } from '@/data/blog/content'
+import type { BlogComment } from '@/data/blog/types'
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 
@@ -9,12 +9,27 @@ type FetchOptions = {
 type InteractionPayload = {
   likes: number
   liked: boolean
-  comments: BlogComment[]
+}
+
+export type BlogCommentPagePayload = {
+  items: BlogComment[]
+  page: number
+  pageSize: number
+  totalCount: number
 }
 
 type CommentCreateInput = {
   authorName: string
   body: string
+}
+
+type CommentUpdateInput = {
+  body: string
+}
+
+type FetchCommentPageInput = {
+  page: number
+  pageSize: number
 }
 
 const DEFAULT_API_PATH = '/api/blog'
@@ -40,22 +55,56 @@ const isInteractionPayload = (value: unknown): value is InteractionPayload => {
     return false
   }
 
-  return (
-    typeof value.likes === 'number' &&
-    typeof value.liked === 'boolean' &&
-    Array.isArray(value.comments) &&
-    value.comments.every((comment) => isBlogComment(comment))
-  )
+  return typeof value.likes === 'number' && typeof value.liked === 'boolean'
 }
 
-const resolvePostBaseUrl = (locale: Locale, slug: string) => {
+const toPositiveInteger = (value: unknown): number | null => {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    return null
+  }
+
+  return value
+}
+
+const normalizeCommentPagePayload = (value: unknown): BlogCommentPagePayload | null => {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const items = Array.isArray(value.items)
+    ? value.items
+    : Array.isArray(value.comments)
+      ? value.comments
+      : null
+
+  if (!items || !items.every((comment) => isBlogComment(comment))) {
+    return null
+  }
+
+  const page = toPositiveInteger(value.page)
+  const pageSize = toPositiveInteger(value.pageSize)
+  const totalCount = typeof value.totalCount === 'number' && value.totalCount >= 0 ? value.totalCount : null
+
+  if (!page || !pageSize || totalCount === null) {
+    return null
+  }
+
+  return {
+    items,
+    page,
+    pageSize,
+    totalCount,
+  }
+}
+
+const resolvePostBaseUrl = (locale: Locale, id: string) => {
   const absoluteUrl = (import.meta.env.VITE_BLOG_API_URL as string | undefined)?.trim()
   const baseUrl = (import.meta.env.VITE_BLOG_API_BASE_URL as string | undefined)?.trim()
   const apiPath = (import.meta.env.VITE_BLOG_API_PATH as string | undefined)?.trim() || DEFAULT_API_PATH
   const origin = globalThis.location?.origin ?? 'http://localhost'
 
   const url = absoluteUrl ? new URL(absoluteUrl) : new URL(apiPath, baseUrl || origin)
-  url.pathname = `${url.pathname.replace(/\/$/, '')}/${encodeURIComponent(slug)}`
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/${encodeURIComponent(id)}`
   url.searchParams.set('locale', locale)
 
   return url
@@ -65,14 +114,14 @@ const extractPayload = (payload: unknown) => (isRecord(payload) && 'data' in pay
 
 export const fetchBlogEngagement = async (
   locale: Locale,
-  slug: string,
+  id: string,
   options: FetchOptions = {},
 ): Promise<InteractionPayload | null> => {
   if (!isBlogApiEnabled()) {
     return null
   }
 
-  const url = resolvePostBaseUrl(locale, slug)
+  const url = resolvePostBaseUrl(locale, id)
   url.pathname = `${url.pathname}/engagement`
 
   const response = await fetch(url.toString(), {
@@ -96,9 +145,41 @@ export const fetchBlogEngagement = async (
   return payload
 }
 
+export const fetchBlogComments = async (
+  locale: Locale,
+  id: string,
+  input: FetchCommentPageInput,
+  options: FetchOptions = {},
+): Promise<BlogCommentPagePayload | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
+  const url = resolvePostBaseUrl(locale, id)
+  url.pathname = `${url.pathname}/comments`
+  url.searchParams.set('page', String(input.page))
+  url.searchParams.set('pageSize', String(input.pageSize))
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal: options.signal,
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const payload = extractPayload((await response.json()) as unknown)
+
+  return normalizeCommentPagePayload(payload)
+}
+
 export const toggleBlogLike = async (
   locale: Locale,
-  slug: string,
+  id: string,
   liked: boolean,
   options: FetchOptions = {},
 ): Promise<Pick<InteractionPayload, 'likes' | 'liked'> | null> => {
@@ -106,7 +187,7 @@ export const toggleBlogLike = async (
     return null
   }
 
-  const url = resolvePostBaseUrl(locale, slug)
+  const url = resolvePostBaseUrl(locale, id)
   url.pathname = `${url.pathname}/like`
 
   const response = await fetch(url.toString(), {
@@ -137,7 +218,7 @@ export const toggleBlogLike = async (
 
 export const createBlogComment = async (
   locale: Locale,
-  slug: string,
+  id: string,
   input: CommentCreateInput,
   options: FetchOptions = {},
 ): Promise<BlogComment | null> => {
@@ -145,7 +226,7 @@ export const createBlogComment = async (
     return null
   }
 
-  const url = resolvePostBaseUrl(locale, slug)
+  const url = resolvePostBaseUrl(locale, id)
   url.pathname = `${url.pathname}/comments`
 
   const response = await fetch(url.toString(), {
@@ -169,4 +250,65 @@ export const createBlogComment = async (
   }
 
   return payload
+}
+
+export const updateBlogComment = async (
+  locale: Locale,
+  id: string,
+  commentId: string,
+  input: CommentUpdateInput,
+  options: FetchOptions = {},
+): Promise<BlogComment | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
+  const url = resolvePostBaseUrl(locale, id)
+  url.pathname = `${url.pathname}/comments/${encodeURIComponent(commentId)}`
+
+  const response = await fetch(url.toString(), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(input),
+    signal: options.signal,
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const payload = extractPayload((await response.json()) as unknown)
+
+  if (!isBlogComment(payload)) {
+    return null
+  }
+
+  return payload
+}
+
+export const deleteBlogComment = async (
+  locale: Locale,
+  id: string,
+  commentId: string,
+  options: FetchOptions = {},
+): Promise<boolean> => {
+  if (!isBlogApiEnabled()) {
+    return false
+  }
+
+  const url = resolvePostBaseUrl(locale, id)
+  url.pathname = `${url.pathname}/comments/${encodeURIComponent(commentId)}`
+
+  const response = await fetch(url.toString(), {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal: options.signal,
+  })
+
+  return response.ok
 }

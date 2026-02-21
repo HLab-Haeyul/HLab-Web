@@ -51,7 +51,7 @@ const formatViewCount = (value: number) => value.toLocaleString()
       <div class="mt-3 flex flex-wrap gap-1.5">
         <span
           v-for="tag in props.post.tags"
-          :key="`${props.post.slug}-${tag}`"
+          :key="`${props.post.id}-${tag}`"
           class="rounded-full bg-[#262626] px-2 py-0.5 text-[11px] text-zinc-300"
         >
           #{{ tag }}

@@ -1,7 +1,7 @@
 export type BlogCategoryKey = 'tech' | 'retrospective' | 'selfDev'
 
 export type BlogPost = {
-  slug: string
+  id: string
   title: string
   excerpt: string
   publishedAt: string

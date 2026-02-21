@@ -14,7 +14,7 @@ export const useLocale = () => {
   )
   const stackPath = computed(() => `${basePath.value}/stack`)
   const blogPath = computed(() => `${basePath.value}/blog`)
-  const blogSlug = computed(() => {
+  const blogId = computed(() => {
     if (!isBlogPage.value) {
       return null
     }
@@ -32,8 +32,8 @@ export const useLocale = () => {
       return '/ko/stack'
     }
 
-    if (blogSlug.value) {
-      return `/ko/blog/${blogSlug.value}`
+    if (blogId.value) {
+      return `/ko/blog/${blogId.value}`
     }
 
     if (isBlogPage.value) {
@@ -47,8 +47,8 @@ export const useLocale = () => {
       return '/en/stack'
     }
 
-    if (blogSlug.value) {
-      return `/en/blog/${blogSlug.value}`
+    if (blogId.value) {
+      return `/en/blog/${blogId.value}`
     }
 
     if (isBlogPage.value) {
@@ -66,7 +66,7 @@ export const useLocale = () => {
     isBlogPage,
     stackPath,
     blogPath,
-    blogSlug,
+    blogId,
     koPath,
     enPath,
   }

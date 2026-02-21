@@ -32,7 +32,7 @@ const emit = defineEmits<{
   <div class="mt-5 flex flex-wrap items-center gap-2">
     <span
       v-for="tag in props.post.tags"
-      :key="`${props.post.slug}-${tag}`"
+      :key="`${props.post.id}-${tag}`"
       class="rounded-full border border-[#353535] bg-[#151515] px-2.5 py-1 text-xs text-zinc-300"
     >
       #{{ tag }}

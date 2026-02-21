@@ -9,8 +9,8 @@ type Props = {
   activeIndex: number
   readLabel: string
   viewLabel: string
-  buildPostPath: (slug: string) => string
-  resolveViewCount: (slug: string) => number
+  buildPostPath: (id: string) => string
+  resolveViewCount: (id: string) => number
 }
 
 const props = defineProps<Props>()
@@ -42,11 +42,13 @@ const emit = defineEmits<{
       >
         <article
           v-for="post in props.posts"
-          :key="`popular-${post.slug}`"
+          :key="`popular-${post.id}`"
           class="min-w-full p-3 sm:p-4"
         >
-          <div
-            class="rounded-2xl border border-[#343434] p-4 sm:p-5"
+          <RouterLink
+            :to="props.buildPostPath(post.id)"
+            :aria-label="`${post.title} ${props.readLabel}`"
+            class="block rounded-2xl border border-[#343434] p-4 transition hover:border-[#5f5f5f] sm:p-5"
             :style="{ background: post.bannerBackground }"
           >
             <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-400">{{ post.heroTag }}</p>
@@ -55,25 +57,19 @@ const emit = defineEmits<{
             </h3>
             <p class="mt-2 text-sm text-zinc-300 sm:text-base">{{ post.highlight }}</p>
             <p class="mt-4 text-sm text-zinc-400">{{ post.excerpt }}</p>
-            <RouterLink
-              :to="props.buildPostPath(post.slug)"
-              class="mt-4 inline-flex rounded-lg border border-[#3a3a3a] bg-[#10101066] px-2.5 py-1 text-xs text-zinc-200 transition hover:border-[#5f5f5f] hover:text-white"
-            >
-              {{ props.readLabel }}
-            </RouterLink>
             <div class="mt-5 flex flex-wrap gap-2">
               <span
                 v-for="tag in post.tags"
-                :key="`${post.slug}-${tag}`"
+                :key="`${post.id}-${tag}`"
                 class="rounded-full border border-[#3d3d3d] bg-[#12121290] px-2.5 py-1 text-[11px] text-zinc-300"
               >
                 {{ tag }}
               </span>
             </div>
             <p class="mt-5 text-xs tracking-[0.06em] text-zinc-400">
-              {{ post.publishedAt }} · {{ post.readTime }} · {{ props.viewLabel }} {{ formatViewCount(props.resolveViewCount(post.slug)) }}
+              {{ post.publishedAt }} · {{ post.readTime }} · {{ props.viewLabel }} {{ formatViewCount(props.resolveViewCount(post.id)) }}
             </p>
-          </div>
+          </RouterLink>
         </article>
       </div>
     </div>
@@ -105,7 +101,7 @@ const emit = defineEmits<{
       <div class="inline-flex items-center gap-2">
         <button
           v-for="(post, index) in props.posts"
-          :key="`popular-dot-${post.slug}`"
+          :key="`popular-dot-${post.id}`"
           type="button"
           class="h-2.5 rounded-full transition"
           :class="index === props.activeIndex ? 'w-6 bg-zinc-100' : 'w-2.5 bg-zinc-600 hover:bg-zinc-400'"

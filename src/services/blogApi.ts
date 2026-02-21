@@ -1,5 +1,6 @@
 import {
   BLOG_CATEGORY_KEYS,
+  type BlogCategoryKey,
   type BlogCategoryCopy,
   type BlogPageCopySet,
   type BlogPost,
@@ -13,6 +14,23 @@ import { isBlogApiEnabled } from '@/services/blogApiConfig'
 type FetchBlogOptions = {
   signal?: AbortSignal
 }
+
+export type BlogPostCreateInput = {
+  id: string
+  title: string
+  excerpt: string
+  publishedAt: string
+  readTime: string
+  tags: string[]
+  category: BlogCategoryKey
+  heroTag: string
+  authorName: string
+  markdown: string
+  images?: BlogPostImage[]
+  videos?: BlogPostVideo[]
+}
+
+export type BlogPostUpdateInput = Partial<Omit<BlogPostCreateInput, 'id'>>
 
 export type BlogMainPagePatchInput = Partial<
   Pick<
@@ -73,7 +91,7 @@ const isBlogPost = (value: unknown): value is BlogPost => {
   }
 
   return (
-    typeof value.slug === 'string' &&
+    typeof value.id === 'string' &&
     typeof value.title === 'string' &&
     typeof value.excerpt === 'string' &&
     typeof value.publishedAt === 'string' &&
@@ -175,14 +193,14 @@ const resolveBlogListApiUrl = (locale: Locale) => {
   return url.toString()
 }
 
-const resolveBlogPostApiUrl = (locale: Locale, slug: string) => {
+const resolveBlogPostApiUrl = (locale: Locale, id: string) => {
   const absoluteUrl = (import.meta.env.VITE_BLOG_API_URL as string | undefined)?.trim()
   const baseUrl = (import.meta.env.VITE_BLOG_API_BASE_URL as string | undefined)?.trim()
   const apiPath = (import.meta.env.VITE_BLOG_API_PATH as string | undefined)?.trim() || DEFAULT_API_PATH
   const origin = globalThis.location?.origin ?? 'http://localhost'
 
   const url = absoluteUrl ? new URL(absoluteUrl) : new URL(apiPath, baseUrl || origin)
-  url.pathname = `${url.pathname.replace(/\/$/, '')}/${encodeURIComponent(slug)}`
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/${encodeURIComponent(id)}`
   url.searchParams.set('locale', locale)
 
   return url.toString()
@@ -199,6 +217,35 @@ const resolveBlogMainPageApiUrl = (locale: Locale) => {
   url.searchParams.set('locale', locale)
 
   return url.toString()
+}
+
+const normalizeBlogPostDetailPayload = (payload: unknown): BlogPostDetail | null => {
+  const normalized = isRecord(payload) && 'data' in payload ? payload.data : payload
+
+  if (!isBlogPostDetailPayload(normalized)) {
+    return null
+  }
+
+  const images = Array.isArray(normalized.images) ? normalized.images : undefined
+  const videos = Array.isArray(normalized.videos) ? normalized.videos : undefined
+
+  if (typeof normalized.markdown === 'string') {
+    return {
+      ...normalized,
+      markdown: normalized.markdown,
+      images,
+      videos,
+    }
+  }
+
+  const legacyContent = isStringArray(normalized.content) ? normalized.content.join('\n\n') : ''
+
+  return {
+    ...normalized,
+    markdown: legacyContent,
+    images,
+    videos,
+  }
 }
 
 export const fetchBlogPageCopy = async (
@@ -233,14 +280,14 @@ export const fetchBlogPageCopy = async (
 
 export const fetchBlogPostDetail = async (
   locale: Locale,
-  slug: string,
+  id: string,
   options: FetchBlogOptions = {},
 ): Promise<BlogPostDetail | null> => {
   if (!isBlogApiEnabled()) {
     return null
   }
 
-  const response = await fetch(resolveBlogPostApiUrl(locale, slug), {
+  const response = await fetch(resolveBlogPostApiUrl(locale, id), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -253,32 +300,8 @@ export const fetchBlogPostDetail = async (
   }
 
   const payload = (await response.json()) as unknown
-  const normalized = isRecord(payload) && 'data' in payload ? payload.data : payload
 
-  if (!isBlogPostDetailPayload(normalized)) {
-    return null
-  }
-
-  const images = Array.isArray(normalized.images) ? normalized.images : undefined
-  const videos = Array.isArray(normalized.videos) ? normalized.videos : undefined
-
-  if (typeof normalized.markdown === 'string') {
-    return {
-      ...normalized,
-      markdown: normalized.markdown,
-      images,
-      videos,
-    }
-  }
-
-  const legacyContent = isStringArray(normalized.content) ? normalized.content.join('\n\n') : ''
-
-  return {
-    ...normalized,
-    markdown: legacyContent,
-    images,
-    videos,
-  }
+  return normalizeBlogPostDetailPayload(payload)
 }
 
 export const updateBlogMainPageCopy = async (
@@ -312,4 +335,81 @@ export const updateBlogMainPageCopy = async (
   }
 
   return normalized
+}
+
+export const createBlogPost = async (
+  locale: Locale,
+  input: BlogPostCreateInput,
+  options: FetchBlogOptions = {},
+): Promise<BlogPostDetail | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
+  const response = await fetch(resolveBlogListApiUrl(locale), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(input),
+    signal: options.signal,
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const payload = (await response.json()) as unknown
+
+  return normalizeBlogPostDetailPayload(payload)
+}
+
+export const updateBlogPost = async (
+  locale: Locale,
+  id: string,
+  input: BlogPostUpdateInput,
+  options: FetchBlogOptions = {},
+): Promise<BlogPostDetail | null> => {
+  if (!isBlogApiEnabled()) {
+    return null
+  }
+
+  const response = await fetch(resolveBlogPostApiUrl(locale, id), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(input),
+    signal: options.signal,
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const payload = (await response.json()) as unknown
+
+  return normalizeBlogPostDetailPayload(payload)
+}
+
+export const deleteBlogPost = async (
+  locale: Locale,
+  id: string,
+  options: FetchBlogOptions = {},
+): Promise<boolean> => {
+  if (!isBlogApiEnabled()) {
+    return false
+  }
+
+  const response = await fetch(resolveBlogPostApiUrl(locale, id), {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal: options.signal,
+  })
+
+  return response.ok
 }

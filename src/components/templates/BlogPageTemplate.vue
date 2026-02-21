@@ -8,6 +8,7 @@ import { useLocale } from '@/composables/useLocale'
 import { getEstimatedViewCount } from '@/utils/blogViews'
 import BlogCategoryTabs from '@/components/molecules/BlogCategoryTabs.vue'
 import BlogPostPreviewCard from '@/components/molecules/BlogPostPreviewCard.vue'
+import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 import BlogPopularCarousel from '@/components/organisms/BlogPopularCarousel.vue'
 import BlogRetrospectiveSelector from '@/components/organisms/BlogRetrospectiveSelector.vue'
 import BlogSearchSyncPanel from '@/components/organisms/BlogSearchSyncPanel.vue'
@@ -17,7 +18,8 @@ const AUTO_PLAY_MS = 4500
 const { locale } = useLocale()
 const route = useRoute()
 const router = useRouter()
-const { copy, dataSource, isLoading, errorMessage, reload } = useBlogContent(locale)
+const { copy, dataSource, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
+  useBlogContent(locale)
 const activePopularIndex = ref(0)
 
 const normalizeTagInput = (value: string) =>
@@ -96,7 +98,50 @@ const apiStatusLabel = computed(() =>
 )
 const reloadLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
 const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-const buildPostPath = (slug: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${slug}`
+const isAdminPostMode = computed(() => {
+  const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
+  const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
+
+  return envFlag === 'true' || queryValue === '1'
+})
+const adminPanelTitle = computed(() =>
+  locale.value === 'en' ? 'Blog Post Manager' : '블로그 게시글 관리자',
+)
+const adminPanelDescription = computed(() =>
+  locale.value === 'en'
+    ? 'Create, update, and delete blog posts for admin use.'
+    : '관리자용으로 게시글 작성, 수정, 삭제를 수행합니다.',
+)
+const adminIdLabel = computed(() => (locale.value === 'en' ? 'Post ID' : '게시글 ID'))
+const adminTitleLabel = computed(() => (locale.value === 'en' ? 'Title' : '제목'))
+const adminExcerptLabel = computed(() => (locale.value === 'en' ? 'Excerpt' : '요약'))
+const adminCategoryLabel = computed(() => (locale.value === 'en' ? 'Category' : '카테고리'))
+const adminTagsLabel = computed(() => (locale.value === 'en' ? 'Tags' : '태그'))
+const adminTagsPlaceholder = computed(() =>
+  locale.value === 'en' ? 'vue,typescript,retrospective' : 'vue,typescript,회고',
+)
+const adminPublishedAtLabel = computed(() =>
+  locale.value === 'en' ? 'Published At' : '발행일',
+)
+const adminReadTimeLabel = computed(() => (locale.value === 'en' ? 'Read Time' : '읽기 시간'))
+const adminHeroTagLabel = computed(() => (locale.value === 'en' ? 'Hero Tag' : '히어로 태그'))
+const adminAuthorLabel = computed(() => (locale.value === 'en' ? 'Author' : '작성자'))
+const adminMarkdownLabel = computed(() => (locale.value === 'en' ? 'Markdown' : '마크다운 본문'))
+const adminMarkdownPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Write markdown content here...' : '마크다운 본문을 입력하세요...',
+)
+const adminCreateLabel = computed(() => (locale.value === 'en' ? 'Create Post' : '게시글 작성'))
+const adminUpdateLabel = computed(() => (locale.value === 'en' ? 'Update Post' : '게시글 수정'))
+const adminDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete Post' : '게시글 삭제'))
+const adminResetLabel = computed(() => (locale.value === 'en' ? 'Reset' : '초기화'))
+const buildPostPath = (id: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
+
+const adminCategoryOptions = computed(() =>
+  BLOG_CATEGORY_KEYS.map((key) => ({
+    key,
+    label: copy.value.categories[key].title,
+  })),
+)
 
 const coverPaletteByCategory: Record<BlogCategoryKey, string[]> = {
   tech: [
@@ -119,8 +164,8 @@ const getCoverBackground = (category: BlogCategoryKey, index: number) => {
   return palette[index % palette.length] ?? palette[0] ?? '#1a1a1a'
 }
 
-const getEngagement = (slug: string) => {
-  const seed = [...slug].reduce((acc, char) => acc + char.charCodeAt(0), 0)
+const getEngagement = (id: string) => {
+  const seed = [...id].reduce((acc, char) => acc + char.charCodeAt(0), 0)
 
   return {
     likes: 30 + (seed % 220),
@@ -128,7 +173,7 @@ const getEngagement = (slug: string) => {
   }
 }
 
-const getViewCount = (slug: string) => getEstimatedViewCount(slug)
+const getViewCount = (id: string) => getEstimatedViewCount(id)
 
 const selectedProjectIndex = ref<number | null>(null)
 const projectWorks = computed(() => worksByLocale[locale.value])
@@ -378,6 +423,125 @@ const findBestCategoryByTag = (tag: string): BlogCategoryKey | null => {
   return best[0]
 }
 
+type BlogPostAdminDraft = {
+  id: string
+  title: string
+  excerpt: string
+  category: BlogCategoryKey
+  tags: string
+  publishedAt: string
+  readTime: string
+  heroTag: string
+  authorName: string
+  markdown: string
+}
+
+const parseAdminTags = (value: string) => {
+  const unique = new Set<string>()
+
+  value
+    .split(/[,\s]+/)
+    .map((token) => token.trim().replace(/^#+/, ''))
+    .filter((token) => token.length > 0)
+    .forEach((token) => unique.add(token))
+
+  return [...unique]
+}
+
+const getAdminValidationMessage = () =>
+  locale.value === 'en'
+    ? 'Please fill in required fields: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
+    : '필수 항목을 입력해주세요: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
+
+const isBlank = (value: string) => value.trim().length === 0
+
+const handleCreatePost = async (draft: BlogPostAdminDraft) => {
+  if (
+    isBlank(draft.id) ||
+    isBlank(draft.title) ||
+    isBlank(draft.excerpt) ||
+    isBlank(draft.publishedAt) ||
+    isBlank(draft.readTime) ||
+    isBlank(draft.heroTag) ||
+    isBlank(draft.authorName) ||
+    isBlank(draft.markdown)
+  ) {
+    if (typeof window !== 'undefined') {
+      window.alert(getAdminValidationMessage())
+    }
+
+    return
+  }
+
+  await createPost({
+    id: draft.id.trim(),
+    title: draft.title.trim(),
+    excerpt: draft.excerpt.trim(),
+    category: draft.category,
+    tags: parseAdminTags(draft.tags),
+    publishedAt: draft.publishedAt.trim(),
+    readTime: draft.readTime.trim(),
+    heroTag: draft.heroTag.trim(),
+    authorName: draft.authorName.trim(),
+    markdown: draft.markdown.trim(),
+  })
+}
+
+const handleUpdatePost = async (draft: BlogPostAdminDraft) => {
+  const id = draft.id.trim()
+
+  if (!id) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'Post ID is required.' : '게시글 ID가 필요합니다.')
+    }
+
+    return
+  }
+
+  const nextTags = parseAdminTags(draft.tags)
+  const payload = {
+    title: draft.title.trim() || undefined,
+    excerpt: draft.excerpt.trim() || undefined,
+    tags: draft.tags.trim() ? nextTags : undefined,
+    publishedAt: draft.publishedAt.trim() || undefined,
+    readTime: draft.readTime.trim() || undefined,
+    heroTag: draft.heroTag.trim() || undefined,
+    authorName: draft.authorName.trim() || undefined,
+    markdown: draft.markdown.trim() || undefined,
+  }
+
+  const hasAtLeastOneField = Object.values(payload).some((value) => typeof value !== 'undefined')
+
+  if (!hasAtLeastOneField) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'No fields to update.' : '수정할 항목을 입력해주세요.')
+    }
+
+    return
+  }
+
+  await updatePost(id, payload)
+}
+
+const handleDeletePost = async ({ id }: { id: string }) => {
+  const targetId = id.trim()
+
+  if (!targetId) {
+    return
+  }
+
+  const confirmLabel =
+    locale.value === 'en'
+      ? `Do you want to delete post \"${targetId}\"?`
+      : `게시글 \"${targetId}\" 을(를) 삭제하시겠습니까?`
+
+  if (typeof window !== 'undefined' && !window.confirm(confirmLabel)) {
+    return
+  }
+
+  await removePost(targetId)
+}
+
 let autoPlayTimer: ReturnType<typeof window.setInterval> | undefined
 
 const nextPopular = () => {
@@ -555,7 +719,6 @@ watch(
     ></div>
 
     <main class="space-y-8">
-
       <BlogPopularCarousel
         :popular-kicker="copy.popularKicker"
         :popular-heading="copy.popularHeading"
@@ -569,6 +732,33 @@ watch(
         @prev="handlePrev"
         @next="handleNext"
         @move="moveToPopular"
+      />
+
+      <BlogPostAdminPanel
+        v-if="isAdminPostMode"
+        :panel-title="adminPanelTitle"
+        :panel-description="adminPanelDescription"
+        :id-label="adminIdLabel"
+        :title-label="adminTitleLabel"
+        :excerpt-label="adminExcerptLabel"
+        :category-label="adminCategoryLabel"
+        :tags-label="adminTagsLabel"
+        :tags-placeholder="adminTagsPlaceholder"
+        :published-at-label="adminPublishedAtLabel"
+        :read-time-label="adminReadTimeLabel"
+        :hero-tag-label="adminHeroTagLabel"
+        :author-label="adminAuthorLabel"
+        :markdown-label="adminMarkdownLabel"
+        :markdown-placeholder="adminMarkdownPlaceholder"
+        :create-label="adminCreateLabel"
+        :update-label="adminUpdateLabel"
+        :delete-label="adminDeleteLabel"
+        :reset-label="adminResetLabel"
+        :is-submitting="isManagingPost"
+        :category-options="adminCategoryOptions"
+        @create="handleCreatePost"
+        @update="handleUpdatePost"
+        @delete="handleDeletePost"
       />
 
       <section id="blog-categories" class="space-y-4">
@@ -619,16 +809,16 @@ watch(
           >
             <BlogPostPreviewCard
               v-for="(post, postIndex) in filteredSelectedPosts"
-              :key="`post-${post.slug}`"
+              :key="`post-${post.id}`"
               :post="post"
               :group-title="isSearchActive ? getCategoryTitle(post.category) : selectedGroup.title"
               :read-label="copy.readLabel"
               :author-name="authorName"
-              :to="buildPostPath(post.slug)"
+              :to="buildPostPath(post.id)"
               :cover-background="getCoverBackground(post.category, postIndex)"
               :view-label="viewLabel"
-              :view-count="getViewCount(post.slug)"
-              :engagement="getEngagement(post.slug)"
+              :view-count="getViewCount(post.id)"
+              :engagement="getEngagement(post.id)"
             />
           </div>
 

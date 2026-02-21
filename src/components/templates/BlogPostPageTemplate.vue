@@ -13,8 +13,8 @@ import BlogPostMediaSection from '@/components/organisms/BlogPostMediaSection.vu
 
 const { locale, route, blogPath } = useLocale()
 
-const slug = computed(() => {
-  const raw = route.params.slug
+const id = computed(() => {
+  const raw = route.params.id
   const value = Array.isArray(raw) ? raw[0] : raw
 
   if (typeof value !== 'string') {
@@ -34,19 +34,30 @@ const {
   isLoading: isPostLoading,
   errorMessage,
   reload,
-} = useBlogPostContent(locale, slug)
+} = useBlogPostContent(locale, id)
 const {
   likes,
   liked,
   comments,
+  totalCommentCount,
+  commentPage,
+  totalCommentPages,
+  hasPreviousCommentPage,
+  hasNextCommentPage,
   dataSource: engagementDataSource,
   isLoading: isEngagementLoading,
+  isCommentPageLoading,
   isSubmitting,
+  isCommentActionLoading,
   errorMessage: engagementError,
   toggleLike,
   addComment,
+  updateComment,
+  removeComment,
+  goToPreviousCommentPage,
+  goToNextCommentPage,
   reload: reloadEngagement,
-} = useBlogEngagement(locale, slug)
+} = useBlogEngagement(locale, id)
 
 const commentAuthor = ref('')
 const commentBody = ref('')
@@ -83,6 +94,23 @@ const notFoundDescription = computed(() =>
 const likeLabel = computed(() => (locale.value === 'en' ? 'Like' : '좋아요'))
 const viewLabel = computed(() => (locale.value === 'en' ? 'Views' : '조회수'))
 const commentHeading = computed(() => (locale.value === 'en' ? 'Comments' : '댓글'))
+const commentPageLoadingLabel = computed(() =>
+  locale.value === 'en' ? 'Loading comments...' : '댓글을 불러오는 중...',
+)
+const commentPrevLabel = computed(() => (locale.value === 'en' ? 'Previous' : '이전'))
+const commentNextLabel = computed(() => (locale.value === 'en' ? 'Next' : '다음'))
+const commentPageStatusLabel = computed(() =>
+  locale.value === 'en'
+    ? `Page ${commentPage.value} / ${totalCommentPages.value}`
+    : `${commentPage.value} / ${totalCommentPages.value} 페이지`,
+)
+const commentEditLabel = computed(() => (locale.value === 'en' ? 'Edit' : '수정'))
+const commentDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete' : '삭제'))
+const commentSaveLabel = computed(() => (locale.value === 'en' ? 'Save' : '저장'))
+const commentCancelLabel = computed(() => (locale.value === 'en' ? 'Cancel' : '취소'))
+const commentEditPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Edit comment' : '댓글 내용을 수정하세요',
+)
 const tocHeadingLabel = computed(() => (locale.value === 'en' ? 'On this page' : '이 페이지 목차'))
 const mediaHeading = computed(() => (locale.value === 'en' ? 'Media' : '미디어'))
 const mediaImageFallbackAlt = computed(() =>
@@ -118,11 +146,17 @@ const likeAriaLabel = computed(() =>
       ? 'Like this post'
       : '좋아요',
 )
+const isAdminCommentMode = computed(() => {
+  const envFlag = (import.meta.env.VITE_BLOG_COMMENT_ADMIN_ENABLED as string | undefined)?.trim()
+  const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
+
+  return envFlag === 'true' || queryValue === '1'
+})
 const renderedMarkdown = computed(() => (post.value ? markdownToHtml(post.value.markdown) : ''))
 const headingTocItems = computed(() =>
   post.value ? extractMarkdownHeadings(post.value.markdown, [1, 2, 3]) : [],
 )
-const viewCount = computed(() => (post.value ? getEstimatedViewCount(post.value.slug) : 0))
+const viewCount = computed(() => (post.value ? getEstimatedViewCount(post.value.id) : 0))
 
 const buildHeadingLink = (id: string) => ({
   path: route.path,
@@ -174,7 +208,7 @@ const postImages = computed(() => {
       }
 
       return {
-        key: `${currentPost.slug}-image-${index}`,
+        key: `${currentPost.id}-image-${index}`,
         src,
         alt: image.alt?.trim() || `${mediaImageFallbackAlt.value} ${index + 1}`,
         caption: image.caption?.trim() || '',
@@ -202,7 +236,7 @@ const postVideos = computed(() => {
       const title = video.title?.trim() || `${mediaVideoFallbackTitle.value} ${index + 1}`
 
       return {
-        key: `${currentPost.slug}-video-${index}`,
+        key: `${currentPost.id}-video-${index}`,
         src,
         title,
         poster,
@@ -259,6 +293,31 @@ const handleSubmitComment = async () => {
   await addComment(commentAuthor.value, nextBody)
   commentBody.value = ''
 }
+
+const handlePreviousCommentPage = () => {
+  goToPreviousCommentPage()
+}
+
+const handleNextCommentPage = () => {
+  goToNextCommentPage()
+}
+
+const handleEditComment = async ({ commentId, body }: { commentId: string; body: string }) => {
+  await updateComment(commentId, body)
+}
+
+const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
+  const confirmLabel =
+    locale.value === 'en'
+      ? 'Do you want to delete this comment?'
+      : '이 댓글을 삭제하시겠습니까?'
+
+  if (typeof window !== 'undefined' && !window.confirm(confirmLabel)) {
+    return
+  }
+
+  await removeComment(commentId)
+}
 </script>
 
 <template>
@@ -305,7 +364,7 @@ const handleSubmitComment = async () => {
             :like-label="likeLabel"
             :like-aria-label="likeAriaLabel"
             :comment-heading="commentHeading"
-            :comment-count="comments.length"
+            :comment-count="totalCommentCount"
             @toggle-like="toggleLike"
           />
 
@@ -325,6 +384,22 @@ const handleSubmitComment = async () => {
           <BlogCommentSection
             :comment-heading="commentHeading"
             :comments="comments"
+            :comment-total-count="totalCommentCount"
+            :comment-total-pages="totalCommentPages"
+            :has-previous-page="hasPreviousCommentPage"
+            :has-next-page="hasNextCommentPage"
+            :is-comment-page-loading="isCommentPageLoading"
+            :comment-page-loading-label="commentPageLoadingLabel"
+            :comment-page-status-label="commentPageStatusLabel"
+            :comment-prev-label="commentPrevLabel"
+            :comment-next-label="commentNextLabel"
+            :is-admin-mode="isAdminCommentMode"
+            :is-comment-action-loading="isCommentActionLoading"
+            :comment-edit-label="commentEditLabel"
+            :comment-delete-label="commentDeleteLabel"
+            :comment-save-label="commentSaveLabel"
+            :comment-cancel-label="commentCancelLabel"
+            :comment-edit-placeholder="commentEditPlaceholder"
             :comment-author="commentAuthor"
             :comment-body="commentBody"
             :comment-author-placeholder="commentAuthorPlaceholder"
@@ -336,6 +411,10 @@ const handleSubmitComment = async () => {
             @update:comment-author="commentAuthor = $event"
             @update:comment-body="commentBody = $event"
             @submit="handleSubmitComment"
+            @go-prev-page="handlePreviousCommentPage"
+            @go-next-page="handleNextCommentPage"
+            @edit-comment="handleEditComment"
+            @delete-comment="handleDeleteComment"
           />
         </article>
 
