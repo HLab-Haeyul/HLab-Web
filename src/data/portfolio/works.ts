@@ -1,4 +1,5 @@
 import type { Locale, WorkItem } from './types'
+import clueMainImageSrc from '@/assets/images/CLUE-MAIN.svg'
 
 export const worksByLocale: Record<Locale, WorkItem[]> = {
   ko: [
@@ -16,7 +17,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: '클라우드 기반 통합 교육 서비스',
       impact: '기존 서비스 대비 사용자 30% 시간 절약',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
-      imageSrc: './src/assets/images/CLUE-MAIN.svg',
+      imageSrc: clueMainImageSrc,
       imageAlt: '캠페인 랜딩 페이지 화면',
     },
     {
@@ -44,7 +45,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: 'Cloud-based integrated education service',
       impact: 'Users save 30% more time than with the previous service',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
-      imageSrc: './src/assets/images/CLUE-MAIN.svg',
+      imageSrc: clueMainImageSrc,
       imageAlt: 'Campaign landing page interface',
     },
     {

@@ -21,11 +21,7 @@ type InteractionSnapshot = {
 
 const DEFAULT_COMMENT_PAGE_SIZE = 5
 
-const makeFallbackLikes = (id: string) => {
-  const seed = [...id].reduce((acc, char) => acc + char.charCodeAt(0), 0)
-
-  return 24 + (seed % 170)
-}
+const makeFallbackLikes = (_id: string) => 0
 
 const createStorageKey = (locale: Locale, id: string) => `blog:engagement:${locale}:${id}`
 

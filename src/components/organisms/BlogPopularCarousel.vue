@@ -5,6 +5,7 @@ type Props = {
   popularKicker: string
   popularHeading: string
   popularDescription: string
+  emptyLabel: string
   posts: PopularPost[]
   activeIndex: number
   readLabel: string
@@ -35,7 +36,10 @@ const emit = defineEmits<{
       <p class="mt-2 text-sm text-zinc-400">{{ props.popularDescription }}</p>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
+    <div
+      v-if="props.posts.length > 0"
+      class="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]"
+    >
       <div
         class="flex transition-transform duration-500 ease-out"
         :style="{ transform: `translate3d(-${props.activeIndex * 100}%, 0, 0)` }"
@@ -74,7 +78,14 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div class="mt-4 flex items-center justify-between gap-3 px-1">
+    <p
+      v-else
+      class="rounded-2xl border border-dashed border-[#2f2f2f] bg-[#121212] px-4 py-8 text-center text-sm text-zinc-400"
+    >
+      {{ props.emptyLabel }}
+    </p>
+
+    <div v-if="props.posts.length > 0" class="mt-4 flex items-center justify-between gap-3 px-1">
       <div class="inline-flex items-center gap-2">
         <button
           type="button"
