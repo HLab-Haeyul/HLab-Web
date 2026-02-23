@@ -1,4 +1,5 @@
 import type { Locale, ProfileShowcaseCopy } from './types'
+import myPictureSrc from '@/assets/images/MyPicture.jpeg'
 
 export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
   ko: {
@@ -6,7 +7,7 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     heading: '수상 경력',
     photoTitle: '내 사진',
     photoHint: '프로필 사진 준비 중',
-    photoSrc: './src/assets/images/MyPicture.jpeg',
+    photoSrc: myPictureSrc,
     photoAlt: 'Sample profile portrait',
     awardsTitle: '수상 경력',
     awards: [
@@ -52,7 +53,7 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     heading: 'Awards & Achievements',
     photoTitle: 'My Photo',
     photoHint: 'Profile photo coming soon',
-    photoSrc: './src/assets/images/MyPicture.jpeg',
+    photoSrc: myPictureSrc,
     photoAlt: 'Sample profile portrait',
     awardsTitle: 'Awards & Achievements',
     awards: [

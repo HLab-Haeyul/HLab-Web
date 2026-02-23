@@ -1,31 +1,54 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { portfolioCopyByLocale } from '../data/portfolio/copy'
-import { stackTickerByLocale } from '../data/stack/stackTicker'
-import type { Locale } from '../data/portfolio/types'
+import type { RouteLocationRaw } from 'vue-router'
+import { portfolioCopyByLocale } from '@/data/portfolio/copy'
+import { stackTickerByLocale } from '@/data/stack/stackTicker'
+import { useLocale } from '@/composables/useLocale'
+import SidebarNavSection from '@/components/molecules/SidebarNavSection.vue'
+import logoSrc from '@/assets/images/logo.svg'
 
-const route = useRoute()
-const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
+const {
+  route,
+  locale,
+  basePath,
+  stackPath,
+  blogPath,
+  blogId,
+  isStackPage,
+  isBlogPage,
+  koPath,
+  enPath,
+} = useLocale()
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
+
 const pageGroupTitle = computed(() => (locale.value === 'en' ? 'Page Navigation' : '페이지 이동'))
 const sectionGroupTitle = computed(() =>
   locale.value === 'en' ? 'Section Navigation' : '페이지 내 위치 이동',
 )
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
+const blogNavLabel = computed(() => (locale.value === 'en' ? 'Blog' : '블로그'))
 const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
 const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
 const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
+const blogPopularLabel = computed(() => (locale.value === 'en' ? 'Popular Posts' : '인기 글'))
+const blogSearchLabel = computed(() => (locale.value === 'en' ? 'Search Box' : '검색창'))
+const blogSyncLabel = computed(() => (locale.value === 'en' ? 'Sync Status' : '동기화 상태'))
+const blogPostOverviewLabel = computed(() =>
+  locale.value === 'en' ? 'Post Overview' : '글 개요',
+)
+const blogPostContentLabel = computed(() => (locale.value === 'en' ? 'Post Content' : '본문'))
+const blogPostCommentsLabel = computed(() => (locale.value === 'en' ? 'Comments' : '댓글'))
+const blogPostListLabel = computed(() => (locale.value === 'en' ? 'Back to List' : '목록으로'))
 
-const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
-const stackPath = computed(() => `${basePath.value}/stack`)
-const isStackPage = computed(() => route.path.endsWith('/stack'))
-const koPath = computed(() => (route.path.endsWith('/stack') ? '/ko/stack' : '/ko'))
-const enPath = computed(() => (route.path.endsWith('/stack') ? '/en/stack' : '/en'))
+type SidebarLinkItem = {
+  label: string
+  to: RouteLocationRaw
+  index: string
+}
 
-const pageLinks = computed(() => [
+const pageLinks = computed<SidebarLinkItem[]>(() => [
   {
     label: homeNavLabel.value,
     to: basePath.value,
@@ -36,9 +59,14 @@ const pageLinks = computed(() => [
     to: stackPath.value,
     index: '02',
   },
+  {
+    label: blogNavLabel.value,
+    to: blogPath.value,
+    index: '03',
+  },
 ])
 
-const sectionLinks = computed(() => {
+const sectionLinks = computed<SidebarLinkItem[]>(() => {
   if (isStackPage.value) {
     return [
       {
@@ -56,6 +84,69 @@ const sectionLinks = computed(() => {
           hash: '#stack-matrix',
         },
         index: '02',
+      },
+    ]
+  }
+
+  if (isBlogPage.value) {
+    if (blogId.value) {
+      return [
+        {
+          label: blogPostOverviewLabel.value,
+          to: {
+            path: route.path,
+            hash: '#post-overview',
+          },
+          index: '01',
+        },
+        {
+          label: blogPostContentLabel.value,
+          to: {
+            path: route.path,
+            hash: '#post-content',
+          },
+          index: '02',
+        },
+        {
+          label: blogPostCommentsLabel.value,
+          to: {
+            path: route.path,
+            hash: '#post-comments',
+          },
+          index: '03',
+        },
+        {
+          label: blogPostListLabel.value,
+          to: blogPath.value,
+          index: '04',
+        },
+      ]
+    }
+
+    return [
+      {
+        label: blogPopularLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#popular',
+        },
+        index: '01',
+      },
+      {
+        label: blogSearchLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#blog-search',
+        },
+        index: '02',
+      },
+      {
+        label: blogSyncLabel.value,
+        to: {
+          path: blogPath.value,
+          hash: '#blog-sync',
+        },
+        index: '03',
       },
     ]
   }
@@ -147,7 +238,7 @@ watch(
           :to="basePath"
         >
           <img
-            src="../assets/images/logo.svg"
+            :src="logoSrc"
             alt="HLab logo"
             class="h-5 w-5 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-6 sm:w-6"
             loading="eager"
@@ -183,7 +274,7 @@ watch(
     id="site-sidebar"
     class="fixed left-0 top-0 z-40 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
     :class="
-      isSidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+      isSidebarOpen ? 'pointer-events-auto translate-x-0' : 'pointer-events-none -translate-x-full'
     "
   >
     <div class="mb-5 flex items-center justify-between">
@@ -212,57 +303,19 @@ watch(
     </div>
 
     <div class="space-y-5">
-      <section>
-        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">
-          {{ pageGroupTitle }}
-        </p>
-        <nav class="border-y border-[#222222]" aria-label="Page Navigation">
-          <RouterLink
-            v-for="item in pageLinks"
-            :key="`page-${item.index}`"
-            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
-            :to="item.to"
-            @click="closeSidebar"
-          >
-            <span
-              class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-            >
-              {{ item.label }}
-            </span>
-            <span
-              class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-            >
-              {{ item.index }}
-            </span>
-          </RouterLink>
-        </nav>
-      </section>
+      <SidebarNavSection
+        :title="pageGroupTitle"
+        nav-aria-label="Page Navigation"
+        :links="pageLinks"
+        @link-click="closeSidebar"
+      />
 
-      <section>
-        <p class="mb-2 text-[11px] uppercase tracking-[0.11em] text-zinc-500">
-          {{ sectionGroupTitle }}
-        </p>
-        <nav class="border-y border-[#222222]" aria-label="Section Navigation">
-          <RouterLink
-            v-for="item in sectionLinks"
-            :key="`section-${item.index}`"
-            class="group flex items-center justify-between border-b border-[#222222] py-3 text-[15px] transition last:border-b-0"
-            :to="item.to"
-            @click="closeSidebar"
-          >
-            <span
-              class="origin-left text-zinc-300 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-            >
-              {{ item.label }}
-            </span>
-            <span
-              class="origin-right text-xs tracking-[0.08em] text-zinc-600 transition-all duration-150 group-hover:scale-[1.05] group-hover:font-semibold group-hover:text-white"
-            >
-              {{ item.index }}
-            </span>
-          </RouterLink>
-        </nav>
-      </section>
+      <SidebarNavSection
+        :title="sectionGroupTitle"
+        nav-aria-label="Section Navigation"
+        :links="sectionLinks"
+        @link-click="closeSidebar"
+      />
     </div>
   </aside>
 </template>

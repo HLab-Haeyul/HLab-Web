@@ -58,7 +58,7 @@ fi
 
 step "서버 시작..."
 
-if [ -n "$(docker ps -q --filter 'name=hlab-web-dev')" ]; then
+if [ -n "$(docker ps -q --filter 'name=hlab-web-prod')" ]; then
   warn "프로덕션 서버가 이미 실행 중입니다. 기존 컨테이너를 종료 중..."
   docker compose -f ./docker/docker-compose.prod.yml down
   sleep 2

@@ -6,6 +6,8 @@ services:
     image: hlab-web:dev
     container_name: hlab-web-dev
     restart: unless-stopped
+    environment:
+      - VITE_BLOG_API_ENABLED=false
     ports:
       - "3000:3000"
     volumes:
