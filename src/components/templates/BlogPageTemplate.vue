@@ -126,6 +126,12 @@ const adminTagsLabel = computed(() => (locale.value === 'en' ? 'Tags' : '태그'
 const adminTagsPlaceholder = computed(() =>
   locale.value === 'en' ? 'vue,typescript,retrospective' : 'vue,typescript,회고',
 )
+const adminRetrospectiveProjectLabel = computed(() =>
+  locale.value === 'en' ? 'Linked Project' : '연결 프로젝트',
+)
+const adminRetrospectiveProjectPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Select project' : '프로젝트 선택',
+)
 const adminPublishedAtLabel = computed(() =>
   locale.value === 'en' ? 'Published At' : '발행일',
 )
@@ -149,6 +155,25 @@ const adminCategoryOptions = computed(() =>
   })),
 )
 
+const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
+const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
+
+const retrospectiveProjectOptions = computed(() => {
+  const uniqueByKey = new Map<string, string>()
+
+  worksByLocale[locale.value].forEach((work) => {
+    const key = normalizeProjectKey(work.title)
+
+    if (!key || uniqueByKey.has(key)) {
+      return
+    }
+
+    uniqueByKey.set(key, work.title)
+  })
+
+  return [...uniqueByKey.entries()].map(([key, label]) => ({ key, label }))
+})
+
 const coverPaletteByCategory: Record<BlogCategoryKey, string[]> = {
   tech: [
     'linear-gradient(140deg, rgba(56,56,56,0.95) 0%, rgba(24,24,24,0.94) 58%, rgba(10,10,10,0.95) 100%)',
@@ -170,10 +195,14 @@ const getCoverBackground = (category: BlogCategoryKey, index: number) => {
   return palette[index % palette.length] ?? palette[0] ?? '#1a1a1a'
 }
 
-const getEngagement = (_id: string) => ({
+const getEngagement = (id: string) => {
+  void id
+
+  return {
   likes: 0,
   comments: 0,
-})
+  }
+}
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
 
@@ -189,8 +218,6 @@ const selectedProject = computed(() => {
   return projectWorks.value[index]
 })
 
-const normalizeToken = (value: string) => value.toLocaleLowerCase().replace(/\s+/g, '')
-
 const projectKeywordMap: Record<string, string[]> = {
   hlab: ['hlab', 'docker', 'deploy', 'pipeline', '배포'],
   clue: ['clue', 'portfolio', '포트폴리오', 'planning', 'v1'],
@@ -198,7 +225,13 @@ const projectKeywordMap: Record<string, string[]> = {
 }
 
 const isRetrospectiveLinkedToProject = (post: BlogPost, projectTitle: string) => {
-  const key = normalizeToken(projectTitle)
+  const key = normalizeProjectKey(projectTitle)
+  const normalizedTags = post.tags.map((tag) => normalizeProjectKey(normalizeTagToken(tag)))
+
+  if (normalizedTags.some((tag) => tag === key)) {
+    return true
+  }
+
   const hints = projectKeywordMap[key] ?? []
   const keywords = [...new Set([projectTitle.toLocaleLowerCase(), ...hints])]
   const source = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLocaleLowerCase()
@@ -435,6 +468,7 @@ type BlogPostAdminDraft = {
   excerpt: string
   category: BlogCategoryKey
   tags: string
+  retrospectiveProjectKey: string
   publishedAt: string
   readTime: string
   heroTag: string
@@ -442,36 +476,61 @@ type BlogPostAdminDraft = {
   markdown: string
 }
 
-const parseAdminTags = (value: string) => {
+const composeAdminTags = (
+  value: string,
+  category: BlogCategoryKey,
+  retrospectiveProjectKey: string,
+) => {
   const unique = new Set<string>()
 
   value
     .split(/[,\s]+/)
-    .map((token) => token.trim().replace(/^#+/, ''))
+    .map((token) => normalizeTagToken(token))
     .filter((token) => token.length > 0)
     .forEach((token) => unique.add(token))
+
+  if (category === 'retrospective') {
+    const normalizedProjectKey = normalizeProjectKey(retrospectiveProjectKey)
+
+    if (normalizedProjectKey.length > 0) {
+      unique.add(normalizedProjectKey)
+    }
+  }
 
   return [...unique]
 }
 
 const getAdminValidationMessage = () =>
   locale.value === 'en'
-    ? 'Please fill in required fields: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
-    : '필수 항목을 입력해주세요: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
+    ? 'Please fill in required fields: title, markdown.'
+    : '필수 항목을 입력해주세요: title, markdown.'
 
 const isBlank = (value: string) => value.trim().length === 0
+const buildAutoExcerpt = (draft: BlogPostAdminDraft) => {
+  const explicitExcerpt = draft.excerpt.trim()
+
+  if (explicitExcerpt.length > 0) {
+    return explicitExcerpt
+  }
+
+  const markdownPlainText = draft.markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/[*_~>#-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (markdownPlainText.length > 0) {
+    return markdownPlainText.slice(0, 140)
+  }
+
+  return draft.title.trim()
+}
 
 const handleCreatePost = async (draft: BlogPostAdminDraft) => {
-  if (
-    isBlank(draft.id) ||
-    isBlank(draft.title) ||
-    isBlank(draft.excerpt) ||
-    isBlank(draft.publishedAt) ||
-    isBlank(draft.readTime) ||
-    isBlank(draft.heroTag) ||
-    isBlank(draft.authorName) ||
-    isBlank(draft.markdown)
-  ) {
+  if (isBlank(draft.title) || isBlank(draft.markdown)) {
     if (typeof window !== 'undefined') {
       window.alert(getAdminValidationMessage())
     }
@@ -479,16 +538,21 @@ const handleCreatePost = async (draft: BlogPostAdminDraft) => {
     return
   }
 
+  if (draft.category === 'retrospective' && isBlank(draft.retrospectiveProjectKey)) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'Please select a linked project.' : '회고 글은 연결 프로젝트를 선택해주세요.')
+    }
+
+    return
+  }
+
+  const nextTags = composeAdminTags(draft.tags, draft.category, draft.retrospectiveProjectKey)
+
   await createPost({
-    id: draft.id.trim(),
     title: draft.title.trim(),
-    excerpt: draft.excerpt.trim(),
+    excerpt: buildAutoExcerpt(draft),
     category: draft.category,
-    tags: parseAdminTags(draft.tags),
-    publishedAt: draft.publishedAt.trim(),
-    readTime: draft.readTime.trim(),
-    heroTag: draft.heroTag.trim(),
-    authorName: draft.authorName.trim(),
+    tags: nextTags,
     markdown: draft.markdown.trim(),
   })
 }
@@ -504,15 +568,22 @@ const handleUpdatePost = async (draft: BlogPostAdminDraft) => {
     return
   }
 
-  const nextTags = parseAdminTags(draft.tags)
+  if (draft.category === 'retrospective' && isBlank(draft.retrospectiveProjectKey)) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'Please select a linked project.' : '회고 글은 연결 프로젝트를 선택해주세요.')
+    }
+
+    return
+  }
+
+  const nextTags = composeAdminTags(draft.tags, draft.category, draft.retrospectiveProjectKey)
+  const shouldUpdateTags =
+    draft.tags.trim().length > 0 ||
+    (draft.category === 'retrospective' && draft.retrospectiveProjectKey.trim().length > 0)
+
   const payload = {
     title: draft.title.trim() || undefined,
-    excerpt: draft.excerpt.trim() || undefined,
-    tags: draft.tags.trim() ? nextTags : undefined,
-    publishedAt: draft.publishedAt.trim() || undefined,
-    readTime: draft.readTime.trim() || undefined,
-    heroTag: draft.heroTag.trim() || undefined,
-    authorName: draft.authorName.trim() || undefined,
+    tags: shouldUpdateTags ? nextTags : undefined,
     markdown: draft.markdown.trim() || undefined,
   }
 
@@ -751,6 +822,8 @@ watch(
         :category-label="adminCategoryLabel"
         :tags-label="adminTagsLabel"
         :tags-placeholder="adminTagsPlaceholder"
+        :retrospective-project-label="adminRetrospectiveProjectLabel"
+        :retrospective-project-placeholder="adminRetrospectiveProjectPlaceholder"
         :published-at-label="adminPublishedAtLabel"
         :read-time-label="adminReadTimeLabel"
         :hero-tag-label="adminHeroTagLabel"
@@ -763,6 +836,13 @@ watch(
         :reset-label="adminResetLabel"
         :is-submitting="isManagingPost"
         :category-options="adminCategoryOptions"
+        :retrospective-project-options="retrospectiveProjectOptions"
+        :show-id-field="false"
+        :show-excerpt-field="false"
+        :show-author-field="false"
+        :show-published-at-field="false"
+        :show-read-time-field="false"
+        :show-hero-tag-field="false"
         @create="handleCreatePost"
         @update="handleUpdatePost"
         @delete="handleDeletePost"

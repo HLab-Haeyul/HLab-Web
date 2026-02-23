@@ -3,6 +3,9 @@ import PortfolioView from '@/views/PortfolioView.vue'
 import StackDetailView from '@/views/StackDetailView.vue'
 import BlogView from '@/views/BlogView.vue'
 import BlogPostView from '@/views/BlogPostView.vue'
+import AdminView from '@/views/AdminView.vue'
+import AdminBlogManagerView from '@/views/AdminBlogManagerView.vue'
+import AdminBlogPostView from '@/views/AdminBlogPostView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +59,30 @@ const router = createRouter({
       },
     },
     {
+      path: '/ko/admin',
+      name: 'admin-ko',
+      component: AdminView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/blog',
+      name: 'admin-blog-ko',
+      component: AdminBlogManagerView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/blog/:id',
+      name: 'admin-blog-post-ko',
+      component: AdminBlogPostView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
       path: '/en',
       name: 'portfolio-en',
       component: PortfolioView,
@@ -83,6 +110,30 @@ const router = createRouter({
       path: '/en/blog/:id',
       name: 'blog-post-en',
       component: BlogPostView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin',
+      name: 'admin-en',
+      component: AdminView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/blog',
+      name: 'admin-blog-en',
+      component: AdminBlogManagerView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/blog/:id',
+      name: 'admin-blog-post-en',
+      component: AdminBlogPostView,
       meta: {
         locale: 'en',
       },

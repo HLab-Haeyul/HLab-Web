@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { portfolioCopyByLocale } from '@/data/portfolio/copy'
 import { stackTickerByLocale } from '@/data/stack/stackTicker'
 import { useLocale } from '@/composables/useLocale'
 import SidebarNavSection from '@/components/molecules/SidebarNavSection.vue'
@@ -13,15 +12,12 @@ const {
   basePath,
   stackPath,
   blogPath,
-  blogId,
-  isStackPage,
-  isBlogPage,
   koPath,
   enPath,
 } = useLocale()
-const copy = computed(() => portfolioCopyByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
+const headingSectionLinks = ref<SidebarLinkItem[]>([])
 
 const pageGroupTitle = computed(() => (locale.value === 'en' ? 'Page Navigation' : '페이지 이동'))
 const sectionGroupTitle = computed(() =>
@@ -29,18 +25,6 @@ const sectionGroupTitle = computed(() =>
 )
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
 const blogNavLabel = computed(() => (locale.value === 'en' ? 'Blog' : '블로그'))
-const profileNavLabel = computed(() => (locale.value === 'en' ? 'Profile' : '프로필'))
-const stackOverviewLabel = computed(() => (locale.value === 'en' ? 'Overview' : '개요'))
-const stackMatrixLabel = computed(() => (locale.value === 'en' ? 'Skill Matrix' : '기술 매트릭스'))
-const blogPopularLabel = computed(() => (locale.value === 'en' ? 'Popular Posts' : '인기 글'))
-const blogSearchLabel = computed(() => (locale.value === 'en' ? 'Search Box' : '검색창'))
-const blogSyncLabel = computed(() => (locale.value === 'en' ? 'Sync Status' : '동기화 상태'))
-const blogPostOverviewLabel = computed(() =>
-  locale.value === 'en' ? 'Post Overview' : '글 개요',
-)
-const blogPostContentLabel = computed(() => (locale.value === 'en' ? 'Post Content' : '본문'))
-const blogPostCommentsLabel = computed(() => (locale.value === 'en' ? 'Comments' : '댓글'))
-const blogPostListLabel = computed(() => (locale.value === 'en' ? 'Back to List' : '목록으로'))
 
 type SidebarLinkItem = {
   label: string
@@ -66,126 +50,7 @@ const pageLinks = computed<SidebarLinkItem[]>(() => [
   },
 ])
 
-const sectionLinks = computed<SidebarLinkItem[]>(() => {
-  if (isStackPage.value) {
-    return [
-      {
-        label: stackOverviewLabel.value,
-        to: {
-          path: stackPath.value,
-          hash: '#stack-overview',
-        },
-        index: '01',
-      },
-      {
-        label: stackMatrixLabel.value,
-        to: {
-          path: stackPath.value,
-          hash: '#stack-matrix',
-        },
-        index: '02',
-      },
-    ]
-  }
-
-  if (isBlogPage.value) {
-    if (blogId.value) {
-      return [
-        {
-          label: blogPostOverviewLabel.value,
-          to: {
-            path: route.path,
-            hash: '#post-overview',
-          },
-          index: '01',
-        },
-        {
-          label: blogPostContentLabel.value,
-          to: {
-            path: route.path,
-            hash: '#post-content',
-          },
-          index: '02',
-        },
-        {
-          label: blogPostCommentsLabel.value,
-          to: {
-            path: route.path,
-            hash: '#post-comments',
-          },
-          index: '03',
-        },
-        {
-          label: blogPostListLabel.value,
-          to: blogPath.value,
-          index: '04',
-        },
-      ]
-    }
-
-    return [
-      {
-        label: blogPopularLabel.value,
-        to: {
-          path: blogPath.value,
-          hash: '#popular',
-        },
-        index: '01',
-      },
-      {
-        label: blogSearchLabel.value,
-        to: {
-          path: blogPath.value,
-          hash: '#blog-search',
-        },
-        index: '02',
-      },
-      {
-        label: blogSyncLabel.value,
-        to: {
-          path: blogPath.value,
-          hash: '#blog-sync',
-        },
-        index: '03',
-      },
-    ]
-  }
-
-  return [
-    {
-      label: profileNavLabel.value,
-      to: {
-        path: basePath.value,
-        hash: '#profile',
-      },
-      index: '01',
-    },
-    {
-      label: copy.value.navWork,
-      to: {
-        path: basePath.value,
-        hash: '#work',
-      },
-      index: '02',
-    },
-    {
-      label: copy.value.navPrinciples,
-      to: {
-        path: basePath.value,
-        hash: '#principles',
-      },
-      index: '03',
-    },
-    {
-      label: copy.value.navContact,
-      to: {
-        path: basePath.value,
-        hash: '#contact',
-      },
-      index: '04',
-    },
-  ]
-})
+const sectionLinks = computed<SidebarLinkItem[]>(() => headingSectionLinks.value)
 
 const closeSidebar = () => {
   isSidebarOpen.value = false
@@ -195,10 +60,144 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
+const normalizeHeadingText = (value: string) => value.replace(/\s+/g, ' ').trim()
+
+const toHeadingId = (value: string) =>
+  value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9\u3131-\u318e\uac00-\ud7a3\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+
+let collectRafId: number | null = null
+let headingObserver: MutationObserver | null = null
+
+const collectHeadingLinks = () => {
+  const main = document.querySelector('main')
+
+  if (!main) {
+    headingSectionLinks.value = []
+    return
+  }
+
+  const usedIds = new Set<string>()
+  const links: SidebarLinkItem[] = []
+  const headings = Array.from(main.querySelectorAll('h1, h2, h3'))
+
+  headings.forEach((heading, headingIndex) => {
+    const text = normalizeHeadingText(heading.textContent ?? '')
+
+    if (!text) {
+      return
+    }
+
+    if (!(heading instanceof HTMLElement) || heading.offsetParent === null) {
+      return
+    }
+
+    let id = heading.id
+
+    if (!id) {
+      const baseId = toHeadingId(text) || `section-${headingIndex + 1}`
+      let nextId = baseId
+      let duplicateIndex = 2
+
+      while (usedIds.has(nextId) || document.getElementById(nextId)) {
+        nextId = `${baseId}-${duplicateIndex}`
+        duplicateIndex += 1
+      }
+
+      heading.id = nextId
+      id = nextId
+    }
+
+    usedIds.add(id)
+    links.push({
+      label: text,
+      to: {
+        path: route.path,
+        query: route.query,
+        hash: `#${id}`,
+      },
+      index: String(links.length + 1).padStart(2, '0'),
+    })
+  })
+
+  headingSectionLinks.value = links
+}
+
+const scheduleCollectHeadingLinks = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (collectRafId !== null) {
+    cancelAnimationFrame(collectRafId)
+  }
+
+  collectRafId = window.requestAnimationFrame(() => {
+    collectRafId = null
+    collectHeadingLinks()
+  })
+}
+
+const disconnectHeadingObserver = () => {
+  if (!headingObserver) {
+    return
+  }
+
+  headingObserver.disconnect()
+  headingObserver = null
+}
+
+const connectHeadingObserver = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  disconnectHeadingObserver()
+
+  const main = document.querySelector('main')
+
+  if (!main) {
+    return
+  }
+
+  headingObserver = new MutationObserver(() => {
+    scheduleCollectHeadingLinks()
+  })
+
+  headingObserver.observe(main, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  })
+}
+
+onMounted(() => {
+  scheduleCollectHeadingLinks()
+  connectHeadingObserver()
+})
+
+onBeforeUnmount(() => {
+  disconnectHeadingObserver()
+
+  if (collectRafId !== null) {
+    cancelAnimationFrame(collectRafId)
+    collectRafId = null
+  }
+})
+
 watch(
   () => route.fullPath,
-  () => {
+  async () => {
     closeSidebar()
+
+    await nextTick()
+    scheduleCollectHeadingLinks()
+    connectHeadingObserver()
   },
 )
 </script>
