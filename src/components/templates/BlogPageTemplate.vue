@@ -61,6 +61,9 @@ const searchPlaceholder = computed(() =>
 const searchNoResult = computed(() =>
   locale.value === 'en' ? 'No posts match your search.' : '검색 결과가 없습니다.',
 )
+const noPostsLabel = computed(() =>
+  locale.value === 'en' ? 'No posts have been published yet.' : '아직 게시글이 없습니다.',
+)
 const searchResultTitle = computed(() => (locale.value === 'en' ? 'Search Results' : '검색 결과'))
 const searchResultDescription = computed(() =>
   locale.value === 'en'
@@ -98,6 +101,9 @@ const apiStatusLabel = computed(() =>
 )
 const reloadLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
 const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
+const popularEmptyLabel = computed(() =>
+  locale.value === 'en' ? 'No popular posts yet.' : '아직 인기 글이 없습니다.',
+)
 const isAdminPostMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
   const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
@@ -164,14 +170,10 @@ const getCoverBackground = (category: BlogCategoryKey, index: number) => {
   return palette[index % palette.length] ?? palette[0] ?? '#1a1a1a'
 }
 
-const getEngagement = (id: string) => {
-  const seed = [...id].reduce((acc, char) => acc + char.charCodeAt(0), 0)
-
-  return {
-    likes: 30 + (seed % 220),
-    comments: 4 + (seed % 24),
-  }
-}
+const getEngagement = (_id: string) => ({
+  likes: 0,
+  comments: 0,
+})
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
 
@@ -366,6 +368,10 @@ const filteredSelectedPosts = computed(() => {
 const emptyStateLabel = computed(() => {
   if (isSearchActive.value) {
     return searchNoResult.value
+  }
+
+  if (copy.value.posts.length === 0) {
+    return noPostsLabel.value
   }
 
   if (selectedCategory.value !== 'retrospective') {
@@ -723,6 +729,7 @@ watch(
         :popular-kicker="copy.popularKicker"
         :popular-heading="copy.popularHeading"
         :popular-description="copy.popularDescription"
+        :empty-label="popularEmptyLabel"
         :posts="copy.popularPosts"
         :active-index="activePopularIndex"
         :read-label="copy.readLabel"

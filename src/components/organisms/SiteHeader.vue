@@ -5,6 +5,7 @@ import { portfolioCopyByLocale } from '@/data/portfolio/copy'
 import { stackTickerByLocale } from '@/data/stack/stackTicker'
 import { useLocale } from '@/composables/useLocale'
 import SidebarNavSection from '@/components/molecules/SidebarNavSection.vue'
+import logoSrc from '@/assets/images/logo.svg'
 
 const {
   route,
@@ -237,7 +238,7 @@ watch(
           :to="basePath"
         >
           <img
-            src="../../assets/images/logo.svg"
+            :src="logoSrc"
             alt="HLab logo"
             class="h-5 w-5 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-6 sm:w-6"
             loading="eager"
