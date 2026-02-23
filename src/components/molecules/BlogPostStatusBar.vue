@@ -7,9 +7,12 @@ type Props = {
   isLoading: boolean
   loadingLabel: string
   retryLabel: string
+  hideStatusText?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  hideStatusText: false,
+})
 
 const emit = defineEmits<{
   reload: []
@@ -26,7 +29,7 @@ const emit = defineEmits<{
     </RouterLink>
 
     <div class="flex items-center gap-2">
-      <p class="text-xs text-zinc-400">
+      <p v-if="!props.hideStatusText" class="text-xs text-zinc-400">
         {{ props.statusLabel }} · {{ props.engagementStatusLabel }}
         <span v-if="props.isLoading"> · {{ props.loadingLabel }}</span>
       </p>
