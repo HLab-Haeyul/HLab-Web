@@ -180,18 +180,52 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
   const getPostManageFailedMessage = (currentLocale: Locale) =>
     currentLocale === 'en' ? 'Failed to manage blog post.' : '게시글 관리에 실패했습니다.'
 
+  const buildFallbackPostId = (input: BlogPostCreateInput) => {
+    const explicitId = input.id?.trim()
+
+    if (explicitId) {
+      return explicitId
+    }
+
+    const fromTitle = input.title
+      .trim()
+      .toLocaleLowerCase()
+      .replace(/[^a-z0-9가-힣\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    if (fromTitle) {
+      return `${fromTitle}-${Date.now()}`
+    }
+
+    return `post-${Date.now()}`
+  }
+
+  const resolveFallbackPublishedAt = (value?: string) => {
+    const trimmed = value?.trim()
+
+    if (trimmed) {
+      return trimmed
+    }
+
+    return new Date().toISOString().slice(0, 10)
+  }
+
   const createPost = async (input: BlogPostCreateInput) => {
     isManagingPost.value = true
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
+      const fallbackId = buildFallbackPostId(input)
+
       upsertListPost(
         toListPost({
-          id: input.id,
+          id: fallbackId,
           title: input.title,
           excerpt: input.excerpt,
-          publishedAt: input.publishedAt,
-          readTime: input.readTime,
+          publishedAt: resolveFallbackPublishedAt(input.publishedAt),
+          readTime: input.readTime ?? (locale.value === 'en' ? '5 min' : '5분'),
           tags: input.tags,
           category: input.category,
         }),

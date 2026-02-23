@@ -11,6 +11,22 @@ import BlogCommentSection from '@/components/organisms/BlogCommentSection.vue'
 import BlogPostHeroSection from '@/components/organisms/BlogPostHeroSection.vue'
 import BlogPostMediaSection from '@/components/organisms/BlogPostMediaSection.vue'
 
+type Props = {
+  forceAdminCommentMode?: boolean
+  backPath?: string
+  backLabelOverride?: string
+  editPostPath?: string
+  editPostLabel?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  forceAdminCommentMode: false,
+  backPath: undefined,
+  backLabelOverride: undefined,
+  editPostPath: undefined,
+  editPostLabel: '글 수정하기',
+})
+
 const { locale, route, blogPath } = useLocale()
 
 const id = computed(() => {
@@ -62,7 +78,10 @@ const {
 const commentAuthor = ref('')
 const commentBody = ref('')
 
-const backLabel = computed(() => (locale.value === 'en' ? 'Back to blog' : '블로그 목록으로'))
+const backLabel = computed(
+  () => props.backLabelOverride ?? (locale.value === 'en' ? 'Back to blog' : '블로그 목록으로'),
+)
+const backPath = computed(() => props.backPath ?? blogPath.value)
 const statusLabel = computed(() =>
   dataSource.value === 'api'
     ? locale.value === 'en'
@@ -150,7 +169,7 @@ const isAdminCommentMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_COMMENT_ADMIN_ENABLED as string | undefined)?.trim()
   const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
 
-  return envFlag === 'true' || queryValue === '1'
+  return props.forceAdminCommentMode || envFlag === 'true' || queryValue === '1'
 })
 const renderedMarkdown = computed(() => (post.value ? markdownToHtml(post.value.markdown) : ''))
 const headingTocItems = computed(() =>
@@ -321,15 +340,24 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[980px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1240px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
     ></div>
 
     <main class="space-y-4">
+      <div v-if="props.editPostPath" class="flex justify-end">
+        <RouterLink
+          :to="props.editPostPath"
+          class="inline-flex items-center rounded-lg border border-[#4d3b1f] bg-[#2c2418] px-3 py-1.5 text-xs text-amber-200 transition hover:border-[#765a2b] hover:text-amber-100"
+        >
+          {{ props.editPostLabel }}
+        </RouterLink>
+      </div>
+
       <BlogPostStatusBar
-        :blog-path="blogPath"
+        :blog-path="backPath"
         :back-label="backLabel"
         :status-label="statusLabel"
         :engagement-status-label="engagementStatusLabel"
@@ -350,7 +378,7 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
         {{ engagementError }}
       </p>
 
-      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_220px] xl:items-start xl:gap-5">
+      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start xl:gap-7">
         <article
           id="post-overview"
           class="rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
@@ -377,7 +405,7 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
           <div
             id="post-content"
-            class="markdown-body mt-7 text-[15px] leading-8 text-zinc-200 sm:text-base"
+            class="markdown-body mt-8 text-[16px] leading-[2.05] text-zinc-200 sm:text-[17px]"
             v-html="renderedMarkdown"
           ></div>
 
@@ -446,36 +474,38 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 .markdown-body :deep(h5),
 .markdown-body :deep(h6) {
   scroll-margin-top: 6.5rem;
-  margin: 1.25rem 0 0.55rem;
+  margin: 1.6rem 0 0.75rem;
   color: #f4f4f5;
-  line-height: 1.25;
+  line-height: 1.34;
 }
 
 .markdown-body :deep(h1) {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
 }
 
 .markdown-body :deep(h2) {
-  font-size: 1.35rem;
+  font-size: 1.48rem;
 }
 
 .markdown-body :deep(h3) {
-  font-size: 1.15rem;
+  font-size: 1.26rem;
 }
 
 .markdown-body :deep(p) {
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.25rem;
   color: #e4e4e7;
+  line-height: 1.95;
 }
 
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) {
-  margin: 0 0 0.95rem;
-  padding-left: 1.2rem;
+  margin: 0 0 1.2rem;
+  padding-left: 1.45rem;
+  line-height: 1.88;
 }
 
 .markdown-body :deep(li) {
-  margin: 0.2rem 0;
+  margin: 0.42rem 0;
 }
 
 .markdown-body :deep(a) {
@@ -495,12 +525,12 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
 .markdown-body :deep(pre) {
   position: relative;
-  margin: 0 0 1rem;
+  margin: 0 0 1.2rem;
   overflow-x: auto;
   border: 1px solid #3f3f46;
   border-radius: 0.8rem;
   background: #0f1012;
-  padding: 0.8rem;
+  padding: 1rem;
 }
 
 .markdown-body :deep(pre code) {
@@ -544,9 +574,10 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 }
 
 .markdown-body :deep(blockquote) {
-  margin: 0 0 1rem;
+  margin: 0 0 1.2rem;
   border-left: 3px solid #52525b;
-  padding-left: 0.85rem;
+  padding-left: 1rem;
   color: #d4d4d8;
+  line-height: 1.9;
 }
 </style>

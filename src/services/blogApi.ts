@@ -16,15 +16,15 @@ type FetchBlogOptions = {
 }
 
 export type BlogPostCreateInput = {
-  id: string
+  id?: string
   title: string
   excerpt: string
-  publishedAt: string
-  readTime: string
+  publishedAt?: string
+  readTime?: string
   tags: string[]
   category: BlogCategoryKey
-  heroTag: string
-  authorName: string
+  heroTag?: string
+  authorName?: string
   markdown: string
   images?: BlogPostImage[]
   videos?: BlogPostVideo[]
