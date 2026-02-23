@@ -42,5 +42,6 @@ const editPostPath = computed(() => {
     back-label-override="글 관리로"
     :edit-post-path="editPostPath"
     edit-post-label="글 수정하기"
+    :hide-status-text="true"
   />
 </template>

@@ -14,9 +14,7 @@ type Props = {
   commentPageStatusLabel: string
   commentPrevLabel: string
   commentNextLabel: string
-  commentAuthor: string
   commentBody: string
-  commentAuthorPlaceholder: string
   commentBodyPlaceholder: string
   commentSubmitLabel: string
   isSubmitting: boolean
@@ -34,7 +32,6 @@ type Props = {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update:commentAuthor': [value: string]
   'update:commentBody': [value: string]
   submit: []
   'go-prev-page': []
@@ -98,13 +95,6 @@ const handleDelete = (commentId: string) => {
     <h2 class="text-lg font-semibold text-zinc-100">{{ props.commentHeading }} {{ props.commentTotalCount }}</h2>
 
     <form class="mt-4 space-y-2" @submit.prevent="emit('submit')">
-      <input
-        :value="props.commentAuthor"
-        type="text"
-        class="w-full rounded-xl border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
-        :placeholder="props.commentAuthorPlaceholder"
-        @input="emit('update:commentAuthor', ($event.target as HTMLInputElement).value)"
-      />
       <textarea
         :value="props.commentBody"
         class="min-h-24 w-full resize-y rounded-xl border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"

@@ -17,6 +17,7 @@ type Props = {
   backLabelOverride?: string
   editPostPath?: string
   editPostLabel?: string
+  hideStatusText?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   backLabelOverride: undefined,
   editPostPath: undefined,
   editPostLabel: '글 수정하기',
+  hideStatusText: false,
 })
 
 const { locale, route, blogPath } = useLocale()
@@ -75,7 +77,6 @@ const {
   reload: reloadEngagement,
 } = useBlogEngagement(locale, id)
 
-const commentAuthor = ref('')
 const commentBody = ref('')
 
 const backLabel = computed(
@@ -140,9 +141,6 @@ const mediaVideoFallbackTitle = computed(() =>
 )
 const commentEmptyLabel = computed(() =>
   locale.value === 'en' ? 'No comments yet. Be the first to write one.' : '아직 댓글이 없습니다. 첫 댓글을 남겨보세요.',
-)
-const commentAuthorPlaceholder = computed(() =>
-  locale.value === 'en' ? 'Your name (optional)' : '이름 (선택)',
 )
 const commentBodyPlaceholder = computed(() =>
   locale.value === 'en' ? 'Write a comment' : '댓글을 작성하세요',
@@ -309,7 +307,7 @@ const handleSubmitComment = async () => {
     return
   }
 
-  await addComment(commentAuthor.value, nextBody)
+  await addComment('', nextBody)
   commentBody.value = ''
 }
 
@@ -364,6 +362,7 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
         :is-loading="isPostLoading || isEngagementLoading"
         :loading-label="loadingLabel"
         :retry-label="retryLabel"
+        :hide-status-text="props.hideStatusText"
         @reload="handleReload"
       />
 
@@ -428,15 +427,12 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
             :comment-save-label="commentSaveLabel"
             :comment-cancel-label="commentCancelLabel"
             :comment-edit-placeholder="commentEditPlaceholder"
-            :comment-author="commentAuthor"
             :comment-body="commentBody"
-            :comment-author-placeholder="commentAuthorPlaceholder"
             :comment-body-placeholder="commentBodyPlaceholder"
             :comment-submit-label="commentSubmitLabel"
             :is-submitting="isSubmitting"
             :comment-empty-label="commentEmptyLabel"
             :format-comment-date="formatCommentDate"
-            @update:comment-author="commentAuthor = $event"
             @update:comment-body="commentBody = $event"
             @submit="handleSubmitComment"
             @go-prev-page="handlePreviousCommentPage"
