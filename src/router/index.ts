@@ -6,21 +6,32 @@ import BlogPostView from '@/views/BlogPostView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminBlogManagerView from '@/views/AdminBlogManagerView.vue'
 import AdminBlogPostView from '@/views/AdminBlogPostView.vue'
+import AdminBlogWriteView from '@/views/AdminBlogWriteView.vue'
+import AdminProjectManagerView from '@/views/AdminProjectManagerView.vue'
+import AdminPortfolioManagerView from '@/views/AdminPortfolioManagerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  // scrollBehavior(to) {
-  //   if (to.hash) {
-  //     return {
-  //       el: to.hash,
-  //       behavior: 'smooth',
-  //     }
-  //   }
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
 
-  //   return {
-  //     top: 0,
-  //   }
-  // }, --- IGNORE ---
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+      }
+    }
+
+    if (to.path === from.path && to.fullPath !== from.fullPath) {
+      return false
+    }
+
+    return {
+      top: 0,
+    }
+  },
   routes: [
     {
       path: '/',
@@ -70,6 +81,30 @@ const router = createRouter({
       path: '/ko/admin/blog',
       name: 'admin-blog-ko',
       component: AdminBlogManagerView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/blog/write',
+      name: 'admin-blog-write-ko',
+      component: AdminBlogWriteView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/projects',
+      name: 'admin-projects-ko',
+      component: AdminProjectManagerView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/portfolio',
+      name: 'admin-portfolio-ko',
+      component: AdminPortfolioManagerView,
       meta: {
         locale: 'ko',
       },
@@ -126,6 +161,30 @@ const router = createRouter({
       path: '/en/admin/blog',
       name: 'admin-blog-en',
       component: AdminBlogManagerView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/blog/write',
+      name: 'admin-blog-write-en',
+      component: AdminBlogWriteView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/projects',
+      name: 'admin-projects-en',
+      component: AdminProjectManagerView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/portfolio',
+      name: 'admin-portfolio-en',
+      component: AdminPortfolioManagerView,
       meta: {
         locale: 'en',
       },

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { markdownToHtml } from '@/utils/markdown'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 type Props = {
   modelValue: string
@@ -15,14 +14,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
+const MIN_EDITOR_HEIGHT_PX = 720
+
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const overlayRef = ref<HTMLDivElement | null>(null)
 const draft = ref(props.modelValue)
-const previewHtml = ref('')
-const isPreviewMode = ref(false)
-const parser = ref<(value: string) => string>((value) => markdownToHtml(value))
-const parserName = ref<'marked' | 'fallback'>('fallback')
-const importFromUrl = new Function('url', 'return import(url)') as (url: string) => Promise<unknown>
 
 const escapeHtml = (value: string) =>
   value
@@ -35,97 +31,93 @@ const escapeHtml = (value: string) =>
 const withInlineMarkup = (value: string) => {
   let next = escapeHtml(value)
 
-  next = next.replace(/`([^`]+)`/g, '<span class="md-inline-code">`$1`</span>')
-  next = next.replace(/\*\*([^*]+)\*\*/g, '<span class="md-inline-strong">**$1**</span>')
+  next = next.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<span class="md-link">$1</span>')
+  next = next.replace(/`([^`]+)`/g, '<span class="md-inline-code">$1</span>')
+  next = next.replace(/\*\*([^*]+)\*\*/g, '<strong class="md-strong">$1</strong>')
+  next = next.replace(/\*([^*]+)\*/g, '<em class="md-em">$1</em>')
+  next = next.replace(/~~([^~]+)~~/g, '<span class="md-strike">$1</span>')
 
   return next
 }
 
-const toStyledLineHtml = (line: string) => {
-  if (line.length === 0) {
-    return '<div class="md-line md-empty"><br /></div>'
-  }
+const renderStyledLines = (value: string) => {
+  const lines = value.split('\n')
+  const rendered: string[] = []
+  let insideFence = false
 
-  const headingMatch = line.match(/^(#{1,6})\s+(.*)$/)
+  lines.forEach((line) => {
+    const trimmed = line.trim()
+    const fenceMatch = trimmed.match(/^```(.*)$/)
 
-  if (headingMatch) {
-    const hashes = headingMatch[1] ?? ''
-    const content = headingMatch[2] ?? ''
-    const level = hashes.length
+    if (fenceMatch) {
+      const fenceLanguage = (fenceMatch[1] ?? '').trim()
+      const label = fenceLanguage.length > 0 ? `코드 블록 (${escapeHtml(fenceLanguage)})` : '코드 블록'
+      rendered.push(`<div class="md-line md-fence">${label}</div>`)
+      insideFence = !insideFence
+      return
+    }
 
-    return [
-      `<div class="md-line md-h${level}">`,
-      `<span class="md-token">${escapeHtml(hashes)} </span>`,
-      `<span class="md-content">${withInlineMarkup(content)}</span>`,
-      '</div>',
-    ].join('')
-  }
+    if (insideFence) {
+      rendered.push(
+        line.length > 0
+          ? `<div class="md-line md-code">${escapeHtml(line)}</div>`
+          : '<div class="md-line md-code md-empty"><br /></div>',
+      )
+      return
+    }
 
-  const quoteMatch = line.match(/^(>\s?)(.*)$/)
+    if (line.length === 0) {
+      rendered.push('<div class="md-line md-empty"><br /></div>')
+      return
+    }
 
-  if (quoteMatch) {
-    const quoteToken = quoteMatch[1] ?? ''
-    const quoteContent = quoteMatch[2] ?? ''
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/)
 
-    return [
-      '<div class="md-line md-quote">',
-      `<span class="md-token">${escapeHtml(quoteToken)}</span>`,
-      `<span class="md-content">${withInlineMarkup(quoteContent)}</span>`,
-      '</div>',
-    ].join('')
-  }
+    if (headingMatch) {
+      const level = (headingMatch[1] ?? '#').length
+      const content = headingMatch[2] ?? ''
+      rendered.push(`<div class="md-line md-h${level}">${withInlineMarkup(content)}</div>`)
+      return
+    }
 
-  const unorderedMatch = line.match(/^([-*+]\s+)(.*)$/)
+    const quoteMatch = line.match(/^>\s?(.*)$/)
 
-  if (unorderedMatch) {
-    const unorderedToken = unorderedMatch[1] ?? ''
-    const unorderedContent = unorderedMatch[2] ?? ''
+    if (quoteMatch) {
+      const quoteContent = quoteMatch[1] ?? ''
+      rendered.push(`<div class="md-line md-quote">${withInlineMarkup(quoteContent)}</div>`)
+      return
+    }
 
-    return [
-      '<div class="md-line md-list">',
-      `<span class="md-token">${escapeHtml(unorderedToken)}</span>`,
-      `<span class="md-content">${withInlineMarkup(unorderedContent)}</span>`,
-      '</div>',
-    ].join('')
-  }
+    const unorderedMatch = line.match(/^[-*+]\s+(.*)$/)
 
-  const orderedMatch = line.match(/^(\d+\.\s+)(.*)$/)
+    if (unorderedMatch) {
+      const unorderedContent = unorderedMatch[1] ?? ''
+      rendered.push(
+        `<div class="md-line md-list"><span class="md-list-bullet">•</span><span>${withInlineMarkup(unorderedContent)}</span></div>`,
+      )
+      return
+    }
 
-  if (orderedMatch) {
-    const orderedToken = orderedMatch[1] ?? ''
-    const orderedContent = orderedMatch[2] ?? ''
+    const orderedMatch = line.match(/^(\d+)\.\s+(.*)$/)
 
-    return [
-      '<div class="md-line md-list">',
-      `<span class="md-token">${escapeHtml(orderedToken)}</span>`,
-      `<span class="md-content">${withInlineMarkup(orderedContent)}</span>`,
-      '</div>',
-    ].join('')
-  }
+    if (orderedMatch) {
+      const orderedIndex = orderedMatch[1] ?? '1'
+      const orderedContent = orderedMatch[2] ?? ''
+      rendered.push(
+        `<div class="md-line md-list"><span class="md-list-index">${escapeHtml(orderedIndex)}.</span><span>${withInlineMarkup(orderedContent)}</span></div>`,
+      )
+      return
+    }
 
-  const fenceMatch = line.match(/^(```.*)$/)
+    rendered.push(`<div class="md-line md-p">${withInlineMarkup(line)}</div>`)
+  })
 
-  if (fenceMatch) {
-    const fenceToken = fenceMatch[1] ?? ''
-    return `<div class="md-line md-fence"><span class="md-token">${escapeHtml(fenceToken)}</span></div>`
-  }
-
-  return `<div class="md-line md-p">${withInlineMarkup(line)}</div>`
+  return rendered.join('')
 }
 
-const liveStyledHtml = computed(() =>
-  draft.value.split('\n').map((line) => toStyledLineHtml(line)).join(''),
-)
+const liveStyledHtml = computed(() => renderStyledLines(draft.value))
 
-const renderPreview = () => {
-  previewHtml.value = parser.value(draft.value || '')
-}
-
-const toggleMode = () => {
-  isPreviewMode.value = !isPreviewMode.value
-}
-
-const handleEditorScroll = () => {
+const syncOverlayScroll = () => {
   if (!overlayRef.value || !textareaRef.value) {
     return
   }
@@ -134,37 +126,25 @@ const handleEditorScroll = () => {
   overlayRef.value.scrollLeft = textareaRef.value.scrollLeft
 }
 
-const loadMarkedParser = async () => {
-  if (typeof window === 'undefined') {
+const syncEditorHeight = () => {
+  const textarea = textareaRef.value
+
+  if (!textarea) {
     return
   }
 
-  try {
-    const module = (await importFromUrl('https://esm.sh/marked@12.0.2')) as {
-      marked?: { parse: (value: string, options?: Record<string, unknown>) => string }
-    }
-
-    if (!module?.marked?.parse) {
-      return
-    }
-
-    parser.value = (value: string) =>
-      String(
-        module.marked?.parse(value, {
-          breaks: true,
-          gfm: true,
-        }),
-      )
-    parserName.value = 'marked'
-    renderPreview()
-  } catch {
-    parserName.value = 'fallback'
-  }
+  textarea.style.height = '0px'
+  const nextHeight = Math.max(textarea.scrollHeight, MIN_EDITOR_HEIGHT_PX)
+  textarea.style.height = `${nextHeight}px`
+  syncOverlayScroll()
 }
 
-onMounted(async () => {
-  renderPreview()
-  await loadMarkedParser()
+const handleEditorScroll = () => {
+  syncOverlayScroll()
+}
+
+onMounted(() => {
+  syncEditorHeight()
 })
 
 watch(
@@ -175,6 +155,10 @@ watch(
     }
 
     draft.value = value
+
+    void nextTick(() => {
+      syncEditorHeight()
+    })
   },
 )
 
@@ -182,7 +166,10 @@ watch(
   () => draft.value,
   (value) => {
     emit('update:modelValue', value)
-    renderPreview()
+
+    void nextTick(() => {
+      syncEditorHeight()
+    })
   },
   { immediate: true },
 )
@@ -190,47 +177,25 @@ watch(
 
 <template>
   <div class="space-y-2">
-    <div class="flex items-center justify-between gap-2">
-      <p class="text-[11px] uppercase tracking-[0.1em] text-zinc-500">
-        Live Markdown
-        <span class="ml-1 text-zinc-600">({{ parserName }})</span>
-      </p>
-      <button
-        type="button"
-        class="rounded-md border border-[#3a3731] px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#5f5544] hover:text-white"
-        @click="toggleMode"
-      >
-        {{ isPreviewMode ? '편집 모드' : '미리보기 모드' }}
-      </button>
-    </div>
+    <p class="text-[11px] uppercase tracking-[0.1em] text-zinc-500">Markdown Editor</p>
 
-    <section class="relative isolate min-h-[22rem] overflow-hidden rounded-xl border border-[#3c3427] bg-[#120f0b]">
+    <section class="relative isolate overflow-hidden rounded-xl border border-[#3c3427] bg-[#120f0b]">
       <div
-        v-if="isPreviewMode"
-        class="markdown-preview min-h-[22rem] px-5 py-4 text-base text-zinc-200"
+        ref="overlayRef"
+        class="pointer-events-none absolute inset-0 overflow-auto px-5 py-4 text-base"
+        aria-hidden="true"
       >
         <p v-if="!draft.trim()" class="text-zinc-500">{{ props.placeholder }}</p>
-        <div v-else v-html="previewHtml"></div>
+        <div v-else class="md-live" v-html="liveStyledHtml"></div>
       </div>
 
-      <template v-else>
-        <div
-          ref="overlayRef"
-          class="pointer-events-none absolute inset-0 overflow-auto px-5 py-4 text-base"
-          aria-hidden="true"
-        >
-          <p v-if="!draft.trim()" class="text-zinc-500">{{ props.placeholder }}</p>
-          <div v-else class="md-live" v-html="liveStyledHtml"></div>
-        </div>
-
-        <textarea
-          ref="textareaRef"
-          v-model="draft"
-          :placeholder="props.placeholder"
-          class="relative z-10 min-h-[22rem] w-full resize-y bg-transparent px-5 py-4 text-base text-transparent caret-zinc-200 placeholder:text-transparent focus:outline-none"
-          @scroll="handleEditorScroll"
-        ></textarea>
-      </template>
+      <textarea
+        ref="textareaRef"
+        v-model="draft"
+        :placeholder="props.placeholder"
+        class="relative z-10 min-h-[45rem] w-full resize-none bg-transparent px-5 py-4 text-base text-transparent caret-zinc-200 placeholder:text-transparent focus:outline-none"
+        @scroll="handleEditorScroll"
+      ></textarea>
     </section>
   </div>
 </template>
@@ -252,14 +217,6 @@ watch(
 
 .md-empty {
   min-height: 1.62em;
-}
-
-.md-token {
-  color: #8f8f95;
-}
-
-.md-content {
-  color: #e4e4e7;
 }
 
 .md-h1 {
@@ -297,8 +254,32 @@ watch(
   color: #d4d4d8;
 }
 
-.md-list .md-token {
+.md-list {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.md-list-bullet,
+.md-list-index {
   color: #b5b5bc;
+  flex: 0 0 auto;
+}
+
+.md-code {
+  border-left: 2px solid #3f3f46;
+  padding-left: 0.9rem;
+  color: #c4c4d0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.md-fence {
+  margin-top: 0.2rem;
+  border: 1px dashed #3f3f46;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  color: #8f8f95;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
 .md-inline-code {
@@ -309,84 +290,24 @@ watch(
   color: #f4f4f5;
 }
 
-.md-inline-strong {
-  color: #fafafa;
+.md-strong {
+  color: #f8f8f9;
   font-weight: 700;
 }
 
-.markdown-preview :deep(h1),
-.markdown-preview :deep(h2),
-.markdown-preview :deep(h3),
-.markdown-preview :deep(h4),
-.markdown-preview :deep(h5),
-.markdown-preview :deep(h6) {
-  margin: 1rem 0 0.45rem;
-  color: #f4f4f5;
-  line-height: 1.25;
+.md-em {
+  color: #e9e9ee;
+  font-style: italic;
 }
 
-.markdown-preview :deep(h1) {
-  font-size: 1.35rem;
-}
-
-.markdown-preview :deep(h2) {
-  font-size: 1.2rem;
-}
-
-.markdown-preview :deep(h3) {
-  font-size: 1.05rem;
-}
-
-.markdown-preview :deep(p) {
-  margin: 0 0 0.75rem;
-  color: #e4e4e7;
-}
-
-.markdown-preview :deep(ul),
-.markdown-preview :deep(ol) {
-  margin: 0 0 0.75rem;
-  padding-left: 1.2rem;
-}
-
-.markdown-preview :deep(li) {
-  margin: 0.2rem 0;
-}
-
-.markdown-preview :deep(code) {
-  border: 1px solid #3f3f46;
-  border-radius: 0.35rem;
-  background: #171717;
-  padding: 0.08rem 0.35rem;
-  font-size: 0.9em;
-  color: #f4f4f5;
-}
-
-.markdown-preview :deep(pre) {
-  margin: 0 0 0.9rem;
-  overflow-x: auto;
-  border: 1px solid #3f3f46;
-  border-radius: 0.65rem;
-  background: #0f1012;
-  padding: 0.75rem;
-}
-
-.markdown-preview :deep(pre code) {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: #d4d4d8;
-}
-
-.markdown-preview :deep(a) {
+.md-link {
   color: #d4d4d8;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.markdown-preview :deep(blockquote) {
-  margin: 0 0 0.8rem;
-  border-left: 2px solid #52525b;
-  padding-left: 0.8rem;
-  color: #d4d4d8;
+.md-strike {
+  color: #b7b7bf;
+  text-decoration: line-through;
 }
 </style>
