@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 type Props = {
   modelValue: string
@@ -14,300 +14,237 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const MIN_EDITOR_HEIGHT_PX = 720
-
-const textareaRef = ref<HTMLTextAreaElement | null>(null)
-const overlayRef = ref<HTMLDivElement | null>(null)
-const draft = ref(props.modelValue)
-
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-
-const withInlineMarkup = (value: string) => {
-  let next = escapeHtml(value)
-
-  next = next.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<span class="md-link">$1</span>')
-  next = next.replace(/`([^`]+)`/g, '<span class="md-inline-code">$1</span>')
-  next = next.replace(/\*\*([^*]+)\*\*/g, '<strong class="md-strong">$1</strong>')
-  next = next.replace(/\*([^*]+)\*/g, '<em class="md-em">$1</em>')
-  next = next.replace(/~~([^~]+)~~/g, '<span class="md-strike">$1</span>')
-
-  return next
+type ToastEditorInstance = {
+  getMarkdown: () => string
+  setMarkdown: (markdown: string, cursorToEnd?: boolean) => void
+  destroy: () => void
 }
 
-const renderStyledLines = (value: string) => {
-  const lines = value.split('\n')
-  const rendered: string[] = []
-  let insideFence = false
+type ToastEditorConstructor = new (options: {
+  el: HTMLElement
+  initialValue?: string
+  placeholder?: string
+  initialEditType?: 'markdown' | 'wysiwyg'
+  previewStyle?: 'tab' | 'vertical'
+  height?: string
+  usageStatistics?: boolean
+  autofocus?: boolean
+  events?: {
+    change?: () => void
+  }
+}) => ToastEditorInstance
 
-  lines.forEach((line) => {
-    const trimmed = line.trim()
-    const fenceMatch = trimmed.match(/^```(.*)$/)
+type ToastUiGlobal = {
+  Editor: ToastEditorConstructor
+}
 
-    if (fenceMatch) {
-      const fenceLanguage = (fenceMatch[1] ?? '').trim()
-      const label = fenceLanguage.length > 0 ? `코드 블록 (${escapeHtml(fenceLanguage)})` : '코드 블록'
-      rendered.push(`<div class="md-line md-fence">${label}</div>`)
-      insideFence = !insideFence
-      return
-    }
+type ToastUiWindow = Window & {
+  toastui?: ToastUiGlobal
+}
 
-    if (insideFence) {
-      rendered.push(
-        line.length > 0
-          ? `<div class="md-line md-code">${escapeHtml(line)}</div>`
-          : '<div class="md-line md-code md-empty"><br /></div>',
-      )
-      return
-    }
+const TOAST_UI_CSS_URL = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css'
+const TOAST_UI_JS_URL = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js'
+const TOAST_UI_CSS_ID = 'toast-ui-editor-css'
+const TOAST_UI_JS_ID = 'toast-ui-editor-js'
 
-    if (line.length === 0) {
-      rendered.push('<div class="md-line md-empty"><br /></div>')
-      return
-    }
+const editorHostRef = ref<HTMLDivElement | null>(null)
+let editorInstance: ToastEditorInstance | null = null
+let isSyncingFromEditor = false
 
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/)
+const loadToastUiAssets = async () => {
+  if (typeof window === 'undefined') {
+    return
+  }
 
-    if (headingMatch) {
-      const level = (headingMatch[1] ?? '#').length
-      const content = headingMatch[2] ?? ''
-      rendered.push(`<div class="md-line md-h${level}">${withInlineMarkup(content)}</div>`)
-      return
-    }
+  if (!document.getElementById(TOAST_UI_CSS_ID)) {
+    const link = document.createElement('link')
+    link.id = TOAST_UI_CSS_ID
+    link.rel = 'stylesheet'
+    link.href = TOAST_UI_CSS_URL
+    document.head.appendChild(link)
+  }
 
-    const quoteMatch = line.match(/^>\s?(.*)$/)
+  if ((window as ToastUiWindow).toastui?.Editor) {
+    return
+  }
 
-    if (quoteMatch) {
-      const quoteContent = quoteMatch[1] ?? ''
-      rendered.push(`<div class="md-line md-quote">${withInlineMarkup(quoteContent)}</div>`)
-      return
-    }
+  const existingScript = document.getElementById(TOAST_UI_JS_ID) as HTMLScriptElement | null
 
-    const unorderedMatch = line.match(/^[-*+]\s+(.*)$/)
+  if (existingScript) {
+    await new Promise<void>((resolve, reject) => {
+      existingScript.addEventListener('load', () => resolve(), { once: true })
+      existingScript.addEventListener('error', () => reject(new Error('Toast UI script load failed')), {
+        once: true,
+      })
+    })
+    return
+  }
 
-    if (unorderedMatch) {
-      const unorderedContent = unorderedMatch[1] ?? ''
-      rendered.push(
-        `<div class="md-line md-list"><span class="md-list-bullet">•</span><span>${withInlineMarkup(unorderedContent)}</span></div>`,
-      )
-      return
-    }
-
-    const orderedMatch = line.match(/^(\d+)\.\s+(.*)$/)
-
-    if (orderedMatch) {
-      const orderedIndex = orderedMatch[1] ?? '1'
-      const orderedContent = orderedMatch[2] ?? ''
-      rendered.push(
-        `<div class="md-line md-list"><span class="md-list-index">${escapeHtml(orderedIndex)}.</span><span>${withInlineMarkup(orderedContent)}</span></div>`,
-      )
-      return
-    }
-
-    rendered.push(`<div class="md-line md-p">${withInlineMarkup(line)}</div>`)
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.id = TOAST_UI_JS_ID
+    script.src = TOAST_UI_JS_URL
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Toast UI script load failed'))
+    document.head.appendChild(script)
   })
-
-  return rendered.join('')
 }
 
-const liveStyledHtml = computed(() => renderStyledLines(draft.value))
+const getToastEditorConstructor = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
 
-const syncOverlayScroll = () => {
-  if (!overlayRef.value || !textareaRef.value) {
+  return (window as ToastUiWindow).toastui?.Editor ?? null
+}
+
+const handleEditorChange = () => {
+  if (!editorInstance) {
     return
   }
 
-  overlayRef.value.scrollTop = textareaRef.value.scrollTop
-  overlayRef.value.scrollLeft = textareaRef.value.scrollLeft
-}
+  const markdown = editorInstance.getMarkdown()
 
-const syncEditorHeight = () => {
-  const textarea = textareaRef.value
-
-  if (!textarea) {
+  if (markdown === props.modelValue) {
     return
   }
 
-  textarea.style.height = '0px'
-  const nextHeight = Math.max(textarea.scrollHeight, MIN_EDITOR_HEIGHT_PX)
-  textarea.style.height = `${nextHeight}px`
-  syncOverlayScroll()
+  isSyncingFromEditor = true
+  emit('update:modelValue', markdown)
+  isSyncingFromEditor = false
 }
 
-const handleEditorScroll = () => {
-  syncOverlayScroll()
+const createEditor = (initialValue: string, placeholder: string) => {
+  if (!editorHostRef.value) {
+    return
+  }
+
+  const EditorCtor = getToastEditorConstructor()
+
+  if (!EditorCtor) {
+    return
+  }
+
+  editorInstance = new EditorCtor({
+    el: editorHostRef.value,
+    initialValue,
+    placeholder,
+    initialEditType: 'markdown',
+    previewStyle: 'tab',
+    height: '760px',
+    usageStatistics: false,
+    autofocus: false,
+    events: {
+      change: handleEditorChange,
+    },
+  })
 }
 
-onMounted(() => {
-  syncEditorHeight()
+const destroyEditor = () => {
+  if (!editorInstance) {
+    return
+  }
+
+  editorInstance.destroy()
+  editorInstance = null
+}
+
+onMounted(async () => {
+  await loadToastUiAssets()
+  createEditor(props.modelValue, props.placeholder)
+})
+
+onBeforeUnmount(() => {
+  destroyEditor()
 })
 
 watch(
   () => props.modelValue,
   (value) => {
-    if (value === draft.value) {
+    if (!editorInstance || isSyncingFromEditor) {
       return
     }
 
-    draft.value = value
+    const current = editorInstance.getMarkdown()
 
-    void nextTick(() => {
-      syncEditorHeight()
-    })
+    if (current === value) {
+      return
+    }
+
+    editorInstance.setMarkdown(value, false)
   },
 )
 
 watch(
-  () => draft.value,
-  (value) => {
-    emit('update:modelValue', value)
+  () => props.placeholder,
+  (nextPlaceholder, previousPlaceholder) => {
+    if (!editorInstance || nextPlaceholder === previousPlaceholder) {
+      return
+    }
 
-    void nextTick(() => {
-      syncEditorHeight()
-    })
+    const current = editorInstance.getMarkdown()
+    destroyEditor()
+    createEditor(current, nextPlaceholder)
   },
-  { immediate: true },
 )
 </script>
 
 <template>
   <div class="space-y-2">
     <p class="text-[11px] uppercase tracking-[0.1em] text-zinc-500">Markdown Editor</p>
-
-    <section class="relative isolate overflow-hidden rounded-xl border border-[#3c3427] bg-[#120f0b]">
-      <div
-        ref="overlayRef"
-        class="pointer-events-none absolute inset-0 overflow-auto px-5 py-4 text-base"
-        aria-hidden="true"
-      >
-        <p v-if="!draft.trim()" class="text-zinc-500">{{ props.placeholder }}</p>
-        <div v-else class="md-live" v-html="liveStyledHtml"></div>
-      </div>
-
-      <textarea
-        ref="textareaRef"
-        v-model="draft"
-        :placeholder="props.placeholder"
-        class="relative z-10 min-h-[45rem] w-full resize-none bg-transparent px-5 py-4 text-base text-transparent caret-zinc-200 placeholder:text-transparent focus:outline-none"
-        @scroll="handleEditorScroll"
-      ></textarea>
-    </section>
+    <div ref="editorHostRef"></div>
   </div>
 </template>
 
 <style scoped>
-.md-live {
-  color: #e4e4e7;
+:deep(.toastui-editor-defaultUI) {
+  overflow: hidden;
+  border: 1px solid #3c3427;
+  border-radius: 0.75rem;
+  background: #120f0b;
 }
 
-.md-line {
-  white-space: pre-wrap;
-  line-height: 1.82;
-  color: #e4e4e7;
+:deep(.toastui-editor-toolbar) {
+  border-bottom: 1px solid #332c22;
+  background: #15120e;
 }
 
-.md-line + .md-line {
-  margin-top: 0.3rem;
-}
-
-.md-empty {
-  min-height: 1.62em;
-}
-
-.md-h1 {
-  margin-top: 0.55rem;
-  font-size: 1.58rem;
-  font-weight: 700;
-  line-height: 1.34;
-}
-
-.md-h2 {
-  margin-top: 0.48rem;
-  font-size: 1.38rem;
-  font-weight: 700;
-  line-height: 1.36;
-}
-
-.md-h3 {
-  margin-top: 0.42rem;
-  font-size: 1.22rem;
-  font-weight: 650;
-  line-height: 1.4;
-}
-
-.md-h4,
-.md-h5,
-.md-h6 {
-  margin-top: 0.28rem;
-  font-size: 1rem;
-  font-weight: 650;
-}
-
-.md-quote {
-  border-left: 2px solid #52525b;
-  padding-left: 0.95rem;
+:deep(.toastui-editor-toolbar button) {
   color: #d4d4d8;
 }
 
-.md-list {
-  display: flex;
-  gap: 0.55rem;
+:deep(.toastui-editor-toolbar button:hover) {
+  background: #231d16;
 }
 
-.md-list-bullet,
-.md-list-index {
-  color: #b5b5bc;
-  flex: 0 0 auto;
+:deep(.toastui-editor-md-container),
+:deep(.toastui-editor-md-preview),
+:deep(.toastui-editor-ww-container) {
+  background: #120f0b;
 }
 
-.md-code {
-  border-left: 2px solid #3f3f46;
-  padding-left: 0.9rem;
-  color: #c4c4d0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+:deep(.toastui-editor-md-container .toastui-editor),
+:deep(.toastui-editor-md-container .toastui-editor *),
+:deep(.toastui-editor-md-container .CodeMirror),
+:deep(.toastui-editor-md-container .CodeMirror pre),
+:deep(.toastui-editor-md-container .cm-editor),
+:deep(.toastui-editor-md-container .cm-content),
+:deep(.toastui-editor-md-container .cm-line),
+:deep(.toastui-editor-ww-container .ProseMirror),
+:deep(.toastui-editor-ww-container .ProseMirror *) {
+  color: #e5e7eb !important;
 }
 
-.md-fence {
-  margin-top: 0.2rem;
-  border: 1px dashed #3f3f46;
-  border-radius: 0.5rem;
-  padding: 0.35rem 0.55rem;
-  color: #8f8f95;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
+:deep(.toastui-editor-md-container .toastui-editor-md-preview-style),
+:deep(.toastui-editor-contents) {
+  color: #e5e7eb;
+  font-size: 16px;
+  line-height: 1.8;
 }
 
-.md-inline-code {
-  border: 1px solid #3f3f46;
-  border-radius: 0.35rem;
-  background: #171717;
-  padding: 0.02rem 0.3rem;
-  color: #f4f4f5;
-}
-
-.md-strong {
-  color: #f8f8f9;
-  font-weight: 700;
-}
-
-.md-em {
-  color: #e9e9ee;
-  font-style: italic;
-}
-
-.md-link {
-  color: #d4d4d8;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.md-strike {
-  color: #b7b7bf;
-  text-decoration: line-through;
+:deep(.toastui-editor-md-tab-container) {
+  border-bottom: 1px solid #332c22;
+  background: #15120e;
 }
 </style>

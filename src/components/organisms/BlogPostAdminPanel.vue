@@ -63,6 +63,7 @@ type Props = {
   showUpdateButton?: boolean
   showDeleteButton?: boolean
   showHeroTagField?: boolean
+  minimalBoxes?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -76,6 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   showUpdateButton: true,
   showDeleteButton: true,
   showHeroTagField: true,
+  minimalBoxes: false,
   retrospectiveProjectLabel: '연결 프로젝트',
   retrospectiveProjectPlaceholder: '프로젝트 선택',
   retrospectiveProjectOptions: () => [],
@@ -312,10 +314,20 @@ const handleDelete = () => {
     id: id.value,
   })
 }
+
+const rootSectionClass = computed(() =>
+  props.minimalBoxes
+    ? 'p-0'
+    : 'rounded-[1.2rem] border border-[#2a2a2a] bg-[#101010cc] p-4 sm:p-5',
+)
+
+const tempDraftBoxClass = computed(() =>
+  props.minimalBoxes ? 'mt-4 p-0' : 'mt-4 rounded-lg border border-[#2f2f2f] bg-[#141414] p-3',
+)
 </script>
 
 <template>
-  <section class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#101010cc] p-4 sm:p-5">
+  <section :class="rootSectionClass">
     <div class="flex items-start justify-between gap-3">
       <div>
         <p class="text-[11px] uppercase tracking-[0.11em] text-zinc-500">PUBLISH EDITOR</p>
@@ -324,7 +336,7 @@ const handleDelete = () => {
       </div>
       <button
         type="button"
-        class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
+        class="rounded-lg border border-[#7e3d3d] bg-[#2a1414] px-3 py-1.5 text-xs text-rose-300 transition hover:border-[#a34a4a] hover:bg-[#341818] hover:text-rose-200 disabled:opacity-50"
         :disabled="props.isSubmitting"
         @click="resetForm"
       >
@@ -447,7 +459,7 @@ const handleDelete = () => {
       />
     </div>
 
-    <div class="mt-4 rounded-lg border border-[#2f2f2f] bg-[#141414] p-3">
+    <div :class="tempDraftBoxClass">
       <p class="text-xs font-medium text-zinc-200">임시 저장</p>
       <p class="mt-1 text-[11px] text-zinc-500">작성 중인 글을 임시 저장하고 나중에 다시 불러올 수 있습니다.</p>
       <div class="mt-2 flex flex-wrap gap-2">
@@ -484,7 +496,7 @@ const handleDelete = () => {
       <button
         v-if="props.showCreateButton"
         type="button"
-        class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
+        class="rounded-lg border border-blue-500 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:border-blue-400 hover:bg-blue-500 disabled:opacity-50"
         :disabled="props.isSubmitting"
         @click="handleCreate"
       >

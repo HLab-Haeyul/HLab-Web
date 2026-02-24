@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { BLOG_CATEGORY_KEYS, type BlogCategoryKey } from '@/data/blog/content'
+import { BLOG_CATEGORY_KEYS, getFallbackBlogPostDetail, type BlogCategoryKey } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
+import { fetchBlogPostDetail } from '@/services/blogApi'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 import AdminSidebarNav from '@/components/organisms/AdminSidebarNav.vue'
 
@@ -33,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { locale, basePath, adminPath, adminBlogPath, adminBlogWritePath } = useLocale()
 const route = useRoute()
-const { copy, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
+const { copy, isLoading, isManagingPost, errorMessage, reload, createPostWithStatus, updatePost, removePost } =
   useBlogContent(locale)
 
 const panelDescription = computed(() =>
@@ -155,13 +157,29 @@ const handleCreatePost = async (draft: BlogPostAdminDraft) => {
 
   const nextTags = composeAdminTags(draft.tags, draft.category, draft.retrospectiveProjectKey)
 
-  await createPost({
+  const result = await createPostWithStatus({
     title: draft.title.trim(),
     excerpt: buildAutoExcerpt(draft),
     category: draft.category,
     tags: nextTags,
     markdown: draft.markdown.trim(),
   })
+
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (result.source === 'fallback' && result.ok) {
+    window.alert('API가 비활성화되어 로컬 데이터에 임시 저장했습니다.')
+    return
+  }
+
+  if (result.ok && result.status === 200) {
+    window.alert('게시글 작성이 성공했습니다. (200)')
+    return
+  }
+
+  window.alert(`게시글 작성에 실패했습니다. (status: ${result.status ?? 'unknown'})`)
 }
 
 const handleUpdatePost = async (draft: BlogPostAdminDraft) => {
@@ -252,6 +270,7 @@ const editTargetPost = computed(() => {
 })
 
 const isEditComposerMode = computed(() => Boolean(editQueryId.value))
+const showComposerSection = computed(() => props.writeMode || isEditComposerMode.value)
 
 const emptyDraft = (): BlogPostAdminDraft => ({
   id: '',
@@ -307,6 +326,119 @@ const composerSeedKey = computed(() =>
   isEditComposerMode.value
     ? `edit:${editQueryId.value}:${editTargetPostDetail.value?.id ?? 'loading'}:${editTargetPostDetail.value?.markdown.length ?? 0}`
     : 'create:new',
+)
+
+const postThumbnailById = ref<Record<string, string>>({})
+let thumbnailLoadToken = 0
+
+const sanitizeImageUrl = (raw?: string | null) => {
+  if (typeof raw !== 'string') {
+    return null
+  }
+
+  const value = raw.trim()
+
+  if (!value) {
+    return null
+  }
+
+  if (value.startsWith('/')) {
+    return value
+  }
+
+  try {
+    const parsed = new URL(value)
+
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString()
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+const resolveFallbackThumbnail = (postId: string) => {
+  const detail = getFallbackBlogPostDetail(locale.value, postId)
+
+  if (!detail?.images || detail.images.length === 0) {
+    return null
+  }
+
+  for (const image of detail.images) {
+    const src = sanitizeImageUrl(image.src)
+
+    if (src) {
+      return src
+    }
+  }
+
+  return null
+}
+
+const loadPostThumbnails = async () => {
+  const requestToken = ++thumbnailLoadToken
+  const postIds = copy.value.posts.map((post) => post.id)
+  const nextThumbnailById: Record<string, string> = {}
+
+  postIds.forEach((postId) => {
+    const fallbackThumbnail = resolveFallbackThumbnail(postId)
+
+    if (fallbackThumbnail) {
+      nextThumbnailById[postId] = fallbackThumbnail
+    }
+  })
+
+  if (isBlogApiEnabled() && postIds.length > 0) {
+    const thumbnailResults = await Promise.all(
+      postIds.map(async (postId) => {
+        try {
+          const detail = await fetchBlogPostDetail(locale.value, postId)
+
+          if (!detail?.images || detail.images.length === 0) {
+            return [postId, null] as const
+          }
+
+          for (const image of detail.images) {
+            const src = sanitizeImageUrl(image.src)
+
+            if (src) {
+              return [postId, src] as const
+            }
+          }
+
+          return [postId, null] as const
+        } catch {
+          return [postId, null] as const
+        }
+      }),
+    )
+
+    if (requestToken !== thumbnailLoadToken) {
+      return
+    }
+
+    thumbnailResults.forEach(([postId, thumbnailSrc]) => {
+      if (thumbnailSrc) {
+        nextThumbnailById[postId] = thumbnailSrc
+      }
+    })
+  }
+
+  if (requestToken !== thumbnailLoadToken) {
+    return
+  }
+
+  postThumbnailById.value = nextThumbnailById
+}
+
+watch(
+  [() => locale.value, () => copy.value.posts.map((post) => post.id).join('|')],
+  () => {
+    void loadPostThumbnails()
+  },
+  { immediate: true },
 )
 
 const openPostPath = (id: string) => `${adminBlogPath.value}/${id}`
@@ -395,10 +527,14 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
         </section>
 
         <section
+          v-if="showComposerSection"
           :id="composerSectionId"
-          class="mx-auto max-w-[1180px] rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
+          :class="
+            props.writeMode
+              ? 'mx-auto max-w-[1180px]'
+              : 'mx-auto max-w-[1180px] rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7'
+          "
         >
-        <div class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#111111d9] p-4 sm:p-5">
           <p v-if="!props.writeMode && isEditComposerMode" class="mb-3 text-xs text-zinc-500">
             수정 모드입니다. 대상 글 ID: <span class="font-mono text-zinc-300">{{ editQueryId }}</span>
           </p>
@@ -444,15 +580,16 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
             :show-published-at-field="false"
             :show-read-time-field="false"
             :show-hero-tag-field="false"
+            :show-create-button="props.writeMode"
             :show-update-button="!props.writeMode && isEditComposerMode"
             :show-delete-button="!props.writeMode"
+            :minimal-boxes="props.writeMode"
             :seed-draft="composerSeedDraft"
             :seed-key="composerSeedKey"
             @create="handleCreatePost"
             @update="handleUpdatePost"
             @delete="handleDeletePost"
           />
-        </div>
         </section>
 
         <section
@@ -461,9 +598,17 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
           class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5"
         >
         <h2 class="text-base font-semibold text-zinc-100 sm:text-lg">섹션 3. 게시글 목록</h2>
-        <div class="flex items-center justify-between gap-2">
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
           <p class="text-sm text-zinc-400">기존 글을 선택하거나 카드에서 바로 삭제할 수 있습니다.</p>
-          <p class="text-xs text-zinc-500">박스를 선택하면 댓글 관리 화면으로 이동합니다.</p>
+          <div class="flex items-center gap-3">
+            <p class="text-xs text-zinc-500">박스를 선택하면 댓글 관리 화면으로 이동합니다.</p>
+            <RouterLink
+              :to="adminBlogWritePath"
+              class="inline-flex items-center rounded-md border border-blue-500 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:border-blue-400 hover:bg-blue-500"
+            >
+              새 글 작성
+            </RouterLink>
+          </div>
         </div>
 
         <div v-if="copy.posts.length > 0" class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -472,6 +617,17 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
             :key="post.id"
             class="group rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513]"
           >
+            <div
+              v-if="postThumbnailById[post.id]"
+              class="mb-3 overflow-hidden rounded-lg border border-[#2f2f2f] bg-[#161616]"
+            >
+              <img
+                :src="postThumbnailById[post.id]"
+                :alt="`${post.title} 썸네일`"
+                class="h-36 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
             <p class="font-mono text-[11px] text-zinc-500">{{ post.id }}</p>
             <h3 class="mt-2 line-clamp-2 text-sm font-semibold text-zinc-100">{{ post.title }}</h3>
             <p class="mt-1 line-clamp-2 text-xs text-zinc-400">{{ post.excerpt }}</p>

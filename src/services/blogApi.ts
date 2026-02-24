@@ -31,6 +31,10 @@ export type BlogPostCreateInput = {
 }
 
 export type BlogPostUpdateInput = Partial<Omit<BlogPostCreateInput, 'id'>>
+export type BlogPostCreateApiResult = {
+  status: number
+  post: BlogPostDetail | null
+}
 
 export type BlogMainPagePatchInput = Partial<
   Pick<
@@ -342,8 +346,20 @@ export const createBlogPost = async (
   input: BlogPostCreateInput,
   options: FetchBlogOptions = {},
 ): Promise<BlogPostDetail | null> => {
+  const result = await createBlogPostWithStatus(locale, input, options)
+  return result.post
+}
+
+export const createBlogPostWithStatus = async (
+  locale: Locale,
+  input: BlogPostCreateInput,
+  options: FetchBlogOptions = {},
+): Promise<BlogPostCreateApiResult> => {
   if (!isBlogApiEnabled()) {
-    return null
+    return {
+      status: 0,
+      post: null,
+    }
   }
 
   const response = await fetch(resolveBlogListApiUrl(locale), {
@@ -357,12 +373,18 @@ export const createBlogPost = async (
   })
 
   if (!response.ok) {
-    return null
+    return {
+      status: response.status,
+      post: null,
+    }
   }
 
   const payload = (await response.json()) as unknown
 
-  return normalizeBlogPostDetailPayload(payload)
+  return {
+    status: response.status,
+    post: normalizeBlogPostDetailPayload(payload),
+  }
 }
 
 export const updateBlogPost = async (

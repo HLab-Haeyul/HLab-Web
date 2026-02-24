@@ -3,7 +3,7 @@ import { blogPageCopyByLocale, type BlogPageCopySet, type BlogPost } from '@/dat
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import {
-  createBlogPost,
+  createBlogPostWithStatus,
   deleteBlogPost,
   fetchBlogPageCopy,
   type BlogMainPagePatchInput,
@@ -14,6 +14,11 @@ import {
 } from '@/services/blogApi'
 
 type BlogDataSource = 'api' | 'fallback'
+type CreatePostResult = {
+  ok: boolean
+  status: number | null
+  source: BlogDataSource
+}
 
 export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
   const copy = ref<BlogPageCopySet>(blogPageCopyByLocale[locale.value])
@@ -212,7 +217,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     return new Date().toISOString().slice(0, 10)
   }
 
-  const createPost = async (input: BlogPostCreateInput) => {
+  const createPostWithStatus = async (input: BlogPostCreateInput): Promise<CreatePostResult> => {
     isManagingPost.value = true
     errorMessage.value = null
 
@@ -232,15 +237,23 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
       )
       dataSource.value = 'fallback'
       isManagingPost.value = false
-      return true
+      return {
+        ok: true,
+        status: null,
+        source: 'fallback',
+      }
     }
 
     try {
-      const created = await createBlogPost(locale.value, input)
+      const { status, post: created } = await createBlogPostWithStatus(locale.value, input)
 
       if (!created) {
         errorMessage.value = getPostManageFailedMessage(locale.value)
-        return false
+        return {
+          ok: false,
+          status,
+          source: 'api',
+        }
       }
 
       upsertListPost(
@@ -255,17 +268,34 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
         }),
       )
       dataSource.value = 'api'
-      return true
+      return {
+        ok: true,
+        status,
+        source: 'api',
+      }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
-        return false
+        return {
+          ok: false,
+          status: null,
+          source: 'api',
+        }
       }
 
       errorMessage.value = getPostManageFailedMessage(locale.value)
-      return false
+      return {
+        ok: false,
+        status: null,
+        source: 'api',
+      }
     } finally {
       isManagingPost.value = false
     }
+  }
+
+  const createPost = async (input: BlogPostCreateInput) => {
+    const result = await createPostWithStatus(input)
+    return result.ok
   }
 
   const updatePost = async (id: string, input: BlogPostUpdateInput) => {
@@ -386,6 +416,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     reload,
     updateMainPageCopy,
     createPost,
+    createPostWithStatus,
     updatePost,
     removePost,
   }

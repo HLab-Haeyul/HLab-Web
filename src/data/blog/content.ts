@@ -78,6 +78,17 @@ const enPostSelfDev: BlogPageCopySet['posts'][number] = {
 
 const enSamplePosts: BlogPageCopySet['posts'] = [enPostDocker, enPostRetro, enPostSelfDev]
 
+const samplePostImageById: Record<string, string> = {
+  'docker-fastapi-ci-cd':
+    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1400&q=80',
+  'hlab-v1-retro':
+    'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1400&q=80',
+  'weekly-learning-system':
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80',
+}
+
+const getSamplePostImage = (id: string) => samplePostImageById[id] ?? ''
+
 export const blogPageCopyByLocale: Record<Locale, BlogPageCopySet> = {
   ko: {
     kicker: 'STUDY ARCHIVE',
@@ -168,6 +179,12 @@ export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDeta
       ...koPostDocker,
       heroTag: 'DEPLOYMENT',
       authorName: '김민재',
+      images: [
+        {
+          src: getSamplePostImage('docker-fastapi-ci-cd'),
+          alt: 'Docker와 배포 자동화를 상징하는 개발 환경 이미지',
+        },
+      ],
       markdown: `## 문제 상황
 
 개발 서버와 운영 서버의 배포 절차가 달라서, 장애가 날 때마다 확인 포인트가 많았습니다.
@@ -194,6 +211,12 @@ export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDeta
       ...koPostRetro,
       heroTag: 'RETROSPECTIVE',
       authorName: '김민재',
+      images: [
+        {
+          src: getSamplePostImage('hlab-v1-retro'),
+          alt: '프로젝트 회고를 상징하는 노트북 작업 화면',
+        },
+      ],
       markdown: `## 왜 빠르게 만들었는가
 
 초기에는 사용자 피드백을 빠르게 받는 것이 더 중요했습니다.
@@ -217,6 +240,12 @@ export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDeta
       ...koPostSelfDev,
       heroTag: 'SELF DEV',
       authorName: '김민재',
+      images: [
+        {
+          src: getSamplePostImage('weekly-learning-system'),
+          alt: '학습 루틴 기록을 상징하는 개발자 작업 환경 이미지',
+        },
+      ],
       markdown: `## 주간 루틴 구조
 
 - 월요일: 학습 목표 3개 설정
@@ -239,6 +268,12 @@ export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDeta
       ...enPostDocker,
       heroTag: 'DEPLOYMENT',
       authorName: 'Kim Minjae',
+      images: [
+        {
+          src: getSamplePostImage('docker-fastapi-ci-cd'),
+          alt: 'Development environment that represents Docker deployment automation',
+        },
+      ],
       markdown: `## Problem
 
 Deployment steps were different between development and production, which increased failure points.
@@ -265,6 +300,12 @@ Deployment steps were different between development and production, which increa
       ...enPostRetro,
       heroTag: 'RETROSPECTIVE',
       authorName: 'Kim Minjae',
+      images: [
+        {
+          src: getSamplePostImage('hlab-v1-retro'),
+          alt: 'Notebook workspace representing project retrospectives',
+        },
+      ],
       markdown: `## Why I moved fast
 
 At the early stage, getting feedback quickly was the top priority.
@@ -288,6 +329,12 @@ Fast experiments are great, but unbounded growth always returns as maintenance c
       ...enPostSelfDev,
       heroTag: 'SELF DEV',
       authorName: 'Kim Minjae',
+      images: [
+        {
+          src: getSamplePostImage('weekly-learning-system'),
+          alt: 'Focused desk setup representing a weekly learning system',
+        },
+      ],
       markdown: `## Weekly structure
 
 - Monday: set 3 learning targets
