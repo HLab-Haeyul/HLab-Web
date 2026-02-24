@@ -453,11 +453,14 @@ watch(
 )
 
 const openPostPath = (id: string) => `${adminBlogPath.value}/${id}`
+const openPostFromCard = async (id: string) => {
+  await router.push(openPostPath(id))
+}
 const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1220px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(245,158,11,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(59,130,246,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
@@ -542,8 +545,8 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
           :id="composerSectionId"
           :class="
             props.writeMode
-              ? 'mx-auto max-w-[1180px]'
-              : 'mx-auto max-w-[1180px] rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7'
+              ? 'w-full'
+              : 'w-full rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7'
           "
         >
           <p v-if="!props.writeMode && isEditComposerMode" class="mb-3 text-xs text-zinc-500">
@@ -626,7 +629,12 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
           <article
             v-for="post in copy.posts"
             :key="post.id"
-            class="group rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513]"
+            role="button"
+            tabindex="0"
+            class="group cursor-pointer rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513] focus:outline-none focus-visible:border-[#8f784d]"
+            @click="openPostFromCard(post.id)"
+            @keydown.enter.prevent="openPostFromCard(post.id)"
+            @keydown.space.prevent="openPostFromCard(post.id)"
           >
             <div
               v-if="postThumbnailById[post.id]"
@@ -649,17 +657,14 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
               <span class="text-zinc-500">{{ post.publishedAt }}</span>
             </div>
             <div class="mt-3 flex items-center justify-between gap-2">
-              <RouterLink
-                :to="openPostPath(post.id)"
-                class="text-xs text-amber-300 transition hover:text-amber-200"
-              >
+              <p class="text-xs text-amber-300">
                 댓글 관리 화면으로 이동
-              </RouterLink>
+              </p>
               <button
                 type="button"
                 class="rounded-md border border-[#5a2f2f] px-2.5 py-1 text-[11px] text-rose-300 transition hover:border-[#7e3d3d] hover:text-rose-200 disabled:opacity-50"
                 :disabled="isManagingPost"
-                @click="handleDeletePost({ id: post.id })"
+                @click.stop="handleDeletePost({ id: post.id })"
               >
                 글 삭제
               </button>
