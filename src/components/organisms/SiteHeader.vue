@@ -203,21 +203,21 @@ watch(
 </script>
 
 <template>
-  <div class="sticky top-3 z-30 mx-auto w-full max-w-[1220px] px-4 pt-5 sm:px-8 lg:px-12">
+  <div class="sticky top-3 z-30 mx-auto w-full max-w-[1480px] px-4 pt-5 sm:px-8 lg:px-12">
     <header
-      class="rounded-2xl border border-[#2a2a2a] bg-[#121212d6] px-3 py-2.5 backdrop-blur sm:px-4 sm:py-3"
+      class="rounded-2xl border border-[#2a2a2a] bg-[#121212d6] px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
     >
       <div class="flex items-center justify-between gap-3">
         <button
           type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-200"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-200"
           @click="toggleSidebar"
           aria-label="Open sidebar"
           :aria-expanded="isSidebarOpen"
           aria-controls="site-sidebar"
         >
           <svg
-            class="h-4 w-4"
+            class="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -233,21 +233,21 @@ watch(
         </button>
 
         <RouterLink
-          class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] text-zinc-100"
+          class="inline-flex items-center gap-2.5 text-sm font-bold tracking-[0.12em] text-zinc-100"
           :to="basePath"
         >
           <img
             :src="logoSrc"
             alt="HLab logo"
-            class="h-5 w-5 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-6 sm:w-6"
+            class="h-6 w-6 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-7 sm:w-7"
             loading="eager"
           />
           <span>KIMMINJAE</span>
         </RouterLink>
 
-        <div class="inline-flex rounded-full border border-[#2a2a2a] p-0.5">
+        <div class="inline-flex rounded-full border border-[#2a2a2a] p-1">
           <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+            class="min-w-10 rounded-full px-2.5 py-1.5 text-center text-xs tracking-[0.08em] transition"
             :class="
               locale === 'ko' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
             "
@@ -256,7 +256,7 @@ watch(
             KO
           </RouterLink>
           <RouterLink
-            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
+            class="min-w-10 rounded-full px-2.5 py-1.5 text-center text-xs tracking-[0.08em] transition"
             :class="
               locale === 'en' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
             "

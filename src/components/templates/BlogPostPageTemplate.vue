@@ -4,7 +4,7 @@ import { useBlogEngagement } from '@/composables/useBlogEngagement'
 import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
 import { getEstimatedViewCount } from '@/utils/blogViews'
-import { extractMarkdownHeadings, markdownToHtml } from '@/utils/markdown'
+import { markdownToHtml } from '@/utils/markdown'
 import BlogPostStatusBar from '@/components/molecules/BlogPostStatusBar.vue'
 import BlogTocPanel from '@/components/molecules/BlogTocPanel.vue'
 import BlogCommentSection from '@/components/organisms/BlogCommentSection.vue'
@@ -170,9 +170,7 @@ const isAdminCommentMode = computed(() => {
   return props.forceAdminCommentMode || envFlag === 'true' || queryValue === '1'
 })
 const renderedMarkdown = computed(() => (post.value ? markdownToHtml(post.value.markdown) : ''))
-const headingTocItems = computed(() =>
-  post.value ? extractMarkdownHeadings(post.value.markdown, [1, 2, 3]) : [],
-)
+const headingTocItems = ref<Array<{ id: string; text: string; level: 1 | 2 }>>([])
 const viewCount = computed(() => (post.value ? getEstimatedViewCount(post.value.id) : 0))
 
 const buildHeadingLink = (id: string) => ({
@@ -180,6 +178,84 @@ const buildHeadingLink = (id: string) => ({
   query: route.query,
   hash: `#${id}`,
 })
+
+const normalizeTocHeadingText = (value: string) => value.replace(/\s+/g, ' ').trim()
+
+const toTocHeadingBaseId = (value: string) => {
+  const normalized = normalizeTocHeadingText(value)
+
+  return (
+    normalized
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase()
+      .replace(/[^a-z0-9\u3131-\u318e\uac00-\ud7a3\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-') || 'section'
+  )
+}
+
+const collectHeadingTocItems = () => {
+  if (typeof window === 'undefined') {
+    headingTocItems.value = []
+    return
+  }
+
+  const contentRoot = document.getElementById('post-content')
+
+  if (!contentRoot) {
+    headingTocItems.value = []
+    return
+  }
+
+  const headingElements = Array.from(contentRoot.querySelectorAll('h1, h2'))
+  const usedIds = new Map<string, number>()
+  const registerUniqueId = (baseRaw: string) => {
+    const base = baseRaw.trim() || 'section'
+    const count = usedIds.get(base) ?? 0
+    usedIds.set(base, count + 1)
+
+    if (count === 0) {
+      return base
+    }
+
+    return `${base}-${count + 1}`
+  }
+
+  headingTocItems.value = headingElements.flatMap((headingElement) => {
+    if (!(headingElement instanceof HTMLElement)) {
+      return []
+    }
+
+    const text = normalizeTocHeadingText(headingElement.textContent ?? '')
+
+    if (!text) {
+      return []
+    }
+
+    const currentId = headingElement.id.trim()
+    let nextId = ''
+
+    if (currentId) {
+      nextId = registerUniqueId(currentId)
+    } else {
+      nextId = registerUniqueId(toTocHeadingBaseId(text))
+      headingElement.id = nextId
+    }
+
+    if (currentId && nextId !== currentId) {
+      headingElement.id = nextId
+    }
+
+    return [
+      {
+        id: nextId,
+        text,
+        level: headingElement.tagName.toLowerCase() === 'h1' ? 1 : 2,
+      } as const,
+    ]
+  })
+}
 
 const scrollToHashTarget = (hash: string, behavior: ScrollBehavior = 'smooth') => {
   if (typeof window === 'undefined') {
@@ -365,11 +441,13 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 watch(
   [() => route.hash, renderedMarkdown],
   ([nextHash], [prevHash]) => {
-    if (!nextHash) {
-      return
-    }
-
     void nextTick(() => {
+      collectHeadingTocItems()
+
+      if (!nextHash) {
+        return
+      }
+
       const isSameHash = nextHash === prevHash
       const moved = scrollToHashTarget(nextHash, isSameHash ? 'auto' : 'smooth')
 

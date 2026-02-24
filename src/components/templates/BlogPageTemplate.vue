@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BLOG_CATEGORY_KEYS, type BlogCategoryKey, type BlogPost } from '@/data/blog/content'
+import {
+  BLOG_CATEGORY_KEYS,
+  getFallbackBlogPostDetail,
+  type BlogCategoryKey,
+  type BlogPost,
+} from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
+import { fetchBlogPostDetail } from '@/services/blogApi'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { getEstimatedViewCount } from '@/utils/blogViews'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 
 const { locale } = useLocale()
 const route = useRoute()
 const router = useRouter()
-const { copy, dataSource, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
-  useBlogContent(locale)
+const { copy, isManagingPost, createPost, updatePost, removePost } = useBlogContent(locale)
 
 const normalizeTagInput = (value: string) =>
   value
@@ -78,18 +84,6 @@ const retrospectiveEmptyLabel = computed(() =>
     ? 'No retrospective post is linked to this project yet.'
     : '선택한 프로젝트에 연결된 회고 글이 아직 없습니다.',
 )
-const apiStatusLabel = computed(() =>
-  dataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'API Connected'
-      : 'API 연결됨'
-    : locale.value === 'en'
-      ? 'Fallback Data'
-      : 'Fallback 데이터',
-)
-const reloadLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
-const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-
 const isAdminPostMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
   const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
@@ -146,6 +140,7 @@ const adminCategoryOptions = computed(() =>
 const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
 const normalizeTagLabel = (value: string) => value.replace(/^#+/, '')
+const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
 
 const retrospectiveProjectOptions = computed(() => {
   const uniqueByKey = new Map<string, string>()
@@ -164,6 +159,110 @@ const retrospectiveProjectOptions = computed(() => {
 })
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
+const postThumbnailById = ref<Record<string, string>>({})
+let thumbnailLoadToken = 0
+
+const sanitizeImageUrl = (raw?: string | null) => {
+  if (typeof raw !== 'string') {
+    return null
+  }
+
+  const value = raw.trim()
+
+  if (!value) {
+    return null
+  }
+
+  if (value.startsWith('/')) {
+    return value
+  }
+
+  try {
+    const parsed = new URL(value)
+
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString()
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+const resolveFallbackThumbnail = (postId: string) => {
+  const detail = getFallbackBlogPostDetail(locale.value, postId)
+
+  if (!detail?.images || detail.images.length === 0) {
+    return null
+  }
+
+  for (const image of detail.images) {
+    const src = sanitizeImageUrl(image.src)
+
+    if (src) {
+      return src
+    }
+  }
+
+  return null
+}
+
+const loadPostThumbnails = async () => {
+  const requestToken = ++thumbnailLoadToken
+  const postIds = copy.value.posts.map((post) => post.id)
+  const nextThumbnailById: Record<string, string> = {}
+
+  postIds.forEach((postId) => {
+    const fallbackThumbnail = resolveFallbackThumbnail(postId)
+
+    if (fallbackThumbnail) {
+      nextThumbnailById[postId] = fallbackThumbnail
+    }
+  })
+
+  if (isBlogApiEnabled() && postIds.length > 0) {
+    const thumbnailResults = await Promise.all(
+      postIds.map(async (postId) => {
+        try {
+          const detail = await fetchBlogPostDetail(locale.value, postId)
+
+          if (!detail?.images || detail.images.length === 0) {
+            return [postId, null] as const
+          }
+
+          for (const image of detail.images) {
+            const src = sanitizeImageUrl(image.src)
+
+            if (src) {
+              return [postId, src] as const
+            }
+          }
+
+          return [postId, null] as const
+        } catch {
+          return [postId, null] as const
+        }
+      }),
+    )
+
+    if (requestToken !== thumbnailLoadToken) {
+      return
+    }
+
+    thumbnailResults.forEach(([postId, thumbnailSrc]) => {
+      if (thumbnailSrc) {
+        nextThumbnailById[postId] = thumbnailSrc
+      }
+    })
+  }
+
+  if (requestToken !== thumbnailLoadToken) {
+    return
+  }
+
+  postThumbnailById.value = nextThumbnailById
+}
 
 const selectedProjectIndex = ref<number | null>(null)
 const projectWorks = computed(() => worksByLocale[locale.value])
@@ -681,15 +780,23 @@ watch(
     })
   },
 )
+
+watch(
+  [() => locale.value, () => copy.value.posts.map((post) => post.id).join('|')],
+  () => {
+    void loadPostThumbnails()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <div class="mx-auto min-h-screen w-full max-w-[860px] px-4 pb-20 pt-10 sm:px-6">
+  <div class="mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
     <main class="space-y-8">
       <header class="space-y-2">
         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
-        <h1 class="text-3xl font-semibold leading-tight text-zinc-900">{{ copy.heading }}</h1>
-        <p class="text-sm leading-7 text-zinc-600">{{ copy.description }}</p>
+        <h1 class="text-3xl font-semibold leading-tight text-zinc-100">{{ copy.heading }}</h1>
+        <p class="max-w-[76ch] text-sm leading-7 text-zinc-400">{{ copy.description }}</p>
       </header>
 
       <BlogPostAdminPanel
@@ -728,8 +835,8 @@ watch(
         @delete="handleDeletePost"
       />
 
-      <section id="blog-categories" class="space-y-5">
-        <div class="flex flex-wrap gap-2 border-b border-zinc-200 pb-3">
+      <section id="blog-categories" class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
+        <div class="flex flex-wrap gap-2 border-b border-[#2a2a2a] pb-3">
           <button
             v-for="group in groupedPosts"
             :key="`category-${group.key}`"
@@ -737,8 +844,8 @@ watch(
             class="rounded-md px-3 py-1.5 text-sm font-medium transition"
             :class="
               selectedCategory === group.key
-                ? 'bg-zinc-900 text-white'
-                : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                ? 'border border-[#5f5544] bg-[#211b12] text-amber-200'
+                : 'border border-transparent text-zinc-400 hover:border-[#3a3731] hover:bg-[#171717] hover:text-zinc-100'
             "
             @click="selectCategory(group.key as BlogCategoryKey)"
           >
@@ -746,37 +853,27 @@ watch(
           </button>
         </div>
 
-        <section id="blog-search" class="space-y-2">
+        <section id="blog-search" class="mt-4 space-y-2">
           <label class="text-xs font-medium text-zinc-500" for="blog-search-input">{{ searchLabel }}</label>
           <input
             id="blog-search-input"
             v-model="searchQuery"
             type="search"
             :placeholder="searchPlaceholder"
-            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none"
+            class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
           />
-          <div class="flex items-center justify-between text-xs text-zinc-500">
-            <p>
-              {{ apiStatusLabel }}
-              <span v-if="isLoading"> · {{ loadingLabel }}</span>
-            </p>
-            <button type="button" class="underline underline-offset-2 hover:text-zinc-900" @click="reload">
-              {{ reloadLabel }}
-            </button>
-          </div>
-          <p v-if="errorMessage" class="text-xs text-amber-700">{{ errorMessage }}</p>
         </section>
 
         <section
           v-if="selectedGroup"
           :id="isSearchActive ? 'blog-search-results' : selectedGroup.anchor"
           :key="isSearchActive ? 'search-results' : `category-${selectedGroup.key}`"
-          class="space-y-4"
+          class="mt-4 space-y-4"
         >
           <div>
             <p class="text-xs font-medium text-zinc-500">{{ categoryLabel }}</p>
-            <h2 class="mt-1 text-2xl font-semibold text-zinc-900">{{ activeSectionTitle }}</h2>
-            <p class="mt-1 text-sm text-zinc-600">{{ activeSectionDescription }}</p>
+            <h2 class="mt-1 text-2xl font-semibold text-zinc-100">{{ activeSectionTitle }}</h2>
+            <p class="mt-1 text-sm text-zinc-400">{{ activeSectionDescription }}</p>
           </div>
 
           <div v-if="selectedGroup.key === 'retrospective' && !isSearchActive" class="space-y-2">
@@ -786,7 +883,7 @@ watch(
             <select
               id="retrospective-project-select"
               :value="selectedProjectIndex === null ? '' : String(selectedProjectIndex)"
-              class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 focus:border-[#5a5a5a] focus:outline-none"
               @change="handleProjectChange(($event.target as HTMLSelectElement).value)"
             >
               <option value="">{{ projectSelectorPlaceholder }}</option>
@@ -800,30 +897,61 @@ watch(
             </select>
           </div>
 
-          <ul v-if="canRenderPostList" class="divide-y divide-zinc-200">
-            <li v-for="post in filteredSelectedPosts" :key="`post-${post.id}`">
-              <RouterLink :to="buildPostPath(post.id)" class="block py-5">
-                <h3 class="text-xl font-semibold leading-snug text-zinc-900 transition hover:text-zinc-700">
-                  {{ post.title }}
-                </h3>
-                <p class="mt-2 text-sm leading-7 text-zinc-600">{{ post.excerpt }}</p>
-                <p class="mt-3 text-xs text-zinc-500">
-                  {{ post.publishedAt }} · {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
+          <div
+            v-if="canRenderPostList && filteredSelectedPosts.length > 0"
+            class="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]"
+          >
+            <article
+              v-for="post in filteredSelectedPosts"
+              :key="`post-${post.id}`"
+              class="group rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513]"
+            >
+              <RouterLink :to="buildPostPath(post.id)" class="block">
+                <div
+                  v-if="postThumbnailById[post.id]"
+                  class="mb-3 overflow-hidden rounded-lg border border-[#2f2f2f] bg-[#161616]"
+                >
+                  <img
+                    :src="postThumbnailById[post.id]"
+                    :alt="`${post.title} 썸네일`"
+                    class="h-36 w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                <h3 class="line-clamp-2 text-base font-semibold text-zinc-100">{{ post.title }}</h3>
+                <p class="mt-1 line-clamp-2 text-sm text-zinc-400">{{ post.excerpt }}</p>
+
+                <div class="mt-3 flex items-center justify-between gap-2 text-xs">
+                  <span class="rounded-full border border-[#343434] px-2 py-0.5 text-zinc-300">
+                    {{ categoryTitle(post.category) }}
+                  </span>
+                  <span class="text-zinc-500">{{ post.publishedAt }}</span>
+                </div>
+
+                <p class="mt-2 text-xs text-zinc-500">
+                  {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
                 </p>
+
                 <div class="mt-2 flex flex-wrap gap-2">
                   <span
                     v-for="tag in post.tags"
                     :key="`${post.id}-${tag}`"
-                    class="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] text-zinc-600"
+                    class="rounded-full border border-[#343434] bg-[#161616] px-2 py-0.5 text-[11px] text-zinc-300"
                   >
                     #{{ normalizeTagLabel(tag) }}
                   </span>
                 </div>
               </RouterLink>
-            </li>
-          </ul>
+            </article>
+          </div>
 
-          <p v-if="filteredSelectedPosts.length === 0" class="text-sm text-zinc-500">{{ emptyStateLabel }}</p>
+          <div
+            v-else
+            class="rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3 py-4 text-center text-sm text-zinc-500"
+          >
+            {{ emptyStateLabel }}
+          </div>
         </section>
       </section>
     </main>

@@ -183,7 +183,7 @@ watch(
 <template>
   <div
     class="relative isolate mx-auto w-full px-4 pt-5"
-    :class="isAppLayout ? 'max-w-[430px] pb-24 sm:px-4' : 'max-w-[1220px] pb-14 sm:px-8 lg:px-12'"
+    :class="isAppLayout ? 'max-w-[430px] pb-24 sm:px-4' : 'max-w-[1480px] pb-14 sm:px-8 lg:px-12'"
   >
     <div
       aria-hidden="true"
