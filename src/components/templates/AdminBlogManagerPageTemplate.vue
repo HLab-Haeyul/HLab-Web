@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { BLOG_CATEGORY_KEYS, getFallbackBlogPostDetail, type BlogCategoryKey } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
@@ -35,6 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { locale, basePath, adminPath, adminBlogPath, adminBlogWritePath } = useLocale()
 const route = useRoute()
+const router = useRouter()
 const { copy, isLoading, isManagingPost, errorMessage, reload, createPostWithStatus, updatePost, removePost } =
   useBlogContent(locale)
 
@@ -171,11 +172,21 @@ const handleCreatePost = async (draft: BlogPostAdminDraft) => {
 
   if (result.source === 'fallback' && result.ok) {
     window.alert('API가 비활성화되어 로컬 데이터에 임시 저장했습니다.')
+
+    if (props.writeMode) {
+      await router.push(adminBlogPath.value)
+    }
+
     return
   }
 
   if (result.ok && result.status === 200) {
     window.alert('게시글 작성이 성공했습니다. (200)')
+
+    if (props.writeMode) {
+      await router.push(adminBlogPath.value)
+    }
+
     return
   }
 
@@ -567,7 +578,7 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
             author-label="작성자"
             markdown-label="마크다운 본문"
             markdown-placeholder="마크다운 본문을 입력하세요..."
-            create-label="게시글 작성"
+            create-label="작성 완료"
             update-label="게시글 수정"
             delete-label="게시글 삭제"
             reset-label="초기화"

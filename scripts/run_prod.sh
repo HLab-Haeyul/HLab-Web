@@ -48,7 +48,7 @@ title() {
 title "HLab-Web Production Deploy"
 
 step "프로덕션 빌드 중..."
-docker compose -f ./docker/docker-compose.prod.yml build
+docker-compose -f ./docker/docker-compose.prod.yml build
 if [ $? -eq 0 ]; then
   success "빌드 성공"
 else
@@ -60,7 +60,7 @@ step "서버 시작..."
 
 if [ -n "$(docker ps -q --filter 'name=hlab-web-prod')" ]; then
   warn "프로덕션 서버가 이미 실행 중입니다. 기존 컨테이너를 종료 중..."
-  docker compose -f ./docker/docker-compose.prod.yml down
+  docker-compose -f ./docker/docker-compose.prod.yml down
   sleep 2
   success "기존 컨테이너 종료 완료"
 fi
@@ -83,7 +83,7 @@ if lsof -i :3000 > /dev/null 2>&1; then
   success "기존 프로세스 종료 완료"
 fi
 
-docker compose -f ./docker/docker-compose.prod.yml up -d
+docker-compose -f ./docker/docker-compose.prod.yml up -d
 if [ $? -ne 0 ]; then
   error "서버 시작 실패"
   exit 1

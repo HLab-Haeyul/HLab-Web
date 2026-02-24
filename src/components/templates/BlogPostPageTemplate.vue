@@ -387,7 +387,7 @@ watch(
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1240px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
@@ -426,7 +426,7 @@ watch(
         {{ engagementError }}
       </p>
 
-      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start xl:gap-7">
+      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start xl:gap-10">
         <article
           id="post-overview"
           class="rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
@@ -491,7 +491,10 @@ watch(
           />
         </article>
 
-        <aside v-if="headingTocItems.length > 0" class="hidden xl:block xl:sticky xl:top-24">
+        <aside
+          v-if="headingTocItems.length > 0"
+          class="hidden xl:block xl:sticky xl:top-24 xl:translate-x-6"
+        >
           <BlogTocPanel
             :toc-heading-label="tocHeadingLabel"
             :items="headingTocItems"
