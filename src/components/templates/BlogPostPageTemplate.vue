@@ -559,6 +559,15 @@ watch(
   text-underline-offset: 2px;
 }
 
+.markdown-body :deep(img) {
+  display: block;
+  margin: 0.4rem 0 1.3rem;
+  border: 1px solid #303037;
+  border-radius: 0.8rem;
+  max-width: 100%;
+  height: auto;
+}
+
 .markdown-body :deep(code) {
   border: 1px solid #3f3f46;
   border-radius: 0.35rem;
