@@ -160,6 +160,10 @@ const sanitizeUrl = (raw: string) => {
     return null
   }
 
+  if (value.startsWith('data:image/')) {
+    return value
+  }
+
   if (value.startsWith('/')) {
     return value
   }
@@ -167,7 +171,12 @@ const sanitizeUrl = (raw: string) => {
   try {
     const parsed = new URL(value)
 
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:') {
+    if (
+      parsed.protocol === 'http:' ||
+      parsed.protocol === 'https:' ||
+      parsed.protocol === 'mailto:' ||
+      parsed.protocol === 'blob:'
+    ) {
       return parsed.toString()
     }
   } catch {
