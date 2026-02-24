@@ -1,26 +1,18 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { BLOG_CATEGORY_KEYS, type BlogCategoryKey, type BlogPost } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
 import { getEstimatedViewCount } from '@/utils/blogViews'
-import BlogCategoryTabs from '@/components/molecules/BlogCategoryTabs.vue'
-import BlogPostPreviewCard from '@/components/molecules/BlogPostPreviewCard.vue'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
-import BlogPopularCarousel from '@/components/organisms/BlogPopularCarousel.vue'
-import BlogRetrospectiveSelector from '@/components/organisms/BlogRetrospectiveSelector.vue'
-import BlogSearchSyncPanel from '@/components/organisms/BlogSearchSyncPanel.vue'
-
-const AUTO_PLAY_MS = 4500
 
 const { locale } = useLocale()
 const route = useRoute()
 const router = useRouter()
 const { copy, dataSource, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
   useBlogContent(locale)
-const activePopularIndex = ref(0)
 
 const normalizeTagInput = (value: string) =>
   value
@@ -49,8 +41,9 @@ const parseTagQuery = (value: unknown) => {
 
   return normalizeTagInput(trimmed)
 }
+
 const searchQuery = ref(parseTagQuery(route.query.tag))
-const authorName = computed(() => (locale.value === 'en' ? 'Kim Minjae' : '김민재'))
+
 const categoryLabel = computed(() => (locale.value === 'en' ? 'Category' : '카테고리'))
 const searchLabel = computed(() => (locale.value === 'en' ? 'Search posts' : '글 검색'))
 const searchPlaceholder = computed(() =>
@@ -71,19 +64,14 @@ const searchResultDescription = computed(() =>
     : '기술, 프로젝트 회고, 자기 개발 전체에서 검색 결과를 보여줍니다.',
 )
 const viewLabel = computed(() => (locale.value === 'en' ? 'Views' : '조회수'))
-const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'My Projects' : '내 프로젝트'))
-const projectSelectorHint = computed(() =>
-  locale.value === 'en'
-    ? 'Choose a project to view related retrospectives below.'
-    : '프로젝트를 선택하면 아래에 관련 회고 글이 표시됩니다.',
-)
-const retrospectiveHeadingLabel = computed(() =>
-  locale.value === 'en' ? 'Project Retrospectives' : '프로젝트 회고 글',
+const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'Project' : '프로젝트'))
+const projectSelectorPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Select project' : '프로젝트 선택',
 )
 const retrospectiveUnselectedLabel = computed(() =>
   locale.value === 'en'
-    ? 'Select a project above to see its retrospectives.'
-    : '위에서 프로젝트를 선택하면 회고 글을 볼 수 있습니다.',
+    ? 'Select a project to see related retrospectives.'
+    : '프로젝트를 선택하면 관련 회고 글이 표시됩니다.',
 )
 const retrospectiveEmptyLabel = computed(() =>
   locale.value === 'en'
@@ -101,15 +89,14 @@ const apiStatusLabel = computed(() =>
 )
 const reloadLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
 const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-const popularEmptyLabel = computed(() =>
-  locale.value === 'en' ? 'No popular posts yet.' : '아직 인기 글이 없습니다.',
-)
+
 const isAdminPostMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
   const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
 
   return envFlag === 'true' || queryValue === '1'
 })
+
 const adminPanelTitle = computed(() =>
   locale.value === 'en' ? 'Blog Post Manager' : '블로그 게시글 관리자',
 )
@@ -146,6 +133,7 @@ const adminCreateLabel = computed(() => (locale.value === 'en' ? 'Create Post' :
 const adminUpdateLabel = computed(() => (locale.value === 'en' ? 'Update Post' : '게시글 수정'))
 const adminDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete Post' : '게시글 삭제'))
 const adminResetLabel = computed(() => (locale.value === 'en' ? 'Reset' : '초기화'))
+
 const buildPostPath = (id: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
 
 const adminCategoryOptions = computed(() =>
@@ -157,6 +145,7 @@ const adminCategoryOptions = computed(() =>
 
 const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
+const normalizeTagLabel = (value: string) => value.replace(/^#+/, '')
 
 const retrospectiveProjectOptions = computed(() => {
   const uniqueByKey = new Map<string, string>()
@@ -173,36 +162,6 @@ const retrospectiveProjectOptions = computed(() => {
 
   return [...uniqueByKey.entries()].map(([key, label]) => ({ key, label }))
 })
-
-const coverPaletteByCategory: Record<BlogCategoryKey, string[]> = {
-  tech: [
-    'linear-gradient(140deg, rgba(56,56,56,0.95) 0%, rgba(24,24,24,0.94) 58%, rgba(10,10,10,0.95) 100%)',
-    'linear-gradient(135deg, rgba(62,62,62,0.95) 0%, rgba(26,26,26,0.94) 53%, rgba(12,12,12,0.95) 100%)',
-  ],
-  retrospective: [
-    'linear-gradient(132deg, rgba(67,67,67,0.95) 0%, rgba(30,30,30,0.94) 56%, rgba(12,12,12,0.95) 100%)',
-    'linear-gradient(146deg, rgba(58,58,58,0.95) 0%, rgba(26,26,26,0.94) 52%, rgba(11,11,11,0.95) 100%)',
-  ],
-  selfDev: [
-    'linear-gradient(128deg, rgba(60,60,60,0.95) 0%, rgba(28,28,28,0.94) 50%, rgba(11,11,11,0.95) 100%)',
-    'linear-gradient(140deg, rgba(52,52,52,0.95) 0%, rgba(24,24,24,0.94) 55%, rgba(10,10,10,0.95) 100%)',
-  ],
-}
-
-const getCoverBackground = (category: BlogCategoryKey, index: number) => {
-  const palette = coverPaletteByCategory[category]
-
-  return palette[index % palette.length] ?? palette[0] ?? '#1a1a1a'
-}
-
-const getEngagement = (id: string) => {
-  void id
-
-  return {
-  likes: 0,
-  comments: 0,
-  }
-}
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
 
@@ -254,6 +213,7 @@ const groupedPosts = computed(() =>
     posts: copy.value.posts.filter((post) => post.category === categoryKey),
   })),
 )
+
 const defaultCategory: BlogCategoryKey = BLOG_CATEGORY_KEYS[0] ?? 'tech'
 
 const parseCategoryQuery = (value: unknown): BlogCategoryKey | null => {
@@ -300,6 +260,21 @@ const selectCategory = (category: BlogCategoryKey) => {
 
 const selectProjectWork = (index: number) => {
   selectedProjectIndex.value = index
+}
+
+const handleProjectChange = (value: string) => {
+  if (!value) {
+    selectedProjectIndex.value = null
+    return
+  }
+
+  const index = Number(value)
+
+  if (Number.isNaN(index)) {
+    return
+  }
+
+  selectProjectWork(index)
 }
 
 const selectedGroup = computed(
@@ -369,8 +344,6 @@ const filterPostsBySearchTerms = (posts: BlogPost[], terms: { keywords: string[]
   })
 }
 
-const getCategoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
-
 const filteredSelectedPosts = computed(() => {
   const group = selectedGroup.value
 
@@ -397,6 +370,10 @@ const filteredSelectedPosts = computed(() => {
 
   return searchedPosts.filter((post) => isRetrospectiveLinkedToProject(post, project.title))
 })
+
+const canRenderPostList = computed(
+  () => isSearchActive.value || selectedGroup.value?.key !== 'retrospective' || Boolean(selectedProject.value),
+)
 
 const emptyStateLabel = computed(() => {
   if (isSearchActive.value) {
@@ -619,64 +596,6 @@ const handleDeletePost = async ({ id }: { id: string }) => {
   await removePost(targetId)
 }
 
-let autoPlayTimer: ReturnType<typeof window.setInterval> | undefined
-
-const nextPopular = () => {
-  const count = copy.value.popularPosts.length
-
-  if (count === 0) {
-    return
-  }
-
-  activePopularIndex.value = (activePopularIndex.value + 1) % count
-}
-
-const prevPopular = () => {
-  const count = copy.value.popularPosts.length
-
-  if (count === 0) {
-    return
-  }
-
-  activePopularIndex.value = (activePopularIndex.value - 1 + count) % count
-}
-
-const clearAutoPlay = () => {
-  if (autoPlayTimer) {
-    window.clearInterval(autoPlayTimer)
-    autoPlayTimer = undefined
-  }
-}
-
-const startAutoPlay = () => {
-  clearAutoPlay()
-
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  if (reducedMotion || copy.value.popularPosts.length < 2) {
-    return
-  }
-
-  autoPlayTimer = window.setInterval(() => {
-    nextPopular()
-  }, AUTO_PLAY_MS)
-}
-
-const moveToPopular = (index: number) => {
-  activePopularIndex.value = index
-  startAutoPlay()
-}
-
-const handleNext = () => {
-  nextPopular()
-  startAutoPlay()
-}
-
-const handlePrev = () => {
-  prevPopular()
-  startAutoPlay()
-}
-
 const scrollToSearchBox = () => {
   if (typeof window === 'undefined') {
     return
@@ -694,21 +613,11 @@ const scrollToSearchBox = () => {
   })
 }
 
-onMounted(() => {
-  startAutoPlay()
-})
-
-onBeforeUnmount(() => {
-  clearAutoPlay()
-})
-
 watch(
   () => locale.value,
   () => {
-    activePopularIndex.value = 0
     searchQuery.value = ''
     selectedProjectIndex.value = null
-    startAutoPlay()
   },
 )
 
@@ -772,45 +681,16 @@ watch(
     })
   },
 )
-
-watch(
-  () => copy.value.popularPosts.length,
-  (count) => {
-    if (count === 0) {
-      activePopularIndex.value = 0
-      return
-    }
-
-    if (activePopularIndex.value > count - 1) {
-      activePopularIndex.value = 0
-    }
-  },
-)
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1220px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
-    <div
-      aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
-    ></div>
-
+  <div class="mx-auto min-h-screen w-full max-w-[860px] px-4 pb-20 pt-10 sm:px-6">
     <main class="space-y-8">
-      <BlogPopularCarousel
-        :popular-kicker="copy.popularKicker"
-        :popular-heading="copy.popularHeading"
-        :popular-description="copy.popularDescription"
-        :empty-label="popularEmptyLabel"
-        :posts="copy.popularPosts"
-        :active-index="activePopularIndex"
-        :read-label="copy.readLabel"
-        :view-label="viewLabel"
-        :build-post-path="buildPostPath"
-        :resolve-view-count="getViewCount"
-        @prev="handlePrev"
-        @next="handleNext"
-        @move="moveToPopular"
-      />
+      <header class="space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
+        <h1 class="text-3xl font-semibold leading-tight text-zinc-900">{{ copy.heading }}</h1>
+        <p class="text-sm leading-7 text-zinc-600">{{ copy.description }}</p>
+      </header>
 
       <BlogPostAdminPanel
         v-if="isAdminPostMode"
@@ -848,71 +728,103 @@ watch(
         @delete="handleDeletePost"
       />
 
-      <section id="blog-categories" class="space-y-4">
-        <BlogCategoryTabs
-          :groups="groupedPosts"
-          :selected-category="selectedCategory"
-          @select="selectCategory($event as BlogCategoryKey)"
-        />
-
-        <div>
-          <BlogSearchSyncPanel
-            v-model="searchQuery"
-            :search-label="searchLabel"
-            :search-placeholder="searchPlaceholder"
-            :api-status-label="apiStatusLabel"
-            :is-loading="isLoading"
-            :loading-label="loadingLabel"
-            :reload-label="reloadLabel"
-            :error-message="errorMessage"
-            @reload="reload"
-          />
+      <section id="blog-categories" class="space-y-5">
+        <div class="flex flex-wrap gap-2 border-b border-zinc-200 pb-3">
+          <button
+            v-for="group in groupedPosts"
+            :key="`category-${group.key}`"
+            type="button"
+            class="rounded-md px-3 py-1.5 text-sm font-medium transition"
+            :class="
+              selectedCategory === group.key
+                ? 'bg-zinc-900 text-white'
+                : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+            "
+            @click="selectCategory(group.key as BlogCategoryKey)"
+          >
+            {{ group.title }}
+          </button>
         </div>
 
-        <article
+        <section id="blog-search" class="space-y-2">
+          <label class="text-xs font-medium text-zinc-500" for="blog-search-input">{{ searchLabel }}</label>
+          <input
+            id="blog-search-input"
+            v-model="searchQuery"
+            type="search"
+            :placeholder="searchPlaceholder"
+            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none"
+          />
+          <div class="flex items-center justify-between text-xs text-zinc-500">
+            <p>
+              {{ apiStatusLabel }}
+              <span v-if="isLoading"> · {{ loadingLabel }}</span>
+            </p>
+            <button type="button" class="underline underline-offset-2 hover:text-zinc-900" @click="reload">
+              {{ reloadLabel }}
+            </button>
+          </div>
+          <p v-if="errorMessage" class="text-xs text-amber-700">{{ errorMessage }}</p>
+        </section>
+
+        <section
           v-if="selectedGroup"
           :id="isSearchActive ? 'blog-search-results' : selectedGroup.anchor"
           :key="isSearchActive ? 'search-results' : `category-${selectedGroup.key}`"
-          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#101010cc] p-4 sm:p-6"
+          class="space-y-4"
         >
-          <p class="text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ categoryLabel }}</p>
-          <h2 class="mt-2 text-xl font-semibold text-zinc-100 sm:text-2xl">{{ activeSectionTitle }}</h2>
-          <p class="mt-2 text-sm text-zinc-400">{{ activeSectionDescription }}</p>
-
-          <BlogRetrospectiveSelector
-            v-if="selectedGroup.key === 'retrospective' && !isSearchActive"
-            :project-selector-label="projectSelectorLabel"
-            :project-selector-hint="projectSelectorHint"
-            :retrospective-heading-label="retrospectiveHeadingLabel"
-            :works="projectWorks"
-            :selected-project-index="selectedProjectIndex"
-            :selected-project-title="selectedProject?.title ?? ''"
-            @select="selectProjectWork"
-          />
-
-          <div
-            v-if="isSearchActive || selectedGroup.key !== 'retrospective' || selectedProject"
-            class="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 xl:grid-cols-3"
-          >
-            <BlogPostPreviewCard
-              v-for="(post, postIndex) in filteredSelectedPosts"
-              :key="`post-${post.id}`"
-              :post="post"
-              :group-title="isSearchActive ? getCategoryTitle(post.category) : selectedGroup.title"
-              :read-label="copy.readLabel"
-              :author-name="authorName"
-              :to="buildPostPath(post.id)"
-              :cover-background="getCoverBackground(post.category, postIndex)"
-              :view-label="viewLabel"
-              :view-count="getViewCount(post.id)"
-              :engagement="getEngagement(post.id)"
-            />
+          <div>
+            <p class="text-xs font-medium text-zinc-500">{{ categoryLabel }}</p>
+            <h2 class="mt-1 text-2xl font-semibold text-zinc-900">{{ activeSectionTitle }}</h2>
+            <p class="mt-1 text-sm text-zinc-600">{{ activeSectionDescription }}</p>
           </div>
 
-          <p v-if="filteredSelectedPosts.length === 0" class="mt-5 text-sm text-zinc-400">
-            {{ emptyStateLabel }}
-          </p>
-        </article>
+          <div v-if="selectedGroup.key === 'retrospective' && !isSearchActive" class="space-y-2">
+            <label class="text-xs font-medium text-zinc-500" for="retrospective-project-select">
+              {{ projectSelectorLabel }}
+            </label>
+            <select
+              id="retrospective-project-select"
+              :value="selectedProjectIndex === null ? '' : String(selectedProjectIndex)"
+              class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              @change="handleProjectChange(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="">{{ projectSelectorPlaceholder }}</option>
+              <option
+                v-for="(work, workIndex) in projectWorks"
+                :key="`retrospective-work-${work.title}`"
+                :value="String(workIndex)"
+              >
+                {{ work.title }}
+              </option>
+            </select>
+          </div>
+
+          <ul v-if="canRenderPostList" class="divide-y divide-zinc-200">
+            <li v-for="post in filteredSelectedPosts" :key="`post-${post.id}`">
+              <RouterLink :to="buildPostPath(post.id)" class="block py-5">
+                <h3 class="text-xl font-semibold leading-snug text-zinc-900 transition hover:text-zinc-700">
+                  {{ post.title }}
+                </h3>
+                <p class="mt-2 text-sm leading-7 text-zinc-600">{{ post.excerpt }}</p>
+                <p class="mt-3 text-xs text-zinc-500">
+                  {{ post.publishedAt }} · {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
+                </p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span
+                    v-for="tag in post.tags"
+                    :key="`${post.id}-${tag}`"
+                    class="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] text-zinc-600"
+                  >
+                    #{{ normalizeTagLabel(tag) }}
+                  </span>
+                </div>
+              </RouterLink>
+            </li>
+          </ul>
+
+          <p v-if="filteredSelectedPosts.length === 0" class="text-sm text-zinc-500">{{ emptyStateLabel }}</p>
+        </section>
       </section>
     </main>
   </div>

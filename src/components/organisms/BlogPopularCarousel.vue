@@ -28,17 +28,17 @@ const emit = defineEmits<{
 <template>
   <section
     id="popular"
-    class="rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-2.5 shadow-[0_20px_52px_rgba(0,0,0,0.38)] sm:p-3.5"
+    class="rounded-[1.4rem] border border-[#e8eef2] bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-4"
   >
     <div class="mb-4 px-1">
-      <p class="text-xs uppercase tracking-[0.11em] text-zinc-500">{{ props.popularKicker }}</p>
-      <h2 class="mt-2 text-xl font-semibold text-zinc-100 sm:text-2xl">{{ props.popularHeading }}</h2>
-      <p class="mt-2 text-sm text-zinc-400">{{ props.popularDescription }}</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.11em] text-[#12b886]">{{ props.popularKicker }}</p>
+      <h2 class="mt-2 text-xl font-semibold text-[#212529] sm:text-2xl">{{ props.popularHeading }}</h2>
+      <p class="mt-2 text-sm text-[#495057]">{{ props.popularDescription }}</p>
     </div>
 
     <div
       v-if="props.posts.length > 0"
-      class="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]"
+      class="overflow-hidden rounded-2xl border border-[#e9ecef] bg-[#f8fafb]"
     >
       <div
         class="flex transition-transform duration-500 ease-out"
@@ -52,25 +52,25 @@ const emit = defineEmits<{
           <RouterLink
             :to="props.buildPostPath(post.id)"
             :aria-label="`${post.title} ${props.readLabel}`"
-            class="block rounded-2xl border border-[#343434] p-4 transition hover:border-[#5f5f5f] sm:p-5"
+            class="block rounded-2xl border border-[#e5eaee] p-4 transition hover:border-[#12b886] hover:shadow-[0_12px_24px_rgba(15,23,42,0.1)] sm:p-5"
             :style="{ background: post.bannerBackground }"
           >
-            <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-400">{{ post.heroTag }}</p>
-            <h3 class="mt-2.5 text-[clamp(1.1rem,2.7vw,1.7rem)] leading-snug text-zinc-100">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#e9fff8]">{{ post.heroTag }}</p>
+            <h3 class="mt-2.5 text-[clamp(1.1rem,2.7vw,1.7rem)] font-semibold leading-snug text-white">
               {{ post.title }}
             </h3>
-            <p class="mt-2 text-sm text-zinc-300 sm:text-base">{{ post.highlight }}</p>
-            <p class="mt-4 text-sm text-zinc-400">{{ post.excerpt }}</p>
+            <p class="mt-2 text-sm text-[#ecfdf5] sm:text-base">{{ post.highlight }}</p>
+            <p class="mt-4 text-sm text-[#d9f7ec]">{{ post.excerpt }}</p>
             <div class="mt-5 flex flex-wrap gap-2">
               <span
                 v-for="tag in post.tags"
                 :key="`${post.id}-${tag}`"
-                class="rounded-full border border-[#3d3d3d] bg-[#12121290] px-2.5 py-1 text-[11px] text-zinc-300"
+                class="rounded-full border border-[#ffffff80] bg-[#ffffff30] px-2.5 py-1 text-[11px] text-white"
               >
                 {{ tag }}
               </span>
             </div>
-            <p class="mt-5 text-xs tracking-[0.06em] text-zinc-400">
+            <p class="mt-5 text-xs tracking-[0.06em] text-[#def7ef]">
               {{ post.publishedAt }} · {{ post.readTime }} · {{ props.viewLabel }} {{ formatViewCount(props.resolveViewCount(post.id)) }}
             </p>
           </RouterLink>
@@ -80,7 +80,7 @@ const emit = defineEmits<{
 
     <p
       v-else
-      class="rounded-2xl border border-dashed border-[#2f2f2f] bg-[#121212] px-4 py-8 text-center text-sm text-zinc-400"
+      class="rounded-2xl border border-dashed border-[#cfd8de] bg-[#f8fafb] px-4 py-8 text-center text-sm text-[#868e96]"
     >
       {{ props.emptyLabel }}
     </p>
@@ -89,7 +89,7 @@ const emit = defineEmits<{
       <div class="inline-flex items-center gap-2">
         <button
           type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2f2f2f] text-zinc-200 transition hover:border-[#5a5a5a] hover:text-white"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#d9e2e7] bg-white text-[#495057] transition hover:border-[#12b886] hover:text-[#087f5b]"
           aria-label="Previous popular post"
           @click="emit('prev')"
         >
@@ -99,7 +99,7 @@ const emit = defineEmits<{
         </button>
         <button
           type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2f2f2f] text-zinc-200 transition hover:border-[#5a5a5a] hover:text-white"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#d9e2e7] bg-white text-[#495057] transition hover:border-[#12b886] hover:text-[#087f5b]"
           aria-label="Next popular post"
           @click="emit('next')"
         >
@@ -115,7 +115,7 @@ const emit = defineEmits<{
           :key="`popular-dot-${post.id}`"
           type="button"
           class="h-2.5 rounded-full transition"
-          :class="index === props.activeIndex ? 'w-6 bg-zinc-100' : 'w-2.5 bg-zinc-600 hover:bg-zinc-400'"
+          :class="index === props.activeIndex ? 'w-6 bg-[#12b886]' : 'w-2.5 bg-[#c5d1d8] hover:bg-[#96a4ad]'"
           :aria-label="`Go to popular post ${index + 1}`"
           @click="emit('move', index)"
         ></button>

@@ -20,6 +20,9 @@ export const useLocale = () => {
   const blogPath = computed(() => `${basePath.value}/blog`)
   const adminPath = computed(() => adminPrefix.value)
   const adminBlogPath = computed(() => `${adminPrefix.value}/blog`)
+  const adminBlogWritePath = computed(() => `${adminPrefix.value}/blog/write`)
+  const adminProjectPath = computed(() => `${adminPrefix.value}/projects`)
+  const adminPortfolioPath = computed(() => `${adminPrefix.value}/portfolio`)
   const adminSubPath = computed(() => {
     if (!isAdminPage.value) {
       return null
@@ -108,6 +111,9 @@ export const useLocale = () => {
     blogPath,
     adminPath,
     adminBlogPath,
+    adminBlogWritePath,
+    adminProjectPath,
+    adminPortfolioPath,
     blogId,
     koPath,
     enPath,

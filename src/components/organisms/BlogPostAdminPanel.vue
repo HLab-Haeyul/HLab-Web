@@ -59,7 +59,9 @@ type Props = {
   showReadTimeField?: boolean
   showPublishedAtField?: boolean
   showRetrospectiveProjectField?: boolean
+  showCreateButton?: boolean
   showUpdateButton?: boolean
+  showDeleteButton?: boolean
   showHeroTagField?: boolean
 }
 
@@ -70,7 +72,9 @@ const props = withDefaults(defineProps<Props>(), {
   showReadTimeField: true,
   showPublishedAtField: true,
   showRetrospectiveProjectField: true,
+  showCreateButton: true,
   showUpdateButton: true,
+  showDeleteButton: true,
   showHeroTagField: true,
   retrospectiveProjectLabel: '연결 프로젝트',
   retrospectiveProjectPlaceholder: '프로젝트 선택',
@@ -247,11 +251,11 @@ const applySeedDraft = (seed: BlogPostAdminDraft | null | undefined) => {
 }
 
 watch(
-  () => props.seedKey,
+  [() => props.seedKey, () => props.seedDraft],
   () => {
     applySeedDraft(props.seedDraft)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 watch(category, (nextCategory) => {
@@ -478,6 +482,7 @@ const handleDelete = () => {
 
     <div class="mt-4 flex flex-wrap justify-end gap-2">
       <button
+        v-if="props.showCreateButton"
         type="button"
         class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
         :disabled="props.isSubmitting"
@@ -495,6 +500,7 @@ const handleDelete = () => {
         {{ props.updateLabel }}
       </button>
       <button
+        v-if="props.showDeleteButton"
         type="button"
         class="rounded-lg border border-[#5a2f2f] px-3 py-1.5 text-xs text-rose-300 transition hover:border-[#7e3d3d] hover:text-rose-200 disabled:opacity-50"
         :disabled="props.isSubmitting"

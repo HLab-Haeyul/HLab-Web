@@ -4,8 +4,10 @@ import { useRoute } from 'vue-router'
 import { BLOG_CATEGORY_KEYS, type BlogCategoryKey } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
+import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
+import AdminSidebarNav from '@/components/organisms/AdminSidebarNav.vue'
 
 type BlogPostAdminDraft = {
   id: string
@@ -21,16 +23,28 @@ type BlogPostAdminDraft = {
   markdown: string
 }
 
-const { locale, basePath, adminPath, adminBlogPath } = useLocale()
+type Props = {
+  writeMode?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  writeMode: false,
+})
+
+const { locale, basePath, adminPath, adminBlogPath, adminBlogWritePath } = useLocale()
 const route = useRoute()
 const { copy, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
   useBlogContent(locale)
 
 const panelDescription = computed(() =>
-  isLoading.value
-    ? '게시글 목록을 동기화하는 중입니다.'
-    : '관리자 경로(/admin/blog)에서 게시글 작성, 수정, 삭제를 수행합니다.',
+  props.writeMode
+    ? '새 게시글을 작성하는 전용 페이지입니다.'
+    : isLoading.value
+      ? '게시글 목록을 동기화하는 중입니다.'
+      : '관리자 경로(/admin/blog)에서 게시글 작성, 수정, 삭제를 수행합니다.',
 )
+
+const pageHeading = computed(() => (props.writeMode ? '블로그 글 작성' : '블로그 글 관리'))
 
 const adminCategoryOptions = computed(() =>
   BLOG_CATEGORY_KEYS.map((key) => ({
@@ -222,6 +236,13 @@ const editQueryId = computed(() => {
   return trimmed.length > 0 ? trimmed : null
 })
 
+const editTargetPostId = computed(() => editQueryId.value ?? '')
+const {
+  post: editTargetPostDetail,
+  isLoading: isEditTargetPostLoading,
+  errorMessage: editTargetPostErrorMessage,
+} = useBlogPostContent(locale, editTargetPostId)
+
 const editTargetPost = computed(() => {
   if (!editQueryId.value) {
     return null
@@ -257,7 +278,10 @@ const composerSeedDraft = computed<BlogPostAdminDraft>(() => {
     return emptyDraft()
   }
 
-  if (!editTargetPost.value) {
+  const detail = editTargetPostDetail.value
+  const listPost = editTargetPost.value
+
+  if (!detail && !listPost) {
     return {
       ...emptyDraft(),
       id: editQueryId.value ?? '',
@@ -265,22 +289,24 @@ const composerSeedDraft = computed<BlogPostAdminDraft>(() => {
   }
 
   return {
-    id: editTargetPost.value.id,
-    title: editTargetPost.value.title,
-    excerpt: editTargetPost.value.excerpt,
-    category: editTargetPost.value.category,
-    tags: normalizeTagInput(editTargetPost.value.tags),
-    retrospectiveProjectKey: resolveRetrospectiveProjectKey(editTargetPost.value.tags),
-    publishedAt: editTargetPost.value.publishedAt,
-    readTime: editTargetPost.value.readTime,
-    heroTag: '',
-    authorName: '',
-    markdown: '',
+    id: detail?.id ?? listPost?.id ?? editQueryId.value ?? '',
+    title: detail?.title ?? listPost?.title ?? '',
+    excerpt: detail?.excerpt ?? listPost?.excerpt ?? '',
+    category: detail?.category ?? listPost?.category ?? ((BLOG_CATEGORY_KEYS[0] ?? 'tech') as BlogCategoryKey),
+    tags: normalizeTagInput(detail?.tags ?? listPost?.tags ?? []),
+    retrospectiveProjectKey: resolveRetrospectiveProjectKey(detail?.tags ?? listPost?.tags ?? []),
+    publishedAt: detail?.publishedAt ?? listPost?.publishedAt ?? '',
+    readTime: detail?.readTime ?? listPost?.readTime ?? '',
+    heroTag: detail?.heroTag ?? '',
+    authorName: detail?.authorName ?? '',
+    markdown: detail?.markdown ?? '',
   }
 })
 
 const composerSeedKey = computed(() =>
-  isEditComposerMode.value ? `edit:${editQueryId.value}` : 'create:new',
+  isEditComposerMode.value
+    ? `edit:${editQueryId.value}:${editTargetPostDetail.value?.id ?? 'loading'}:${editTargetPostDetail.value?.markdown.length ?? 0}`
+    : 'create:new',
 )
 
 const openPostPath = (id: string) => `${adminBlogPath.value}/${id}`
@@ -294,62 +320,99 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(245,158,11,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(59,130,246,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
     ></div>
 
-    <main class="space-y-5">
-      <section class="rounded-[1.6rem] border border-[#2b2a28] bg-[#101010d6] p-5 sm:p-7">
-        <p class="text-[11px] uppercase tracking-[0.12em] text-amber-400">ADMIN / BLOG</p>
-        <h1 class="mt-2 text-2xl font-semibold text-zinc-100 sm:text-3xl">블로그 글 관리</h1>
-        <p class="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">{{ panelDescription }}</p>
+    <main class="grid gap-5 xl:grid-cols-[230px_minmax(0,1fr)] xl:items-start">
+      <div class="xl:sticky xl:top-24">
+        <AdminSidebarNav />
+      </div>
 
-        <div class="mt-4 flex flex-wrap gap-2">
-          <RouterLink
-            :to="adminPath"
-            class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
-          >
-            관리자 메인
-          </RouterLink>
-          <RouterLink
-            :to="basePath"
-            class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
-          >
-            메인으로
-          </RouterLink>
-          <button
-            type="button"
-            class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white disabled:opacity-50"
-            :disabled="isLoading || isManagingPost"
-            @click="reload"
-          >
-            새로고침
-          </button>
-        </div>
-      </section>
+      <div class="space-y-5">
+        <section class="rounded-[1.6rem] border border-[#2b2a28] bg-[#101010d6] p-5 sm:p-7">
+          <p class="text-[11px] uppercase tracking-[0.12em] text-amber-400">
+            {{ props.writeMode ? 'ADMIN / BLOG WRITE' : 'ADMIN / BLOG' }}
+          </p>
+          <h1 class="mt-2 text-2xl font-semibold text-zinc-100 sm:text-3xl">{{ pageHeading }}</h1>
+          <p class="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">{{ panelDescription }}</p>
 
-      <section id="admin-blog-overview" class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
-        <p class="mt-1 text-xs text-zinc-500">동기화 상태와 현재 게시글 수를 확인합니다.</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <RouterLink
+              v-if="!props.writeMode"
+              :to="adminBlogWritePath"
+              class="inline-flex items-center rounded-lg border border-[#5f5544] bg-[#211b12] px-3 py-1.5 text-xs text-amber-200 transition hover:border-[#8f784d] hover:text-amber-100"
+            >
+              글 작성하기
+            </RouterLink>
+            <RouterLink
+              v-else
+              :to="adminBlogPath"
+              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+            >
+              글 관리로
+            </RouterLink>
+            <RouterLink
+              :to="adminPath"
+              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+            >
+              관리자 메인
+            </RouterLink>
+            <RouterLink
+              :to="basePath"
+              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+            >
+              메인으로
+            </RouterLink>
+            <button
+              type="button"
+              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white disabled:opacity-50"
+              :disabled="isLoading || isManagingPost"
+              @click="reload"
+            >
+              새로고침
+            </button>
+          </div>
+        </section>
 
-        <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <article class="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-4">
-            <p class="text-xs uppercase tracking-[0.08em] text-zinc-500">게시글 수</p>
-            <p class="mt-2 text-xl font-semibold text-zinc-100">{{ copy.posts.length }}</p>
-            <p class="mt-1 text-xs text-zinc-400">현재 로케일 기준 목록</p>
-          </article>
-        </div>
-
-        <p
-          v-if="errorMessage"
-          class="mt-3 rounded-xl border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300"
+        <section
+          v-if="!props.writeMode"
+          id="admin-blog-overview"
+          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5"
         >
-          {{ errorMessage }}
-        </p>
-      </section>
+          <p class="mt-1 text-xs text-zinc-500">동기화 상태와 현재 게시글 수를 확인합니다.</p>
 
-      <section
-        :id="composerSectionId"
-        class="mx-auto max-w-[1180px] rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
-      >
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <article class="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-4">
+              <p class="text-xs uppercase tracking-[0.08em] text-zinc-500">게시글 수</p>
+              <p class="mt-2 text-xl font-semibold text-zinc-100">{{ copy.posts.length }}</p>
+              <p class="mt-1 text-xs text-zinc-400">현재 로케일 기준 목록</p>
+            </article>
+          </div>
+
+          <p
+            v-if="errorMessage"
+            class="mt-3 rounded-xl border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300"
+          >
+            {{ errorMessage }}
+          </p>
+        </section>
+
+        <section
+          :id="composerSectionId"
+          class="mx-auto max-w-[1180px] rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
+        >
         <div class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#111111d9] p-4 sm:p-5">
-          <p v-if="isEditComposerMode" class="mb-3 text-xs text-zinc-500">
+          <p v-if="!props.writeMode && isEditComposerMode" class="mb-3 text-xs text-zinc-500">
             수정 모드입니다. 대상 글 ID: <span class="font-mono text-zinc-300">{{ editQueryId }}</span>
+          </p>
+          <p
+            v-if="!props.writeMode && isEditComposerMode && isEditTargetPostLoading"
+            class="mb-3 rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-xs text-zinc-400"
+          >
+            기존 글 본문을 불러오는 중입니다.
+          </p>
+          <p
+            v-if="!props.writeMode && isEditComposerMode && editTargetPostErrorMessage"
+            class="mb-3 rounded-lg border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300"
+          >
+            {{ editTargetPostErrorMessage }}
           </p>
           <BlogPostAdminPanel
             panel-title="게시글 관리자"
@@ -381,7 +444,8 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
             :show-published-at-field="false"
             :show-read-time-field="false"
             :show-hero-tag-field="false"
-            :show-update-button="isEditComposerMode"
+            :show-update-button="!props.writeMode && isEditComposerMode"
+            :show-delete-button="!props.writeMode"
             :seed-draft="composerSeedDraft"
             :seed-key="composerSeedKey"
             @create="handleCreatePost"
@@ -389,9 +453,13 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
             @delete="handleDeletePost"
           />
         </div>
-      </section>
+        </section>
 
-      <section id="admin-blog-list" class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
+        <section
+          v-if="!props.writeMode"
+          id="admin-blog-list"
+          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5"
+        >
         <h2 class="text-base font-semibold text-zinc-100 sm:text-lg">섹션 3. 게시글 목록</h2>
         <div class="flex items-center justify-between gap-2">
           <p class="text-sm text-zinc-400">기존 글을 선택하거나 카드에서 바로 삭제할 수 있습니다.</p>
@@ -435,7 +503,8 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
         <div v-else class="mt-3 rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3 py-4 text-center text-xs text-zinc-500">
           게시글이 없습니다.
         </div>
-      </section>
+        </section>
+      </div>
     </main>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useBlogEngagement } from '@/composables/useBlogEngagement'
 import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
@@ -181,6 +181,32 @@ const buildHeadingLink = (id: string) => ({
   hash: `#${id}`,
 })
 
+const scrollToHashTarget = (hash: string, behavior: ScrollBehavior = 'smooth') => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const normalizedHash = hash.replace(/^#/, '')
+
+  if (!normalizedHash) {
+    return false
+  }
+
+  const decodedId = decodeURIComponent(normalizedHash)
+  const targetElement = document.getElementById(decodedId)
+
+  if (!targetElement) {
+    return false
+  }
+
+  targetElement.scrollIntoView({
+    block: 'start',
+    behavior,
+  })
+
+  return true
+}
+
 const sanitizeMediaUrl = (raw?: string | null) => {
   if (typeof raw !== 'string') {
     return null
@@ -335,6 +361,29 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
   await removeComment(commentId)
 }
+
+watch(
+  [() => route.hash, renderedMarkdown],
+  ([nextHash], [prevHash]) => {
+    if (!nextHash) {
+      return
+    }
+
+    void nextTick(() => {
+      const isSameHash = nextHash === prevHash
+      const moved = scrollToHashTarget(nextHash, isSameHash ? 'auto' : 'smooth')
+
+      if (moved || typeof window === 'undefined') {
+        return
+      }
+
+      window.setTimeout(() => {
+        scrollToHashTarget(nextHash, 'auto')
+      }, 120)
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
