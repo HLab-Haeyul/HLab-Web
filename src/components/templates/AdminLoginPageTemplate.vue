@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminAuth } from '@/composables/useAdminAuth'
 import { useLocale } from '@/composables/useLocale'
@@ -10,6 +10,8 @@ const { locale, basePath, adminPath } = useLocale()
 const { requestSmsCode, loginWithSms, rememberLoginPreference, setRememberLoginPreference } =
   useAdminAuth()
 
+const emailInput = ref('')
+const passwordInput = ref('')
 const phoneNumberInput = ref('')
 const verificationCodeInput = ref('')
 const rememberLogin = ref(rememberLoginPreference.value)
@@ -18,13 +20,19 @@ const errorMessage = ref('')
 const debugCode = ref('')
 const isSending = ref(false)
 const isVerifying = ref(false)
+const smsCooldownSeconds = ref(0)
+
+let smsCooldownTimer: ReturnType<typeof setInterval> | undefined
 
 const copy = computed(() =>
   locale.value === 'en'
     ? {
         heading: 'Admin Login',
-        description:
-          'Verify your phone number with SMS and sign in using JWT.',
+        description: 'Verify your phone number with SMS and sign in using JWT.',
+        emailLabel: 'Email',
+        emailPlaceholder: 'admin@example.com',
+        passwordLabel: 'Password',
+        passwordPlaceholder: 'Enter your password',
         phoneLabel: 'Phone Number',
         phonePlaceholder: '01012345678',
         sendCode: 'Send Code',
@@ -38,11 +46,15 @@ const copy = computed(() =>
         sent: 'A verification code has been sent.',
         invalidPhone: 'Please enter a valid phone number.',
         invalidCode: 'Please enter the verification code.',
+        resendIn: 'Resend in',
       }
     : {
         heading: '관리자 로그인',
-        description:
-          '휴대폰 SMS 인증 후 JWT 토큰으로 로그인합니다.',
+        description: '휴대폰 SMS 인증 후 JWT 토큰으로 로그인합니다.',
+        emailLabel: '이메일',
+        emailPlaceholder: 'admin@example.com',
+        passwordLabel: '비밀번호',
+        passwordPlaceholder: '비밀번호를 입력하세요',
         phoneLabel: '휴대폰 번호',
         phonePlaceholder: '01012345678',
         sendCode: '인증번호 전송',
@@ -56,6 +68,7 @@ const copy = computed(() =>
         sent: '인증번호를 전송했습니다.',
         invalidPhone: '유효한 휴대폰 번호를 입력해주세요.',
         invalidCode: '인증번호를 입력해주세요.',
+        resendIn: '재전송 가능까지',
       },
 )
 
@@ -95,6 +108,42 @@ const normalizePhoneNumber = (value: string) => {
 
 const isValidPhoneNumber = (value: string) => /^01\d{8,9}$/.test(value)
 
+const clearSmsCooldown = () => {
+  if (smsCooldownTimer) {
+    clearInterval(smsCooldownTimer)
+    smsCooldownTimer = undefined
+  }
+}
+
+const startSmsCooldown = (seconds: number) => {
+  clearSmsCooldown()
+  smsCooldownSeconds.value = Math.max(0, seconds)
+
+  if (smsCooldownSeconds.value <= 0) {
+    return
+  }
+
+  smsCooldownTimer = setInterval(() => {
+    smsCooldownSeconds.value = Math.max(0, smsCooldownSeconds.value - 1)
+
+    if (smsCooldownSeconds.value <= 0) {
+      clearSmsCooldown()
+    }
+  }, 1000)
+}
+
+const sendCodeButtonText = computed(() => {
+  if (isSending.value) {
+    return copy.value.sending
+  }
+
+  if (smsCooldownSeconds.value > 0) {
+    return `${copy.value.resendIn} ${smsCooldownSeconds.value}s`
+  }
+
+  return copy.value.sendCode
+})
+
 const handleSendCode = async () => {
   errorMessage.value = ''
   statusMessage.value = ''
@@ -120,11 +169,10 @@ const handleSendCode = async () => {
 
     statusMessage.value = result.message || copy.value.sent
     debugCode.value = result.debugCode ?? ''
+    startSmsCooldown(result.expiresIn)
   } catch {
     errorMessage.value =
-      locale.value === 'en'
-        ? 'Failed to send verification code.'
-        : '인증번호 전송에 실패했습니다.'
+      locale.value === 'en' ? 'Failed to send verification code.' : '인증번호 전송에 실패했습니다.'
   } finally {
     isSending.value = false
   }
@@ -152,11 +200,7 @@ const handleLogin = async () => {
   isVerifying.value = true
 
   try {
-    const result = await loginWithSms(
-      normalizedPhoneNumber,
-      normalizedCode,
-      rememberLogin.value,
-    )
+    const result = await loginWithSms(normalizedPhoneNumber, normalizedCode, rememberLogin.value)
 
     if (!result.ok) {
       errorMessage.value = result.message
@@ -173,10 +217,16 @@ const handleLogin = async () => {
     isVerifying.value = false
   }
 }
+
+onBeforeUnmount(() => {
+  clearSmsCooldown()
+})
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
+  <div
+    class="relative isolate mx-auto flex min-h-screen w-full max-w-[1480px] items-center justify-center px-4 py-10 sm:px-8 lg:px-12"
+  >
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_16%_-8%,rgba(59,130,246,0.18),transparent_34%),radial-gradient(circle_at_84%_112%,rgba(59,130,246,0.1),transparent_30%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(0,0,0,0.36))]"
@@ -189,6 +239,28 @@ const handleLogin = async () => {
         <p class="mt-2 text-sm text-zinc-400">{{ copy.description }}</p>
 
         <div class="mt-5 space-y-4">
+          <label class="block space-y-1">
+            <span class="text-xs text-zinc-400">{{ copy.emailLabel }}</span>
+            <input
+              v-model="emailInput"
+              type="email"
+              autocomplete="email"
+              :placeholder="copy.emailPlaceholder"
+              class="w-full rounded-lg border border-[#2f2f2f] bg-[#151515] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-xs text-zinc-400">{{ copy.passwordLabel }}</span>
+            <input
+              v-model="passwordInput"
+              type="password"
+              autocomplete="current-password"
+              :placeholder="copy.passwordPlaceholder"
+              class="w-full rounded-lg border border-[#2f2f2f] bg-[#151515] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none"
+            />
+          </label>
+
           <label class="block space-y-1">
             <span class="text-xs text-zinc-400">{{ copy.phoneLabel }}</span>
             <div class="flex gap-2">
@@ -203,10 +275,10 @@ const handleLogin = async () => {
               <button
                 type="button"
                 class="shrink-0 rounded-lg border border-blue-500 bg-blue-600 px-3 py-2 text-xs font-medium text-white transition hover:border-blue-400 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="isSending || isVerifying"
+                :disabled="isSending || isVerifying || smsCooldownSeconds > 0"
                 @click="handleSendCode"
               >
-                {{ isSending ? copy.sending : copy.sendCode }}
+                {{ sendCodeButtonText }}
               </button>
             </div>
           </label>
@@ -220,6 +292,7 @@ const handleLogin = async () => {
               autocomplete="one-time-code"
               :placeholder="copy.codePlaceholder"
               class="w-full rounded-lg border border-[#2f2f2f] bg-[#151515] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none"
+              @keydown.enter.prevent="handleLogin"
             />
           </label>
 

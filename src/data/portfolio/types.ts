@@ -1,5 +1,10 @@
 export type Locale = 'ko' | 'en'
 
+export type ExternalLink = {
+  name: string
+  url: string
+}
+
 export type WorkItem = {
   title: string
   summary: string
@@ -7,6 +12,7 @@ export type WorkItem = {
   stack: string[]
   imageSrc?: string
   imageAlt?: string
+  links?: ExternalLink[]
 }
 
 export type MetricItem = {
@@ -31,6 +37,12 @@ export type ProfileShowcaseCopy = {
   awards: AwardItem[]
 }
 
+export type StudyLink = {
+  name: string
+  url: string
+  icon: string
+}
+
 export type PortfolioCopySet = {
   navWork: string
   navPrinciples: string
@@ -52,5 +64,7 @@ export type PortfolioCopySet = {
   contactHeading: string
   emailCta: string
   githubCta: string
+  studyLinksTitle: string
+  studyLinks: StudyLink[]
   footerName: string
 }

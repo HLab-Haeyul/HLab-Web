@@ -34,6 +34,13 @@ export const portfolioCopyByLocale: Record<Locale, PortfolioCopySet> = {
     contactHeading: '사용자의 문제 해결과 세상의 혁신을 일으킨 경험을 함께만들어요.',
     emailCta: '이메일 보내기',
     githubCta: 'GitHub 보기',
+    studyLinksTitle: '공부 기록',
+    studyLinks: [
+      { name: 'Naver Blog', url: 'https://blog.naver.com', icon: 'N' },
+      { name: 'Velog', url: 'https://velog.io/@fixgram003/posts', icon: 'V' },
+      { name: 'Tistory', url: 'https://hading25.tistory.com', icon: 'T' },
+      { name: 'Notion', url: 'https://fixgram.notion.site/135532fb19db80edb8b7c45d41e3c78f?v=135532fb19db8176a4d0000c6f34383d&source=copy_link', icon: 'N' },
+    ],
     footerName: '김민재',
   },
   en: {
@@ -68,6 +75,13 @@ export const portfolioCopyByLocale: Record<Locale, PortfolioCopySet> = {
     contactHeading: 'Let’s build highly polished black-minimal product experiences together.',
     emailCta: 'Send an Email',
     githubCta: 'View GitHub',
+    studyLinksTitle: 'Study Notes',
+    studyLinks: [
+      { name: 'Naver Blog', url: 'https://blog.naver.com', icon: 'N' },
+      { name: 'Velog', url: 'https://velog.io/@fixgram003/posts', icon: 'V' },
+      { name: 'Tistory', url: 'https://hading25.tistory.com', icon: 'T' },
+      { name: 'Notion', url: 'https://fixgram.notion.site/135532fb19db80edb8b7c45d41e3c78f?v=135532fb19db8176a4d0000c6f34383d&source=copy_link', icon: 'N' },
+    ],
     footerName: 'Kim Minjae',
   },
 }

@@ -46,7 +46,7 @@ const createProjectRecord = (
   imageSrc: work.imageSrc,
   imageAlt: work.imageAlt,
   troubleshooting: '',
-  collaborationLinks: [],
+  collaborationLinks: (work.links ?? []).map((link) => ({ ...link })),
 })
 
 const projectStoreByLocale = ref<Record<Locale, AdminProjectRecord[]>>({
