@@ -1,5 +1,5 @@
 import type { Locale } from '@/data/portfolio/types'
-import type { BlogPageCopySet, BlogPostDetail } from './types'
+import type { BlogPageCopySet } from './types'
 
 export type {
   BlogCategoryKey,
@@ -18,11 +18,10 @@ export const blogPageCopyByLocale: Record<Locale, BlogPageCopySet> = {
   ko: {
     kicker: 'STUDY ARCHIVE',
     heading: '내가 공부한 기록을 쌓는 블로그',
-    description:
-      '기술 실험, 프로젝트 회고, 자기 개발 루틴을 한 곳에 정리합니다. 실제 게시글은 API 연동 후 표시됩니다.',
+    description: '기술 실험, 프로젝트 회고, 자기 개발 루틴을 한 곳에 정리합니다.',
     popularKicker: '인기 글',
     popularHeading: '인기글',
-    popularDescription: '표시할 인기 글이 없습니다.',
+    popularDescription: '최근 반응이 좋은 글을 우선 노출합니다.',
     readLabel: '글 읽기',
     categories: {
       tech: {
@@ -44,11 +43,10 @@ export const blogPageCopyByLocale: Record<Locale, BlogPageCopySet> = {
   en: {
     kicker: 'STUDY ARCHIVE',
     heading: 'A blog to track what I learn',
-    description:
-      'Technical experiments, retrospectives, and growth notes are shown here once the API is connected.',
+    description: 'Technical experiments, retrospectives, and growth notes in one place.',
     popularKicker: 'Popular Posts',
     popularHeading: 'Popular Posts',
-    popularDescription: 'No popular posts available yet.',
+    popularDescription: 'Most-read notes are highlighted first.',
     readLabel: 'Read Post',
     categories: {
       tech: {
@@ -68,10 +66,3 @@ export const blogPageCopyByLocale: Record<Locale, BlogPageCopySet> = {
     posts: [],
   },
 }
-
-export const blogPostDetailsByLocale: Record<Locale, Record<string, BlogPostDetail>> = {
-  ko: {},
-  en: {},
-}
-
-export const getFallbackBlogPostDetail = (_locale: Locale, _id: string): BlogPostDetail | null => null

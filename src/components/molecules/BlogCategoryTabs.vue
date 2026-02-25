@@ -18,7 +18,7 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-2 rounded-2xl border border-[#2a2a2a] bg-[#111111d1] p-2.5"
+    class="flex flex-wrap items-center gap-2 rounded-2xl border border-[#273346] bg-[#121b2a] p-2.5"
     role="tablist"
     aria-label="Blog categories"
   >
@@ -28,11 +28,11 @@ const emit = defineEmits<{
       type="button"
       role="tab"
       :aria-selected="props.selectedCategory === group.key"
-      class="rounded-xl px-3 py-2 text-sm font-medium transition"
+      class="rounded-xl px-3 py-2 text-sm font-semibold transition"
       :class="
         props.selectedCategory === group.key
-          ? 'bg-white text-[#0f0f0f]'
-          : 'bg-[#181818] text-zinc-300 hover:bg-[#242424] hover:text-zinc-100'
+          ? 'bg-[#6f8fce] text-white shadow-[0_8px_20px_rgba(79,141,255,0.24)]'
+          : 'bg-[#1a2537] text-[#c3cfdf] hover:bg-[#223047] hover:text-white'
       "
       @click="emit('select', group.key)"
     >

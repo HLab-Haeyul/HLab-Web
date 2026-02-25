@@ -1,15 +1,32 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useBlogEngagement } from '@/composables/useBlogEngagement'
 import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
 import { getEstimatedViewCount } from '@/utils/blogViews'
-import { extractMarkdownHeadings, markdownToHtml } from '@/utils/markdown'
-import BlogPostStatusBar from '@/components/molecules/BlogPostStatusBar.vue'
+import { markdownToHtml } from '@/utils/markdown'
 import BlogTocPanel from '@/components/molecules/BlogTocPanel.vue'
 import BlogCommentSection from '@/components/organisms/BlogCommentSection.vue'
 import BlogPostHeroSection from '@/components/organisms/BlogPostHeroSection.vue'
 import BlogPostMediaSection from '@/components/organisms/BlogPostMediaSection.vue'
+
+type Props = {
+  forceAdminCommentMode?: boolean
+  backPath?: string
+  backLabelOverride?: string
+  editPostPath?: string
+  editPostLabel?: string
+  hideStatusText?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  forceAdminCommentMode: false,
+  backPath: undefined,
+  backLabelOverride: undefined,
+  editPostPath: undefined,
+  editPostLabel: '글 수정하기',
+  hideStatusText: false,
+})
 
 const { locale, route, blogPath } = useLocale()
 
@@ -30,10 +47,7 @@ const id = computed(() => {
 
 const {
   post,
-  dataSource,
-  isLoading: isPostLoading,
   errorMessage,
-  reload,
 } = useBlogPostContent(locale, id)
 const {
   likes,
@@ -44,8 +58,6 @@ const {
   totalCommentPages,
   hasPreviousCommentPage,
   hasNextCommentPage,
-  dataSource: engagementDataSource,
-  isLoading: isEngagementLoading,
   isCommentPageLoading,
   isSubmitting,
   isCommentActionLoading,
@@ -56,33 +68,14 @@ const {
   removeComment,
   goToPreviousCommentPage,
   goToNextCommentPage,
-  reload: reloadEngagement,
 } = useBlogEngagement(locale, id)
 
-const commentAuthor = ref('')
 const commentBody = ref('')
 
-const backLabel = computed(() => (locale.value === 'en' ? 'Back to blog' : '블로그 목록으로'))
-const statusLabel = computed(() =>
-  dataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'API Connected'
-      : 'API 연결됨'
-    : locale.value === 'en'
-      ? 'Fallback Data'
-      : 'Fallback 데이터',
+const backLabel = computed(
+  () => props.backLabelOverride ?? (locale.value === 'en' ? 'Back to blog' : '블로그 목록으로'),
 )
-const engagementStatusLabel = computed(() =>
-  engagementDataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'Engagement Synced'
-      : '인터랙션 동기화됨'
-    : locale.value === 'en'
-      ? 'Engagement Fallback'
-      : '인터랙션 fallback',
-)
-const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-const retryLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
+const backPath = computed(() => props.backPath ?? blogPath.value)
 const notFoundTitle = computed(() =>
   locale.value === 'en' ? 'Post not found' : '글을 찾을 수 없습니다',
 )
@@ -122,9 +115,6 @@ const mediaVideoFallbackTitle = computed(() =>
 const commentEmptyLabel = computed(() =>
   locale.value === 'en' ? 'No comments yet. Be the first to write one.' : '아직 댓글이 없습니다. 첫 댓글을 남겨보세요.',
 )
-const commentAuthorPlaceholder = computed(() =>
-  locale.value === 'en' ? 'Your name (optional)' : '이름 (선택)',
-)
 const commentBodyPlaceholder = computed(() =>
   locale.value === 'en' ? 'Write a comment' : '댓글을 작성하세요',
 )
@@ -150,12 +140,11 @@ const isAdminCommentMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_COMMENT_ADMIN_ENABLED as string | undefined)?.trim()
   const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
 
-  return envFlag === 'true' || queryValue === '1'
+  return props.forceAdminCommentMode || envFlag === 'true' || queryValue === '1'
 })
+const shouldShowComments = computed(() => post.value?.category !== 'retrospective')
 const renderedMarkdown = computed(() => (post.value ? markdownToHtml(post.value.markdown) : ''))
-const headingTocItems = computed(() =>
-  post.value ? extractMarkdownHeadings(post.value.markdown, [1, 2, 3]) : [],
-)
+const headingTocItems = ref<Array<{ id: string; text: string; level: 1 | 2 }>>([])
 const viewCount = computed(() => (post.value ? getEstimatedViewCount(post.value.id) : 0))
 
 const buildHeadingLink = (id: string) => ({
@@ -163,6 +152,110 @@ const buildHeadingLink = (id: string) => ({
   query: route.query,
   hash: `#${id}`,
 })
+
+const normalizeTocHeadingText = (value: string) => value.replace(/\s+/g, ' ').trim()
+
+const toTocHeadingBaseId = (value: string) => {
+  const normalized = normalizeTocHeadingText(value)
+
+  return (
+    normalized
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase()
+      .replace(/[^a-z0-9\u3131-\u318e\uac00-\ud7a3\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-') || 'section'
+  )
+}
+
+const collectHeadingTocItems = () => {
+  if (typeof window === 'undefined') {
+    headingTocItems.value = []
+    return
+  }
+
+  const contentRoot = document.getElementById('post-content')
+
+  if (!contentRoot) {
+    headingTocItems.value = []
+    return
+  }
+
+  const headingElements = Array.from(contentRoot.querySelectorAll('h1, h2'))
+  const usedIds = new Map<string, number>()
+  const registerUniqueId = (baseRaw: string) => {
+    const base = baseRaw.trim() || 'section'
+    const count = usedIds.get(base) ?? 0
+    usedIds.set(base, count + 1)
+
+    if (count === 0) {
+      return base
+    }
+
+    return `${base}-${count + 1}`
+  }
+
+  headingTocItems.value = headingElements.flatMap((headingElement) => {
+    if (!(headingElement instanceof HTMLElement)) {
+      return []
+    }
+
+    const text = normalizeTocHeadingText(headingElement.textContent ?? '')
+
+    if (!text) {
+      return []
+    }
+
+    const currentId = headingElement.id.trim()
+    let nextId = ''
+
+    if (currentId) {
+      nextId = registerUniqueId(currentId)
+    } else {
+      nextId = registerUniqueId(toTocHeadingBaseId(text))
+      headingElement.id = nextId
+    }
+
+    if (currentId && nextId !== currentId) {
+      headingElement.id = nextId
+    }
+
+    return [
+      {
+        id: nextId,
+        text,
+        level: headingElement.tagName.toLowerCase() === 'h1' ? 1 : 2,
+      } as const,
+    ]
+  })
+}
+
+const scrollToHashTarget = (hash: string, behavior: ScrollBehavior = 'smooth') => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const normalizedHash = hash.replace(/^#/, '')
+
+  if (!normalizedHash) {
+    return false
+  }
+
+  const decodedId = decodeURIComponent(normalizedHash)
+  const targetElement = document.getElementById(decodedId)
+
+  if (!targetElement) {
+    return false
+  }
+
+  targetElement.scrollIntoView({
+    block: 'start',
+    behavior,
+  })
+
+  return true
+}
 
 const sanitizeMediaUrl = (raw?: string | null) => {
   if (typeof raw !== 'string') {
@@ -278,11 +371,6 @@ const formatCommentDate = (value: string) => {
   })
 }
 
-const handleReload = () => {
-  reload()
-  reloadEngagement()
-}
-
 const handleSubmitComment = async () => {
   const nextBody = commentBody.value.trim()
 
@@ -290,7 +378,7 @@ const handleSubmitComment = async () => {
     return
   }
 
-  await addComment(commentAuthor.value, nextBody)
+  await addComment('', nextBody)
   commentBody.value = ''
 }
 
@@ -318,26 +406,58 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
   await removeComment(commentId)
 }
+
+watch(
+  [() => route.hash, renderedMarkdown],
+  ([nextHash], [prevHash]) => {
+    void nextTick(() => {
+      collectHeadingTocItems()
+
+      if (!nextHash) {
+        return
+      }
+
+      const isSameHash = nextHash === prevHash
+      const moved = scrollToHashTarget(nextHash, isSameHash ? 'auto' : 'smooth')
+
+      if (moved || typeof window === 'undefined') {
+        return
+      }
+
+      window.setTimeout(() => {
+        scrollToHashTarget(nextHash, 'auto')
+      }, 120)
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[980px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
     ></div>
 
     <main class="space-y-4">
-      <BlogPostStatusBar
-        :blog-path="blogPath"
-        :back-label="backLabel"
-        :status-label="statusLabel"
-        :engagement-status-label="engagementStatusLabel"
-        :is-loading="isPostLoading || isEngagementLoading"
-        :loading-label="loadingLabel"
-        :retry-label="retryLabel"
-        @reload="handleReload"
-      />
+      <div v-if="props.editPostPath" class="flex justify-end">
+        <RouterLink
+          :to="props.editPostPath"
+          class="inline-flex items-center rounded-lg border border-[#4d3b1f] bg-[#2c2418] px-3 py-1.5 text-xs text-amber-200 transition hover:border-[#765a2b] hover:text-amber-100"
+        >
+          {{ props.editPostLabel }}
+        </RouterLink>
+      </div>
+
+      <div class="flex items-center">
+        <RouterLink
+          :to="backPath"
+          class="inline-flex items-center rounded-lg border border-[#313131] px-2.5 py-1 text-xs text-zinc-300 transition hover:border-[#5b5b5b] hover:text-white"
+        >
+          {{ backLabel }}
+        </RouterLink>
+      </div>
 
       <p v-if="errorMessage" class="rounded-xl border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300">
         {{ errorMessage }}
@@ -350,7 +470,10 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
         {{ engagementError }}
       </p>
 
-      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_220px] xl:items-start xl:gap-5">
+      <div
+        v-if="post"
+        class="xl:mx-auto xl:grid xl:w-full xl:max-w-[1160px] xl:grid-cols-[minmax(0,860px)_240px] xl:items-start xl:gap-4 xl:pl-8"
+      >
         <article
           id="post-overview"
           class="rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
@@ -365,6 +488,7 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
             :like-aria-label="likeAriaLabel"
             :comment-heading="commentHeading"
             :comment-count="totalCommentCount"
+            :show-comment-badge="shouldShowComments"
             @toggle-like="toggleLike"
           />
 
@@ -377,11 +501,12 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
           <div
             id="post-content"
-            class="markdown-body mt-7 text-[15px] leading-8 text-zinc-200 sm:text-base"
+            class="markdown-body mt-8 text-[16px] leading-[2.05] text-zinc-200 sm:text-[17px]"
             v-html="renderedMarkdown"
           ></div>
 
           <BlogCommentSection
+            v-if="shouldShowComments"
             :comment-heading="commentHeading"
             :comments="comments"
             :comment-total-count="totalCommentCount"
@@ -400,15 +525,12 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
             :comment-save-label="commentSaveLabel"
             :comment-cancel-label="commentCancelLabel"
             :comment-edit-placeholder="commentEditPlaceholder"
-            :comment-author="commentAuthor"
             :comment-body="commentBody"
-            :comment-author-placeholder="commentAuthorPlaceholder"
             :comment-body-placeholder="commentBodyPlaceholder"
             :comment-submit-label="commentSubmitLabel"
             :is-submitting="isSubmitting"
             :comment-empty-label="commentEmptyLabel"
             :format-comment-date="formatCommentDate"
-            @update:comment-author="commentAuthor = $event"
             @update:comment-body="commentBody = $event"
             @submit="handleSubmitComment"
             @go-prev-page="handlePreviousCommentPage"
@@ -446,42 +568,53 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 .markdown-body :deep(h5),
 .markdown-body :deep(h6) {
   scroll-margin-top: 6.5rem;
-  margin: 1.25rem 0 0.55rem;
+  margin: 1.6rem 0 0.75rem;
   color: #f4f4f5;
-  line-height: 1.25;
+  line-height: 1.34;
 }
 
 .markdown-body :deep(h1) {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
 }
 
 .markdown-body :deep(h2) {
-  font-size: 1.35rem;
+  font-size: 1.48rem;
 }
 
 .markdown-body :deep(h3) {
-  font-size: 1.15rem;
+  font-size: 1.26rem;
 }
 
 .markdown-body :deep(p) {
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.25rem;
   color: #e4e4e7;
+  line-height: 1.95;
 }
 
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) {
-  margin: 0 0 0.95rem;
-  padding-left: 1.2rem;
+  margin: 0 0 1.2rem;
+  padding-left: 1.45rem;
+  line-height: 1.88;
 }
 
 .markdown-body :deep(li) {
-  margin: 0.2rem 0;
+  margin: 0.42rem 0;
 }
 
 .markdown-body :deep(a) {
   color: #d4d4d8;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.markdown-body :deep(img) {
+  display: block;
+  margin: 0.4rem 0 1.3rem;
+  border: 1px solid #303037;
+  border-radius: 0.8rem;
+  max-width: 100%;
+  height: auto;
 }
 
 .markdown-body :deep(code) {
@@ -495,12 +628,12 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 
 .markdown-body :deep(pre) {
   position: relative;
-  margin: 0 0 1rem;
+  margin: 0 0 1.2rem;
   overflow-x: auto;
   border: 1px solid #3f3f46;
   border-radius: 0.8rem;
   background: #0f1012;
-  padding: 0.8rem;
+  padding: 1rem;
 }
 
 .markdown-body :deep(pre code) {
@@ -544,9 +677,10 @@ const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
 }
 
 .markdown-body :deep(blockquote) {
-  margin: 0 0 1rem;
+  margin: 0 0 1.2rem;
   border-left: 3px solid #52525b;
-  padding-left: 0.85rem;
+  padding-left: 1rem;
   color: #d4d4d8;
+  line-height: 1.9;
 }
 </style>

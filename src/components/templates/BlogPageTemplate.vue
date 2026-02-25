@@ -1,26 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BLOG_CATEGORY_KEYS, type BlogCategoryKey, type BlogPost } from '@/data/blog/content'
+import {
+  BLOG_CATEGORY_KEYS,
+  type BlogCategoryKey,
+  type BlogPost,
+} from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
+import { fetchBlogPostDetail } from '@/services/blogApi'
+import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { getEstimatedViewCount } from '@/utils/blogViews'
-import BlogCategoryTabs from '@/components/molecules/BlogCategoryTabs.vue'
-import BlogPostPreviewCard from '@/components/molecules/BlogPostPreviewCard.vue'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
-import BlogPopularCarousel from '@/components/organisms/BlogPopularCarousel.vue'
-import BlogRetrospectiveSelector from '@/components/organisms/BlogRetrospectiveSelector.vue'
-import BlogSearchSyncPanel from '@/components/organisms/BlogSearchSyncPanel.vue'
-
-const AUTO_PLAY_MS = 4500
 
 const { locale } = useLocale()
 const route = useRoute()
 const router = useRouter()
-const { copy, dataSource, isLoading, isManagingPost, errorMessage, reload, createPost, updatePost, removePost } =
-  useBlogContent(locale)
-const activePopularIndex = ref(0)
+const { copy, isManagingPost, createPost, updatePost, removePost } = useBlogContent(locale)
 
 const normalizeTagInput = (value: string) =>
   value
@@ -49,8 +46,9 @@ const parseTagQuery = (value: unknown) => {
 
   return normalizeTagInput(trimmed)
 }
+
 const searchQuery = ref(parseTagQuery(route.query.tag))
-const authorName = computed(() => (locale.value === 'en' ? 'Kim Minjae' : '김민재'))
+
 const categoryLabel = computed(() => (locale.value === 'en' ? 'Category' : '카테고리'))
 const searchLabel = computed(() => (locale.value === 'en' ? 'Search posts' : '글 검색'))
 const searchPlaceholder = computed(() =>
@@ -71,38 +69,19 @@ const searchResultDescription = computed(() =>
     : '기술, 프로젝트 회고, 자기 개발 전체에서 검색 결과를 보여줍니다.',
 )
 const viewLabel = computed(() => (locale.value === 'en' ? 'Views' : '조회수'))
-const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'My Projects' : '내 프로젝트'))
-const projectSelectorHint = computed(() =>
-  locale.value === 'en'
-    ? 'Choose a project to view related retrospectives below.'
-    : '프로젝트를 선택하면 아래에 관련 회고 글이 표시됩니다.',
-)
-const retrospectiveHeadingLabel = computed(() =>
-  locale.value === 'en' ? 'Project Retrospectives' : '프로젝트 회고 글',
+const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'Project' : '프로젝트'))
+const projectSelectorPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Select project' : '프로젝트 선택',
 )
 const retrospectiveUnselectedLabel = computed(() =>
   locale.value === 'en'
-    ? 'Select a project above to see its retrospectives.'
-    : '위에서 프로젝트를 선택하면 회고 글을 볼 수 있습니다.',
+    ? 'Select a project to see related retrospectives.'
+    : '프로젝트를 선택하면 관련 회고 글이 표시됩니다.',
 )
 const retrospectiveEmptyLabel = computed(() =>
   locale.value === 'en'
     ? 'No retrospective post is linked to this project yet.'
     : '선택한 프로젝트에 연결된 회고 글이 아직 없습니다.',
-)
-const apiStatusLabel = computed(() =>
-  dataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'API Connected'
-      : 'API 연결됨'
-    : locale.value === 'en'
-      ? 'Fallback Data'
-      : 'Fallback 데이터',
-)
-const reloadLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
-const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-const popularEmptyLabel = computed(() =>
-  locale.value === 'en' ? 'No popular posts yet.' : '아직 인기 글이 없습니다.',
 )
 const isAdminPostMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
@@ -110,6 +89,7 @@ const isAdminPostMode = computed(() => {
 
   return envFlag === 'true' || queryValue === '1'
 })
+
 const adminPanelTitle = computed(() =>
   locale.value === 'en' ? 'Blog Post Manager' : '블로그 게시글 관리자',
 )
@@ -126,6 +106,12 @@ const adminTagsLabel = computed(() => (locale.value === 'en' ? 'Tags' : '태그'
 const adminTagsPlaceholder = computed(() =>
   locale.value === 'en' ? 'vue,typescript,retrospective' : 'vue,typescript,회고',
 )
+const adminRetrospectiveProjectLabel = computed(() =>
+  locale.value === 'en' ? 'Linked Project' : '연결 프로젝트',
+)
+const adminRetrospectiveProjectPlaceholder = computed(() =>
+  locale.value === 'en' ? 'Select project' : '프로젝트 선택',
+)
 const adminPublishedAtLabel = computed(() =>
   locale.value === 'en' ? 'Published At' : '발행일',
 )
@@ -140,6 +126,7 @@ const adminCreateLabel = computed(() => (locale.value === 'en' ? 'Create Post' :
 const adminUpdateLabel = computed(() => (locale.value === 'en' ? 'Update Post' : '게시글 수정'))
 const adminDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete Post' : '게시글 삭제'))
 const adminResetLabel = computed(() => (locale.value === 'en' ? 'Reset' : '초기화'))
+
 const buildPostPath = (id: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
 
 const adminCategoryOptions = computed(() =>
@@ -149,33 +136,107 @@ const adminCategoryOptions = computed(() =>
   })),
 )
 
-const coverPaletteByCategory: Record<BlogCategoryKey, string[]> = {
-  tech: [
-    'linear-gradient(140deg, rgba(56,56,56,0.95) 0%, rgba(24,24,24,0.94) 58%, rgba(10,10,10,0.95) 100%)',
-    'linear-gradient(135deg, rgba(62,62,62,0.95) 0%, rgba(26,26,26,0.94) 53%, rgba(12,12,12,0.95) 100%)',
-  ],
-  retrospective: [
-    'linear-gradient(132deg, rgba(67,67,67,0.95) 0%, rgba(30,30,30,0.94) 56%, rgba(12,12,12,0.95) 100%)',
-    'linear-gradient(146deg, rgba(58,58,58,0.95) 0%, rgba(26,26,26,0.94) 52%, rgba(11,11,11,0.95) 100%)',
-  ],
-  selfDev: [
-    'linear-gradient(128deg, rgba(60,60,60,0.95) 0%, rgba(28,28,28,0.94) 50%, rgba(11,11,11,0.95) 100%)',
-    'linear-gradient(140deg, rgba(52,52,52,0.95) 0%, rgba(24,24,24,0.94) 55%, rgba(10,10,10,0.95) 100%)',
-  ],
-}
+const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
+const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
+const normalizeTagLabel = (value: string) => value.replace(/^#+/, '')
+const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
 
-const getCoverBackground = (category: BlogCategoryKey, index: number) => {
-  const palette = coverPaletteByCategory[category]
+const retrospectiveProjectOptions = computed(() => {
+  const uniqueByKey = new Map<string, string>()
 
-  return palette[index % palette.length] ?? palette[0] ?? '#1a1a1a'
-}
+  worksByLocale[locale.value].forEach((work) => {
+    const key = normalizeProjectKey(work.title)
 
-const getEngagement = (_id: string) => ({
-  likes: 0,
-  comments: 0,
+    if (!key || uniqueByKey.has(key)) {
+      return
+    }
+
+    uniqueByKey.set(key, work.title)
+  })
+
+  return [...uniqueByKey.entries()].map(([key, label]) => ({ key, label }))
 })
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
+const getCardAnimationDelay = (index: number) => `${Math.min(index, 11) * 45}ms`
+const postThumbnailById = ref<Record<string, string>>({})
+let thumbnailLoadToken = 0
+
+const sanitizeImageUrl = (raw?: string | null) => {
+  if (typeof raw !== 'string') {
+    return null
+  }
+
+  const value = raw.trim()
+
+  if (!value) {
+    return null
+  }
+
+  if (value.startsWith('/')) {
+    return value
+  }
+
+  try {
+    const parsed = new URL(value)
+
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString()
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+const loadPostThumbnails = async () => {
+  const requestToken = ++thumbnailLoadToken
+  const postIds = copy.value.posts.map((post) => post.id)
+  const nextThumbnailById: Record<string, string> = {}
+
+  if (isBlogApiEnabled() && postIds.length > 0) {
+    const thumbnailResults = await Promise.all(
+      postIds.map(async (postId) => {
+        try {
+          const detail = await fetchBlogPostDetail(locale.value, postId)
+
+          if (!detail?.images || detail.images.length === 0) {
+            return [postId, null] as const
+          }
+
+          for (const image of detail.images) {
+            const src = sanitizeImageUrl(image.src)
+
+            if (src) {
+              return [postId, src] as const
+            }
+          }
+
+          return [postId, null] as const
+        } catch {
+          return [postId, null] as const
+        }
+      }),
+    )
+
+    if (requestToken !== thumbnailLoadToken) {
+      return
+    }
+
+    thumbnailResults.forEach(([postId, thumbnailSrc]) => {
+      if (thumbnailSrc) {
+        nextThumbnailById[postId] = thumbnailSrc
+      }
+    })
+  }
+
+  if (requestToken !== thumbnailLoadToken) {
+    return
+  }
+
+  postThumbnailById.value = nextThumbnailById
+}
 
 const selectedProjectIndex = ref<number | null>(null)
 const projectWorks = computed(() => worksByLocale[locale.value])
@@ -189,8 +250,6 @@ const selectedProject = computed(() => {
   return projectWorks.value[index]
 })
 
-const normalizeToken = (value: string) => value.toLocaleLowerCase().replace(/\s+/g, '')
-
 const projectKeywordMap: Record<string, string[]> = {
   hlab: ['hlab', 'docker', 'deploy', 'pipeline', '배포'],
   clue: ['clue', 'portfolio', '포트폴리오', 'planning', 'v1'],
@@ -198,7 +257,13 @@ const projectKeywordMap: Record<string, string[]> = {
 }
 
 const isRetrospectiveLinkedToProject = (post: BlogPost, projectTitle: string) => {
-  const key = normalizeToken(projectTitle)
+  const key = normalizeProjectKey(projectTitle)
+  const normalizedTags = post.tags.map((tag) => normalizeProjectKey(normalizeTagToken(tag)))
+
+  if (normalizedTags.some((tag) => tag === key)) {
+    return true
+  }
+
   const hints = projectKeywordMap[key] ?? []
   const keywords = [...new Set([projectTitle.toLocaleLowerCase(), ...hints])]
   const source = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLocaleLowerCase()
@@ -221,6 +286,7 @@ const groupedPosts = computed(() =>
     posts: copy.value.posts.filter((post) => post.category === categoryKey),
   })),
 )
+
 const defaultCategory: BlogCategoryKey = BLOG_CATEGORY_KEYS[0] ?? 'tech'
 
 const parseCategoryQuery = (value: unknown): BlogCategoryKey | null => {
@@ -267,6 +333,21 @@ const selectCategory = (category: BlogCategoryKey) => {
 
 const selectProjectWork = (index: number) => {
   selectedProjectIndex.value = index
+}
+
+const handleProjectChange = (value: string) => {
+  if (!value) {
+    selectedProjectIndex.value = null
+    return
+  }
+
+  const index = Number(value)
+
+  if (Number.isNaN(index)) {
+    return
+  }
+
+  selectProjectWork(index)
 }
 
 const selectedGroup = computed(
@@ -336,8 +417,6 @@ const filterPostsBySearchTerms = (posts: BlogPost[], terms: { keywords: string[]
   })
 }
 
-const getCategoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
-
 const filteredSelectedPosts = computed(() => {
   const group = selectedGroup.value
 
@@ -364,6 +443,10 @@ const filteredSelectedPosts = computed(() => {
 
   return searchedPosts.filter((post) => isRetrospectiveLinkedToProject(post, project.title))
 })
+
+const canRenderPostList = computed(
+  () => isSearchActive.value || selectedGroup.value?.key !== 'retrospective' || Boolean(selectedProject.value),
+)
 
 const emptyStateLabel = computed(() => {
   if (isSearchActive.value) {
@@ -435,6 +518,7 @@ type BlogPostAdminDraft = {
   excerpt: string
   category: BlogCategoryKey
   tags: string
+  retrospectiveProjectKey: string
   publishedAt: string
   readTime: string
   heroTag: string
@@ -442,36 +526,61 @@ type BlogPostAdminDraft = {
   markdown: string
 }
 
-const parseAdminTags = (value: string) => {
+const composeAdminTags = (
+  value: string,
+  category: BlogCategoryKey,
+  retrospectiveProjectKey: string,
+) => {
   const unique = new Set<string>()
 
   value
     .split(/[,\s]+/)
-    .map((token) => token.trim().replace(/^#+/, ''))
+    .map((token) => normalizeTagToken(token))
     .filter((token) => token.length > 0)
     .forEach((token) => unique.add(token))
+
+  if (category === 'retrospective') {
+    const normalizedProjectKey = normalizeProjectKey(retrospectiveProjectKey)
+
+    if (normalizedProjectKey.length > 0) {
+      unique.add(normalizedProjectKey)
+    }
+  }
 
   return [...unique]
 }
 
 const getAdminValidationMessage = () =>
   locale.value === 'en'
-    ? 'Please fill in required fields: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
-    : '필수 항목을 입력해주세요: id, title, excerpt, publishedAt, readTime, heroTag, authorName, markdown.'
+    ? 'Please fill in required fields: title, markdown.'
+    : '필수 항목을 입력해주세요: title, markdown.'
 
 const isBlank = (value: string) => value.trim().length === 0
+const buildAutoExcerpt = (draft: BlogPostAdminDraft) => {
+  const explicitExcerpt = draft.excerpt.trim()
+
+  if (explicitExcerpt.length > 0) {
+    return explicitExcerpt
+  }
+
+  const markdownPlainText = draft.markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/[*_~>#-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (markdownPlainText.length > 0) {
+    return markdownPlainText.slice(0, 140)
+  }
+
+  return draft.title.trim()
+}
 
 const handleCreatePost = async (draft: BlogPostAdminDraft) => {
-  if (
-    isBlank(draft.id) ||
-    isBlank(draft.title) ||
-    isBlank(draft.excerpt) ||
-    isBlank(draft.publishedAt) ||
-    isBlank(draft.readTime) ||
-    isBlank(draft.heroTag) ||
-    isBlank(draft.authorName) ||
-    isBlank(draft.markdown)
-  ) {
+  if (isBlank(draft.title) || isBlank(draft.markdown)) {
     if (typeof window !== 'undefined') {
       window.alert(getAdminValidationMessage())
     }
@@ -479,16 +588,21 @@ const handleCreatePost = async (draft: BlogPostAdminDraft) => {
     return
   }
 
+  if (draft.category === 'retrospective' && isBlank(draft.retrospectiveProjectKey)) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'Please select a linked project.' : '회고 글은 연결 프로젝트를 선택해주세요.')
+    }
+
+    return
+  }
+
+  const nextTags = composeAdminTags(draft.tags, draft.category, draft.retrospectiveProjectKey)
+
   await createPost({
-    id: draft.id.trim(),
     title: draft.title.trim(),
-    excerpt: draft.excerpt.trim(),
+    excerpt: buildAutoExcerpt(draft),
     category: draft.category,
-    tags: parseAdminTags(draft.tags),
-    publishedAt: draft.publishedAt.trim(),
-    readTime: draft.readTime.trim(),
-    heroTag: draft.heroTag.trim(),
-    authorName: draft.authorName.trim(),
+    tags: nextTags,
     markdown: draft.markdown.trim(),
   })
 }
@@ -504,15 +618,22 @@ const handleUpdatePost = async (draft: BlogPostAdminDraft) => {
     return
   }
 
-  const nextTags = parseAdminTags(draft.tags)
+  if (draft.category === 'retrospective' && isBlank(draft.retrospectiveProjectKey)) {
+    if (typeof window !== 'undefined') {
+      window.alert(locale.value === 'en' ? 'Please select a linked project.' : '회고 글은 연결 프로젝트를 선택해주세요.')
+    }
+
+    return
+  }
+
+  const nextTags = composeAdminTags(draft.tags, draft.category, draft.retrospectiveProjectKey)
+  const shouldUpdateTags =
+    draft.tags.trim().length > 0 ||
+    (draft.category === 'retrospective' && draft.retrospectiveProjectKey.trim().length > 0)
+
   const payload = {
     title: draft.title.trim() || undefined,
-    excerpt: draft.excerpt.trim() || undefined,
-    tags: draft.tags.trim() ? nextTags : undefined,
-    publishedAt: draft.publishedAt.trim() || undefined,
-    readTime: draft.readTime.trim() || undefined,
-    heroTag: draft.heroTag.trim() || undefined,
-    authorName: draft.authorName.trim() || undefined,
+    tags: shouldUpdateTags ? nextTags : undefined,
     markdown: draft.markdown.trim() || undefined,
   }
 
@@ -548,64 +669,6 @@ const handleDeletePost = async ({ id }: { id: string }) => {
   await removePost(targetId)
 }
 
-let autoPlayTimer: ReturnType<typeof window.setInterval> | undefined
-
-const nextPopular = () => {
-  const count = copy.value.popularPosts.length
-
-  if (count === 0) {
-    return
-  }
-
-  activePopularIndex.value = (activePopularIndex.value + 1) % count
-}
-
-const prevPopular = () => {
-  const count = copy.value.popularPosts.length
-
-  if (count === 0) {
-    return
-  }
-
-  activePopularIndex.value = (activePopularIndex.value - 1 + count) % count
-}
-
-const clearAutoPlay = () => {
-  if (autoPlayTimer) {
-    window.clearInterval(autoPlayTimer)
-    autoPlayTimer = undefined
-  }
-}
-
-const startAutoPlay = () => {
-  clearAutoPlay()
-
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  if (reducedMotion || copy.value.popularPosts.length < 2) {
-    return
-  }
-
-  autoPlayTimer = window.setInterval(() => {
-    nextPopular()
-  }, AUTO_PLAY_MS)
-}
-
-const moveToPopular = (index: number) => {
-  activePopularIndex.value = index
-  startAutoPlay()
-}
-
-const handleNext = () => {
-  nextPopular()
-  startAutoPlay()
-}
-
-const handlePrev = () => {
-  prevPopular()
-  startAutoPlay()
-}
-
 const scrollToSearchBox = () => {
   if (typeof window === 'undefined') {
     return
@@ -623,21 +686,11 @@ const scrollToSearchBox = () => {
   })
 }
 
-onMounted(() => {
-  startAutoPlay()
-})
-
-onBeforeUnmount(() => {
-  clearAutoPlay()
-})
-
 watch(
   () => locale.value,
   () => {
-    activePopularIndex.value = 0
     searchQuery.value = ''
     selectedProjectIndex.value = null
-    startAutoPlay()
   },
 )
 
@@ -703,43 +756,22 @@ watch(
 )
 
 watch(
-  () => copy.value.popularPosts.length,
-  (count) => {
-    if (count === 0) {
-      activePopularIndex.value = 0
-      return
-    }
-
-    if (activePopularIndex.value > count - 1) {
-      activePopularIndex.value = 0
-    }
+  [() => locale.value, () => copy.value.posts.map((post) => post.id).join('|')],
+  () => {
+    void loadPostThumbnails()
   },
+  { immediate: true },
 )
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1220px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
-    <div
-      aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
-    ></div>
-
+  <div class="mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
     <main class="space-y-8">
-      <BlogPopularCarousel
-        :popular-kicker="copy.popularKicker"
-        :popular-heading="copy.popularHeading"
-        :popular-description="copy.popularDescription"
-        :empty-label="popularEmptyLabel"
-        :posts="copy.popularPosts"
-        :active-index="activePopularIndex"
-        :read-label="copy.readLabel"
-        :view-label="viewLabel"
-        :build-post-path="buildPostPath"
-        :resolve-view-count="getViewCount"
-        @prev="handlePrev"
-        @next="handleNext"
-        @move="moveToPopular"
-      />
+      <header class="focus-fade-in space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
+        <h1 class="text-3xl font-semibold leading-tight text-zinc-100">{{ copy.heading }}</h1>
+        <p class="max-w-[76ch] text-sm leading-7 text-zinc-400">{{ copy.description }}</p>
+      </header>
 
       <BlogPostAdminPanel
         v-if="isAdminPostMode"
@@ -751,6 +783,8 @@ watch(
         :category-label="adminCategoryLabel"
         :tags-label="adminTagsLabel"
         :tags-placeholder="adminTagsPlaceholder"
+        :retrospective-project-label="adminRetrospectiveProjectLabel"
+        :retrospective-project-placeholder="adminRetrospectiveProjectPlaceholder"
         :published-at-label="adminPublishedAtLabel"
         :read-time-label="adminReadTimeLabel"
         :hero-tag-label="adminHeroTagLabel"
@@ -763,77 +797,215 @@ watch(
         :reset-label="adminResetLabel"
         :is-submitting="isManagingPost"
         :category-options="adminCategoryOptions"
+        :retrospective-project-options="retrospectiveProjectOptions"
+        :show-id-field="false"
+        :show-excerpt-field="false"
+        :show-author-field="false"
+        :show-published-at-field="false"
+        :show-read-time-field="false"
+        :show-hero-tag-field="false"
         @create="handleCreatePost"
         @update="handleUpdatePost"
         @delete="handleDeletePost"
       />
 
-      <section id="blog-categories" class="space-y-4">
-        <BlogCategoryTabs
-          :groups="groupedPosts"
-          :selected-category="selectedCategory"
-          @select="selectCategory($event as BlogCategoryKey)"
-        />
-
-        <div>
-          <BlogSearchSyncPanel
-            v-model="searchQuery"
-            :search-label="searchLabel"
-            :search-placeholder="searchPlaceholder"
-            :api-status-label="apiStatusLabel"
-            :is-loading="isLoading"
-            :loading-label="loadingLabel"
-            :reload-label="reloadLabel"
-            :error-message="errorMessage"
-            @reload="reload"
-          />
+      <section id="blog-categories" class="focus-fade-in-delayed rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
+        <div class="flex flex-wrap gap-2 border-b border-[#2a2a2a] pb-3">
+          <button
+            v-for="group in groupedPosts"
+            :key="`category-${group.key}`"
+            type="button"
+            class="rounded-md px-3 py-1.5 text-sm font-medium transition"
+            :class="
+              selectedCategory === group.key
+                ? 'category-pill-active border border-[#5f5544] bg-[#211b12] text-amber-200'
+                : 'border border-transparent text-zinc-400 hover:border-[#3a3731] hover:bg-[#171717] hover:text-zinc-100'
+            "
+            @click="selectCategory(group.key as BlogCategoryKey)"
+          >
+            {{ group.title }}
+          </button>
         </div>
 
-        <article
+        <section id="blog-search" class="mt-4 space-y-2">
+          <label class="text-xs font-medium text-zinc-500" for="blog-search-input">{{ searchLabel }}</label>
+          <input
+            id="blog-search-input"
+            v-model="searchQuery"
+            type="search"
+            :placeholder="searchPlaceholder"
+            class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          />
+        </section>
+
+        <section
           v-if="selectedGroup"
           :id="isSearchActive ? 'blog-search-results' : selectedGroup.anchor"
           :key="isSearchActive ? 'search-results' : `category-${selectedGroup.key}`"
-          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#101010cc] p-4 sm:p-6"
+          class="mt-4 space-y-4"
         >
-          <p class="text-[11px] uppercase tracking-[0.11em] text-zinc-500">{{ categoryLabel }}</p>
-          <h2 class="mt-2 text-xl font-semibold text-zinc-100 sm:text-2xl">{{ activeSectionTitle }}</h2>
-          <p class="mt-2 text-sm text-zinc-400">{{ activeSectionDescription }}</p>
-
-          <BlogRetrospectiveSelector
-            v-if="selectedGroup.key === 'retrospective' && !isSearchActive"
-            :project-selector-label="projectSelectorLabel"
-            :project-selector-hint="projectSelectorHint"
-            :retrospective-heading-label="retrospectiveHeadingLabel"
-            :works="projectWorks"
-            :selected-project-index="selectedProjectIndex"
-            :selected-project-title="selectedProject?.title ?? ''"
-            @select="selectProjectWork"
-          />
-
-          <div
-            v-if="isSearchActive || selectedGroup.key !== 'retrospective' || selectedProject"
-            class="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 xl:grid-cols-3"
-          >
-            <BlogPostPreviewCard
-              v-for="(post, postIndex) in filteredSelectedPosts"
-              :key="`post-${post.id}`"
-              :post="post"
-              :group-title="isSearchActive ? getCategoryTitle(post.category) : selectedGroup.title"
-              :read-label="copy.readLabel"
-              :author-name="authorName"
-              :to="buildPostPath(post.id)"
-              :cover-background="getCoverBackground(post.category, postIndex)"
-              :view-label="viewLabel"
-              :view-count="getViewCount(post.id)"
-              :engagement="getEngagement(post.id)"
-            />
+          <div>
+            <p class="text-xs font-medium text-zinc-500">{{ categoryLabel }}</p>
+            <h2 class="mt-1 text-2xl font-semibold text-zinc-100">{{ activeSectionTitle }}</h2>
+            <p class="mt-1 text-sm text-zinc-400">{{ activeSectionDescription }}</p>
           </div>
 
-          <p v-if="filteredSelectedPosts.length === 0" class="mt-5 text-sm text-zinc-400">
+          <div v-if="selectedGroup.key === 'retrospective' && !isSearchActive" class="space-y-2">
+            <label class="text-xs font-medium text-zinc-500" for="retrospective-project-select">
+              {{ projectSelectorLabel }}
+            </label>
+            <select
+              id="retrospective-project-select"
+              :value="selectedProjectIndex === null ? '' : String(selectedProjectIndex)"
+              class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 focus:border-[#5a5a5a] focus:outline-none"
+              @change="handleProjectChange(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="">{{ projectSelectorPlaceholder }}</option>
+              <option
+                v-for="(work, workIndex) in projectWorks"
+                :key="`retrospective-work-${work.title}`"
+                :value="String(workIndex)"
+              >
+                {{ work.title }}
+              </option>
+            </select>
+          </div>
+
+          <TransitionGroup
+            v-if="canRenderPostList && filteredSelectedPosts.length > 0"
+            name="blog-post-focus"
+            tag="div"
+            class="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]"
+          >
+            <article
+              v-for="(post, postIndex) in filteredSelectedPosts"
+              :key="`post-${post.id}`"
+              class="group post-focus-card rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:-translate-y-[2px] hover:border-[#5f5544] hover:bg-[#161513]"
+              :style="{ animationDelay: getCardAnimationDelay(postIndex) }"
+            >
+              <RouterLink :to="buildPostPath(post.id)" class="block">
+                <div
+                  v-if="postThumbnailById[post.id]"
+                  class="mb-3 overflow-hidden rounded-lg border border-[#2f2f2f] bg-[#161616]"
+                >
+                  <img
+                    :src="postThumbnailById[post.id]"
+                    :alt="`${post.title} 썸네일`"
+                    class="h-36 w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                <h3 class="line-clamp-2 text-base font-semibold text-zinc-100">{{ post.title }}</h3>
+                <p class="mt-1 line-clamp-2 text-sm text-zinc-400">{{ post.excerpt }}</p>
+
+                <div class="mt-3 flex items-center justify-between gap-2 text-xs">
+                  <span class="rounded-full border border-[#343434] px-2 py-0.5 text-zinc-300">
+                    {{ categoryTitle(post.category) }}
+                  </span>
+                  <span class="text-zinc-500">{{ post.publishedAt }}</span>
+                </div>
+
+                <p class="mt-2 text-xs text-zinc-500">
+                  {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
+                </p>
+
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span
+                    v-for="tag in post.tags"
+                    :key="`${post.id}-${tag}`"
+                    class="rounded-full border border-[#343434] bg-[#161616] px-2 py-0.5 text-[11px] text-zinc-300"
+                  >
+                    #{{ normalizeTagLabel(tag) }}
+                  </span>
+                </div>
+              </RouterLink>
+            </article>
+          </TransitionGroup>
+
+          <div
+            v-else
+            class="rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3 py-4 text-center text-sm text-zinc-500"
+          >
             {{ emptyStateLabel }}
-          </p>
-        </article>
+          </div>
+        </section>
       </section>
     </main>
   </div>
 </template>
+
+<style scoped>
+.focus-fade-in {
+  animation: focusFadeUp 420ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+.focus-fade-in-delayed {
+  animation: focusFadeUp 520ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+  animation-delay: 70ms;
+}
+
+.category-pill-active {
+  animation: focusPill 300ms ease-out;
+}
+
+.post-focus-card {
+  animation: focusCardIn 420ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+.blog-post-focus-enter-active,
+.blog-post-focus-leave-active {
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.blog-post-focus-enter-from,
+.blog-post-focus-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.993);
+}
+
+@keyframes focusFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes focusCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes focusPill {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 200, 126, 0.26);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(245, 200, 126, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-fade-in,
+  .focus-fade-in-delayed,
+  .category-pill-active,
+  .post-focus-card {
+    animation: none;
+  }
+
+  .blog-post-focus-enter-active,
+  .blog-post-focus-leave-active {
+    transition-duration: 1ms;
+  }
+}
+</style>

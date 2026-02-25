@@ -19,63 +19,64 @@ type Props = {
 const props = defineProps<Props>()
 
 const formatViewCount = (value: number) => value.toLocaleString()
+const formatTagLabel = (value: string) => value.replace(/^#+/, '')
 </script>
 
 <template>
   <RouterLink
     :to="props.to"
     :aria-label="`${props.post.title} ${props.readLabel}`"
-    class="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#2d2d2d] bg-[#171717] shadow-[0_18px_28px_rgba(0,0,0,0.25)] transition duration-200 hover:-translate-y-1 hover:border-[#4a4a4a] hover:shadow-[0_22px_34px_rgba(0,0,0,0.34)]"
+    class="group flex h-full flex-col overflow-hidden rounded-xl border border-[#273346] bg-[#111a27] transition duration-200 hover:-translate-y-0.5 hover:border-[#6f8fce]"
   >
     <div
-      class="relative aspect-[16/9] border-b border-[#2d2d2d] p-4"
+      class="relative aspect-[16/9] border-b border-[#273346] p-3"
       :style="{ background: props.coverBackground }"
     >
-      <p class="text-[11px] uppercase tracking-[0.12em] text-zinc-300">{{ props.groupTitle }}</p>
-      <p class="mt-2 max-w-[85%] text-sm font-medium text-zinc-100">
-        {{ props.post.tags[0] ?? props.groupTitle }}
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#d3ddf2]">{{ props.groupTitle }}</p>
+      <p class="mt-2 max-w-[85%] text-sm font-semibold text-white">
+        #{{ formatTagLabel(props.post.tags[0] ?? props.groupTitle) }}
       </p>
       <span
-        class="absolute bottom-3 right-3 rounded-md border border-[#ffffff2e] bg-[#10101075] px-2 py-0.5 text-[10px] tracking-[0.08em] text-zinc-200"
+        class="absolute bottom-3 right-3 rounded-md border border-[#ffffff66] bg-[#0d1726cc] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-[#d3ddf2]"
       >
         BLOG
       </span>
     </div>
 
-    <div class="flex flex-1 flex-col p-4">
-      <p class="line-clamp-2 text-base font-semibold leading-snug text-zinc-100 transition group-hover:text-white/90">
+    <div class="flex flex-1 flex-col p-3">
+      <p class="line-clamp-2 text-sm font-semibold leading-snug text-zinc-100 transition group-hover:text-[#a9badb]">
         {{ props.post.title }}
       </p>
-      <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-zinc-400">{{ props.post.excerpt }}</p>
+      <p class="mt-1.5 line-clamp-3 text-xs leading-relaxed text-zinc-400">{{ props.post.excerpt }}</p>
 
-      <div class="mt-3 flex flex-wrap gap-1.5">
+      <div class="mt-2.5 flex flex-wrap gap-1.5">
         <span
           v-for="tag in props.post.tags"
           :key="`${props.post.id}-${tag}`"
-          class="rounded-full bg-[#262626] px-2 py-0.5 text-[11px] text-zinc-300"
+          class="rounded-full border border-[#2b384f] bg-[#0f1726] px-2 py-0.5 text-[11px] text-zinc-300"
         >
-          #{{ tag }}
+          #{{ formatTagLabel(tag) }}
         </span>
       </div>
 
-      <p class="mt-4 text-xs text-zinc-500">
+      <p class="mt-3 text-[11px] text-zinc-500">
         {{ props.post.publishedAt }} · {{ props.post.readTime }} · {{ props.viewLabel }} {{ formatViewCount(props.viewCount) }}
       </p>
     </div>
 
-    <div class="flex items-center justify-between border-t border-[#2d2d2d] px-4 py-3">
+    <div class="flex items-center justify-between border-t border-[#273346] px-3 py-2.5">
       <div class="inline-flex items-center gap-2">
         <span
-          class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#3a3a3a] bg-[#222222] text-[10px] font-semibold text-zinc-200"
+          class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#2b384f] bg-[#0f1726] text-[9px] font-semibold text-[#d3ddf2]"
         >
           KM
         </span>
-        <span class="text-xs text-zinc-400">{{ props.authorName }}</span>
+        <span class="text-[11px] text-zinc-500">{{ props.authorName }}</span>
       </div>
 
-      <div class="inline-flex items-center gap-3 text-xs text-zinc-400">
+      <div class="inline-flex items-center gap-2.5 text-[11px] text-zinc-500">
         <span
-          class="rounded-md border border-[#3a3a3a] px-2 py-0.5 text-[11px] text-zinc-300 transition hover:border-[#5f5f5f] hover:text-white"
+          class="rounded-md border border-[#2b384f] bg-[#0f1726] px-2 py-0.5 text-[11px] font-semibold text-[#d3ddf2] transition hover:border-[#6f8fce] hover:text-white"
         >
           {{ props.readLabel }}
         </span>

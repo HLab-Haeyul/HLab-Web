@@ -1,14 +1,14 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import { getFallbackBlogPostDetail, type BlogPostDetail } from '@/data/blog/content'
+import type { BlogPostDetail } from '@/data/blog/types'
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { fetchBlogPostDetail } from '@/services/blogApi'
 
-type BlogDataSource = 'api' | 'fallback'
+type BlogDataSource = 'api' | 'unavailable'
 
 export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<Ref<string>>) => {
   const post = ref<BlogPostDetail | null>(null)
-  const dataSource = ref<BlogDataSource>('fallback')
+  const dataSource = ref<BlogDataSource>('unavailable')
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
@@ -21,10 +21,15 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
     }
   }
 
+  const getApiUnavailableMessage = (currentLocale: Locale) =>
+    currentLocale === 'en'
+      ? 'Blog API is disabled. No local mock data is used.'
+      : '블로그 API가 비활성화되어 있습니다. 로컬 모의 데이터는 사용하지 않습니다.'
+
   const getFetchFailedMessage = (currentLocale: Locale) =>
     currentLocale === 'en'
-      ? 'Failed to load this post from API. Showing local fallback data.'
-      : 'API에서 글 상세를 불러오지 못해 로컬 fallback 데이터를 표시합니다.'
+      ? 'Failed to load this post from API.'
+      : 'API에서 글 상세를 불러오지 못했습니다.'
 
   const load = async () => {
     abortCurrentRequest()
@@ -37,9 +42,9 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
     }
 
     if (!isBlogApiEnabled()) {
-      post.value = getFallbackBlogPostDetail(locale.value, id.value)
-      dataSource.value = 'fallback'
-      errorMessage.value = null
+      post.value = null
+      dataSource.value = 'unavailable'
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       isLoading.value = false
       return
     }
@@ -64,16 +69,16 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
         return
       }
 
-      post.value = getFallbackBlogPostDetail(locale.value, id.value)
-      dataSource.value = 'fallback'
+      post.value = null
+      dataSource.value = 'unavailable'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
 
-      post.value = getFallbackBlogPostDetail(locale.value, id.value)
-      dataSource.value = 'fallback'
+      post.value = null
+      dataSource.value = 'unavailable'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } finally {
       if (!controller.signal.aborted && currentController === controller) {

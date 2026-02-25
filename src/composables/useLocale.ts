@@ -8,12 +8,43 @@ export const useLocale = () => {
   const locale = computed<Locale>(() => (route.path.startsWith('/en') ? 'en' : 'ko'))
   const basePath = computed(() => (locale.value === 'en' ? '/en' : '/ko'))
   const isStackPage = computed(() => route.path.endsWith('/stack'))
+  const adminPrefix = computed(() => `${basePath.value}/admin`)
+  const isAdminPage = computed(
+    () => route.path === adminPrefix.value || route.path.startsWith(`${adminPrefix.value}/`),
+  )
   const blogPrefix = computed(() => `${basePath.value}/blog`)
+  const projectPrefix = computed(() => `${basePath.value}/projects`)
   const isBlogPage = computed(
     () => route.path === blogPrefix.value || route.path.startsWith(`${blogPrefix.value}/`),
   )
+  const isProjectPage = computed(
+    () => route.path === projectPrefix.value || route.path.startsWith(`${projectPrefix.value}/`),
+  )
   const stackPath = computed(() => `${basePath.value}/stack`)
   const blogPath = computed(() => `${basePath.value}/blog`)
+  const projectPath = computed(() => `${basePath.value}/projects`)
+  const adminPath = computed(() => adminPrefix.value)
+  const adminBlogPath = computed(() => `${adminPrefix.value}/blog`)
+  const adminBlogWritePath = computed(() => `${adminPrefix.value}/blog/write`)
+  const adminProjectPath = computed(() => `${adminPrefix.value}/projects`)
+  const adminPortfolioPath = computed(() => `${adminPrefix.value}/portfolio`)
+  const adminSubPath = computed(() => {
+    if (!isAdminPage.value) {
+      return null
+    }
+
+    if (route.path === adminPrefix.value) {
+      return ''
+    }
+
+    const prefixWithSlash = `${adminPrefix.value}/`
+
+    if (!route.path.startsWith(prefixWithSlash)) {
+      return ''
+    }
+
+    return route.path.slice(prefixWithSlash.length)
+  })
   const blogId = computed(() => {
     if (!isBlogPage.value) {
       return null
@@ -28,6 +59,14 @@ export const useLocale = () => {
     return route.path.slice(prefixWithSlash.length) || null
   })
   const koPath = computed(() => {
+    if (isAdminPage.value) {
+      if (adminSubPath.value) {
+        return `/ko/admin/${adminSubPath.value}`
+      }
+
+      return '/ko/admin'
+    }
+
     if (isStackPage.value) {
       return '/ko/stack'
     }
@@ -40,9 +79,21 @@ export const useLocale = () => {
       return '/ko/blog'
     }
 
+    if (isProjectPage.value) {
+      return '/ko/projects'
+    }
+
     return '/ko'
   })
   const enPath = computed(() => {
+    if (isAdminPage.value) {
+      if (adminSubPath.value) {
+        return `/en/admin/${adminSubPath.value}`
+      }
+
+      return '/en/admin'
+    }
+
     if (isStackPage.value) {
       return '/en/stack'
     }
@@ -55,6 +106,10 @@ export const useLocale = () => {
       return '/en/blog'
     }
 
+    if (isProjectPage.value) {
+      return '/en/projects'
+    }
+
     return '/en'
   })
 
@@ -63,9 +118,17 @@ export const useLocale = () => {
     locale,
     basePath,
     isStackPage,
+    isAdminPage,
     isBlogPage,
+    isProjectPage,
     stackPath,
     blogPath,
+    projectPath,
+    adminPath,
+    adminBlogPath,
+    adminBlogWritePath,
+    adminProjectPath,
+    adminPortfolioPath,
     blogId,
     koPath,
     enPath,

@@ -160,6 +160,10 @@ const sanitizeUrl = (raw: string) => {
     return null
   }
 
+  if (value.startsWith('data:image/')) {
+    return value
+  }
+
   if (value.startsWith('/')) {
     return value
   }
@@ -167,7 +171,12 @@ const sanitizeUrl = (raw: string) => {
   try {
     const parsed = new URL(value)
 
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:') {
+    if (
+      parsed.protocol === 'http:' ||
+      parsed.protocol === 'https:' ||
+      parsed.protocol === 'mailto:' ||
+      parsed.protocol === 'blob:'
+    ) {
       return parsed.toString()
     }
   } catch {
@@ -178,10 +187,38 @@ const sanitizeUrl = (raw: string) => {
 }
 
 const renderInline = (rawText: string) => {
+  const imageTokens: string[] = []
   const linkTokens: string[] = []
   const codeTokens: string[] = []
 
   let text = rawText
+
+  text = text.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)(?:\{width=(\d{1,4})(%|px)?\})?/g,
+    (_, alt: string, src: string, widthRaw: string | undefined, unitRaw: string | undefined) => {
+      const safeSrc = sanitizeUrl(src)
+
+      if (!safeSrc) {
+        return escapeHtml(alt)
+      }
+
+      const parsedWidth = typeof widthRaw === 'string' ? Number.parseInt(widthRaw, 10) : NaN
+      const hasWidth = Number.isFinite(parsedWidth) && parsedWidth > 0
+      const unit = unitRaw === 'px' ? 'px' : '%'
+
+      const widthStyle = hasWidth
+        ? unit === 'px'
+          ? `${Math.min(Math.max(parsedWidth, 80), 1600)}px`
+          : `${Math.min(Math.max(parsedWidth, 20), 100)}%`
+        : '100%'
+
+      const token = `@@IMAGE_TOKEN_${imageTokens.length}@@`
+      imageTokens.push(
+        `<img src="${escapeHtml(safeSrc)}" alt="${escapeHtml(alt)}" loading="lazy" style="width:${widthStyle};max-width:100%;height:auto;" />`,
+      )
+      return token
+    },
+  )
 
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label: string, href: string) => {
     const safeHref = sanitizeUrl(href)
@@ -210,6 +247,10 @@ const renderInline = (rawText: string) => {
 
   codeTokens.forEach((token, index) => {
     text = text.replace(`@@CODE_TOKEN_${index}@@`, token)
+  })
+
+  imageTokens.forEach((token, index) => {
+    text = text.replace(`@@IMAGE_TOKEN_${index}@@`, token)
   })
 
   linkTokens.forEach((token, index) => {

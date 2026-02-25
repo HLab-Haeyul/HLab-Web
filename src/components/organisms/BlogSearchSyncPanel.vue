@@ -20,11 +20,14 @@ const emit = defineEmits<{
 
 <template>
   <div class="space-y-4">
-    <div id="blog-search" class="rounded-2xl border border-[#2a2a2a] bg-[#111111d1] p-3">
+    <div
+      id="blog-search"
+      class="rounded-2xl border border-[#273346] bg-[#111a27] p-4"
+    >
       <label class="mb-2 block text-xs uppercase tracking-[0.11em] text-zinc-500" for="blog-search-input">
         {{ props.searchLabel }}
       </label>
-      <div class="flex items-center gap-2 rounded-xl border border-[#2e2e2e] bg-[#161616] px-3 py-2">
+      <div class="flex items-center gap-2 rounded-xl border border-[#2b384f] bg-[#0f1726] px-3 py-2">
         <svg
           class="h-4 w-4 shrink-0 text-zinc-500"
           viewBox="0 0 24 24"
@@ -43,22 +46,22 @@ const emit = defineEmits<{
           id="blog-search-input"
           :value="props.modelValue"
           type="search"
-          class="w-full border-0 bg-transparent text-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none"
+          class="w-full border-0 bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
           :placeholder="props.searchPlaceholder"
           @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         />
       </div>
     </div>
 
-    <div id="blog-sync" class="rounded-2xl border border-[#2a2a2a] bg-[#111111d1] p-3">
+    <div id="blog-sync" class="rounded-2xl border border-[#273346] bg-[#111a27] p-4">
       <div class="flex items-center justify-between gap-2">
         <p class="text-xs text-zinc-400">
           {{ props.apiStatusLabel }}
-          <span v-if="props.isLoading"> · {{ props.loadingLabel }}</span>
+          <span v-if="props.isLoading" class="text-[#a9badb]"> · {{ props.loadingLabel }}</span>
         </p>
         <button
           type="button"
-          class="rounded-lg border border-[#313131] px-2.5 py-1 text-xs text-zinc-300 transition hover:border-[#5b5b5b] hover:text-white"
+          class="rounded-lg border border-[#2a3950] px-2.5 py-1 text-xs font-medium text-zinc-300 transition hover:border-[#6f8fce] hover:text-white"
           @click="emit('reload')"
         >
           {{ props.reloadLabel }}

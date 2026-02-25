@@ -39,6 +39,7 @@ let metricRaf: number | undefined
 const INTRO_DURATION_MS = 1450
 const INTRO_STORAGE_KEY = 'portfolio_intro_seen'
 const METRIC_DURATION_MS = 1050
+const SECTION_REVEAL_INTERVAL_MS = 95
 
 const parseMetric = (rawValue: string) => {
   const match = rawValue.match(/^(.*?)(\d+(?:\.\d+)?)(.*)$/)
@@ -107,6 +108,15 @@ const runMetricCounter = () => {
   }
 
   metricRaf = requestAnimationFrame(animate)
+}
+
+const getSectionRevealStyle = (sectionIndex: number) => {
+  const introOffset = showIntro.value ? Math.max(INTRO_DURATION_MS - 220, 0) : 0
+  const delay = introOffset + Math.min(sectionIndex, 9) * SECTION_REVEAL_INTERVAL_MS
+
+  return {
+    '--section-reveal-delay': `${delay}ms`,
+  }
 }
 
 const syncViewport = () => {
@@ -183,7 +193,7 @@ watch(
 <template>
   <div
     class="relative isolate mx-auto w-full px-4 pt-5"
-    :class="isAppLayout ? 'max-w-[430px] pb-24 sm:px-4' : 'max-w-[1220px] pb-14 sm:px-8 lg:px-12'"
+    :class="isAppLayout ? 'max-w-[430px] pb-24 sm:px-4' : 'max-w-[1480px] pb-14 sm:px-8 lg:px-12'"
   >
     <div
       aria-hidden="true"
@@ -213,26 +223,51 @@ watch(
           : ''
       "
     >
-      <PortfolioHeroSection :copy="copy" :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
-      <PortfolioMetricsSection
-        :metrics="copy.metrics"
-        :metric-display-values="metricDisplayValues"
-        :is-app-layout="isAppLayout"
-      />
-      <PortfolioStackTickerSection :ticker-loop-items="tickerLoopItems" :is-app-layout="isAppLayout" />
-      <PortfolioAwardsSection :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
-      <PortfolioWorkSection :copy="copy" :is-app-layout="isAppLayout" />
-      <PortfolioPrinciplesSection :copy="copy" :is-app-layout="isAppLayout" />
-      <PortfolioContactSection :copy="copy" :is-app-layout="isAppLayout" />
+      <div class="section-reveal" :style="getSectionRevealStyle(0)">
+        <PortfolioHeroSection :copy="copy" :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(1)">
+        <PortfolioMetricsSection
+          :metrics="copy.metrics"
+          :metric-display-values="metricDisplayValues"
+          :is-app-layout="isAppLayout"
+        />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(2)">
+        <PortfolioStackTickerSection :ticker-loop-items="tickerLoopItems" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(3)">
+        <PortfolioAwardsSection :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(4)">
+        <PortfolioWorkSection :copy="copy" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(5)">
+        <PortfolioPrinciplesSection :copy="copy" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(6)">
+        <PortfolioContactSection :copy="copy" :is-app-layout="isAppLayout" />
+      </div>
     </main>
 
-    <footer :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'">
+    <footer
+      class="section-reveal"
+      :style="getSectionRevealStyle(7)"
+      :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'"
+    >
       <p class="text-sm text-zinc-500">© {{ currentYear }} {{ copy.footerName }}</p>
     </footer>
   </div>
 </template>
 
 <style scoped>
+.section-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: section-fade-up 560ms cubic-bezier(0.22, 0.8, 0.2, 1) forwards;
+  animation-delay: var(--section-reveal-delay, 0ms);
+}
+
 .intro-overlay {
   position: fixed;
   inset: 0;
@@ -241,8 +276,8 @@ watch(
   place-items: center;
   padding: 1.25rem;
   background:
-    radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.12), transparent 42%),
-    radial-gradient(circle at 50% 110%, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 50% -10%, rgba(79, 141, 255, 0.12), transparent 42%),
+    radial-gradient(circle at 50% 110%, rgba(79, 141, 255, 0.08), transparent 34%),
     linear-gradient(165deg, #0f0f0f 0%, #111111 52%, #121212 100%);
 }
 
@@ -329,7 +364,24 @@ watch(
   }
 }
 
+@keyframes section-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .section-reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
   .intro-brand,
   .intro-meter span {
     animation: none;
