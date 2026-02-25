@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   BLOG_CATEGORY_KEYS,
-  getFallbackBlogPostDetail,
   type BlogCategoryKey,
   type BlogPost,
 } from '@/data/blog/content'
@@ -191,36 +190,10 @@ const sanitizeImageUrl = (raw?: string | null) => {
   return null
 }
 
-const resolveFallbackThumbnail = (postId: string) => {
-  const detail = getFallbackBlogPostDetail(locale.value, postId)
-
-  if (!detail?.images || detail.images.length === 0) {
-    return null
-  }
-
-  for (const image of detail.images) {
-    const src = sanitizeImageUrl(image.src)
-
-    if (src) {
-      return src
-    }
-  }
-
-  return null
-}
-
 const loadPostThumbnails = async () => {
   const requestToken = ++thumbnailLoadToken
   const postIds = copy.value.posts.map((post) => post.id)
   const nextThumbnailById: Record<string, string> = {}
-
-  postIds.forEach((postId) => {
-    const fallbackThumbnail = resolveFallbackThumbnail(postId)
-
-    if (fallbackThumbnail) {
-      nextThumbnailById[postId] = fallbackThumbnail
-    }
-  })
 
   if (isBlogApiEnabled() && postIds.length > 0) {
     const thumbnailResults = await Promise.all(

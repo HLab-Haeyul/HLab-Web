@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import { blogPageCopyByLocale, type BlogPost } from '@/data/blog/content'
+import type { BlogPost } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
+import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
 
 const { locale, blogPath, route } = useLocale()
+const { copy: blogCopy } = useBlogContent(locale)
 
 const projects = computed(() => worksByLocale[locale.value])
 const selectedProjectIndex = ref(0)
@@ -67,7 +69,7 @@ const troubleshootingPosts = computed(() => {
     return []
   }
 
-  return blogPageCopyByLocale[locale.value].posts.filter(
+  return blogCopy.value.posts.filter(
     (post) => post.category === 'retrospective' && isTroubleshootingLinkedToProject(post, project.title),
   )
 })

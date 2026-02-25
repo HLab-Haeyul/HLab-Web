@@ -13,16 +13,21 @@ import {
   updateBlogPost,
 } from '@/services/blogApi'
 
-type BlogDataSource = 'api' | 'fallback'
+type BlogDataSource = 'api' | 'unavailable'
 type CreatePostResult = {
   ok: boolean
   status: number | null
-  source: BlogDataSource
 }
 
+const createEmptyCopy = (currentLocale: Locale): BlogPageCopySet => ({
+  ...blogPageCopyByLocale[currentLocale],
+  posts: [],
+  popularPosts: [],
+})
+
 export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
-  const copy = ref<BlogPageCopySet>(blogPageCopyByLocale[locale.value])
-  const dataSource = ref<BlogDataSource>('fallback')
+  const copy = ref<BlogPageCopySet>(createEmptyCopy(locale.value))
+  const dataSource = ref<BlogDataSource>('unavailable')
   const isLoading = ref(false)
   const isUpdating = ref(false)
   const isManagingPost = ref(false)
@@ -37,18 +42,23 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     }
   }
 
+  const getApiUnavailableMessage = (currentLocale: Locale) =>
+    currentLocale === 'en'
+      ? 'Blog API is disabled. No local mock data is used.'
+      : '블로그 API가 비활성화되어 있습니다. 로컬 모의 데이터는 사용하지 않습니다.'
+
   const getFetchFailedMessage = (currentLocale: Locale) =>
     currentLocale === 'en'
-      ? 'Failed to load posts from API. Showing local fallback data.'
-      : 'API에서 글을 불러오지 못해 로컬 fallback 데이터를 표시합니다.'
+      ? 'Failed to load posts from API.'
+      : 'API에서 글 목록을 불러오지 못했습니다.'
 
   const load = async () => {
     abortCurrentRequest()
 
     if (!isBlogApiEnabled()) {
-      copy.value = blogPageCopyByLocale[locale.value]
-      dataSource.value = 'fallback'
-      errorMessage.value = null
+      copy.value = createEmptyCopy(locale.value)
+      dataSource.value = 'unavailable'
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       isLoading.value = false
       return
     }
@@ -71,16 +81,16 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
         return
       }
 
-      copy.value = blogPageCopyByLocale[locale.value]
-      dataSource.value = 'fallback'
+      copy.value = createEmptyCopy(locale.value)
+      dataSource.value = 'unavailable'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
 
-      copy.value = blogPageCopyByLocale[locale.value]
-      dataSource.value = 'fallback'
+      copy.value = createEmptyCopy(locale.value)
+      dataSource.value = 'unavailable'
       errorMessage.value = getFetchFailedMessage(locale.value)
     } finally {
       if (!controller.signal.aborted && currentController === controller) {
@@ -101,6 +111,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
 
   const updateMainPageCopy = async (input: BlogMainPagePatchInput) => {
     if (!isBlogApiEnabled()) {
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       return false
     }
 
@@ -185,62 +196,16 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
   const getPostManageFailedMessage = (currentLocale: Locale) =>
     currentLocale === 'en' ? 'Failed to manage blog post.' : '게시글 관리에 실패했습니다.'
 
-  const buildFallbackPostId = (input: BlogPostCreateInput) => {
-    const explicitId = input.id?.trim()
-
-    if (explicitId) {
-      return explicitId
-    }
-
-    const fromTitle = input.title
-      .trim()
-      .toLocaleLowerCase()
-      .replace(/[^a-z0-9가-힣\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-
-    if (fromTitle) {
-      return `${fromTitle}-${Date.now()}`
-    }
-
-    return `post-${Date.now()}`
-  }
-
-  const resolveFallbackPublishedAt = (value?: string) => {
-    const trimmed = value?.trim()
-
-    if (trimmed) {
-      return trimmed
-    }
-
-    return new Date().toISOString().slice(0, 10)
-  }
-
   const createPostWithStatus = async (input: BlogPostCreateInput): Promise<CreatePostResult> => {
     isManagingPost.value = true
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      const fallbackId = buildFallbackPostId(input)
-
-      upsertListPost(
-        toListPost({
-          id: fallbackId,
-          title: input.title,
-          excerpt: input.excerpt,
-          publishedAt: resolveFallbackPublishedAt(input.publishedAt),
-          readTime: input.readTime ?? (locale.value === 'en' ? '5 min' : '5분'),
-          tags: input.tags,
-          category: input.category,
-        }),
-      )
-      dataSource.value = 'fallback'
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       isManagingPost.value = false
       return {
-        ok: true,
+        ok: false,
         status: null,
-        source: 'fallback',
       }
     }
 
@@ -252,7 +217,6 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
         return {
           ok: false,
           status,
-          source: 'api',
         }
       }
 
@@ -271,14 +235,12 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
       return {
         ok: true,
         status,
-        source: 'api',
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return {
           ok: false,
           status: null,
-          source: 'api',
         }
       }
 
@@ -286,7 +248,6 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
       return {
         ok: false,
         status: null,
-        source: 'api',
       }
     } finally {
       isManagingPost.value = false
@@ -303,28 +264,9 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      const currentPost = copy.value.posts.find((post) => post.id === id)
-
-      if (!currentPost) {
-        errorMessage.value = getPostManageFailedMessage(locale.value)
-        isManagingPost.value = false
-        return false
-      }
-
-      upsertListPost(
-        toListPost({
-          id: currentPost.id,
-          title: input.title ?? currentPost.title,
-          excerpt: input.excerpt ?? currentPost.excerpt,
-          publishedAt: input.publishedAt ?? currentPost.publishedAt,
-          readTime: input.readTime ?? currentPost.readTime,
-          tags: input.tags ?? currentPost.tags,
-          category: input.category ?? currentPost.category,
-        }),
-      )
-      dataSource.value = 'fallback'
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       isManagingPost.value = false
-      return true
+      return false
     }
 
     try {
@@ -365,10 +307,9 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      removeListPost(id)
-      dataSource.value = 'fallback'
+      errorMessage.value = getApiUnavailableMessage(locale.value)
       isManagingPost.value = false
-      return true
+      return false
     }
 
     try {
