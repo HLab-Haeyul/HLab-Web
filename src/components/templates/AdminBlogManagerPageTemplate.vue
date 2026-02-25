@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BLOG_CATEGORY_KEYS, getFallbackBlogPostDetail, type BlogCategoryKey } from '@/data/blog/content'
+import { BLOG_CATEGORY_KEYS, type BlogCategoryKey } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useBlogPostContent } from '@/composables/useBlogPostContent'
@@ -170,18 +170,8 @@ const handleCreatePost = async (draft: BlogPostAdminDraft) => {
     return
   }
 
-  if (result.source === 'fallback' && result.ok) {
-    window.alert('API가 비활성화되어 로컬 데이터에 임시 저장했습니다.')
-
-    if (props.writeMode) {
-      await router.push(adminBlogPath.value)
-    }
-
-    return
-  }
-
-  if (result.ok && result.status === 200) {
-    window.alert('게시글 작성이 성공했습니다. (200)')
+  if (result.ok) {
+    window.alert(`게시글 작성이 성공했습니다. (status: ${result.status ?? 'unknown'})`)
 
     if (props.writeMode) {
       await router.push(adminBlogPath.value)
@@ -370,36 +360,10 @@ const sanitizeImageUrl = (raw?: string | null) => {
   return null
 }
 
-const resolveFallbackThumbnail = (postId: string) => {
-  const detail = getFallbackBlogPostDetail(locale.value, postId)
-
-  if (!detail?.images || detail.images.length === 0) {
-    return null
-  }
-
-  for (const image of detail.images) {
-    const src = sanitizeImageUrl(image.src)
-
-    if (src) {
-      return src
-    }
-  }
-
-  return null
-}
-
 const loadPostThumbnails = async () => {
   const requestToken = ++thumbnailLoadToken
   const postIds = copy.value.posts.map((post) => post.id)
   const nextThumbnailById: Record<string, string> = {}
-
-  postIds.forEach((postId) => {
-    const fallbackThumbnail = resolveFallbackThumbnail(postId)
-
-    if (fallbackThumbnail) {
-      nextThumbnailById[postId] = fallbackThumbnail
-    }
-  })
 
   if (isBlogApiEnabled() && postIds.length > 0) {
     const thumbnailResults = await Promise.all(
