@@ -19,7 +19,7 @@ const profilePhotoSrc = computed(() => props.profileShowcase.photoSrc)
           {{ copy.eyebrow }}
         </p>
         <h1
-          class="mt-3 max-w-[17ch] leading-[0.97] tracking-[-0.02em] text-white [font-family:var(--font-display)]"
+          class="mt-3 max-w-[17ch] leading-[0.97] tracking-[-0.02em] text-zinc-100 [font-family:var(--font-display)]"
           :class="isAppLayout ? 'text-[clamp(1.9rem,8vw,2.6rem)]' : 'text-[clamp(2.3rem,6vw,5.2rem)]'"
         >
           {{ copy.heroTitle }}
@@ -29,7 +29,7 @@ const profilePhotoSrc = computed(() => props.profileShowcase.photoSrc)
         </p>
         <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
           <a
-            class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:-translate-y-0.5 hover:!text-[#0f0f0f]"
+            class="inline-flex items-center justify-center rounded-full bg-[#6f8fce] px-4 py-3 text-sm font-semibold !text-white shadow-[0_10px_22px_rgba(79,141,255,0.3)] transition hover:-translate-y-0.5 hover:bg-[#5f7fbe] hover:!text-white"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
             href="#work"
           >

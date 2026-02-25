@@ -22,14 +22,14 @@ const emit = defineEmits<{
   <div class="space-y-4">
     <div
       id="blog-search"
-      class="rounded-2xl border border-[#e8eef2] bg-white p-4 shadow-[0_12px_26px_rgba(15,23,42,0.06)]"
+      class="rounded-2xl border border-[#273346] bg-[#111a27] p-4"
     >
-      <label class="mb-2 block text-xs uppercase tracking-[0.11em] text-[#868e96]" for="blog-search-input">
+      <label class="mb-2 block text-xs uppercase tracking-[0.11em] text-zinc-500" for="blog-search-input">
         {{ props.searchLabel }}
       </label>
-      <div class="flex items-center gap-2 rounded-xl border border-[#dee2e6] bg-[#f8fafb] px-3 py-2">
+      <div class="flex items-center gap-2 rounded-xl border border-[#2b384f] bg-[#0f1726] px-3 py-2">
         <svg
-          class="h-4 w-4 shrink-0 text-[#868e96]"
+          class="h-4 w-4 shrink-0 text-zinc-500"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -46,28 +46,28 @@ const emit = defineEmits<{
           id="blog-search-input"
           :value="props.modelValue"
           type="search"
-          class="w-full border-0 bg-transparent text-sm text-[#212529] placeholder:text-[#adb5bd] focus:outline-none"
+          class="w-full border-0 bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
           :placeholder="props.searchPlaceholder"
           @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         />
       </div>
     </div>
 
-    <div id="blog-sync" class="rounded-2xl border border-[#e8eef2] bg-white p-4 shadow-[0_12px_26px_rgba(15,23,42,0.06)]">
+    <div id="blog-sync" class="rounded-2xl border border-[#273346] bg-[#111a27] p-4">
       <div class="flex items-center justify-between gap-2">
-        <p class="text-xs text-[#495057]">
+        <p class="text-xs text-zinc-400">
           {{ props.apiStatusLabel }}
-          <span v-if="props.isLoading" class="text-[#12b886]"> · {{ props.loadingLabel }}</span>
+          <span v-if="props.isLoading" class="text-[#a9badb]"> · {{ props.loadingLabel }}</span>
         </p>
         <button
           type="button"
-          class="rounded-lg border border-[#dbe4ea] px-2.5 py-1 text-xs font-medium text-[#495057] transition hover:border-[#12b886] hover:text-[#087f5b]"
+          class="rounded-lg border border-[#2a3950] px-2.5 py-1 text-xs font-medium text-zinc-300 transition hover:border-[#6f8fce] hover:text-white"
           @click="emit('reload')"
         >
           {{ props.reloadLabel }}
         </button>
       </div>
-      <p v-if="props.errorMessage" class="mt-2 text-xs text-[#e67700]">
+      <p v-if="props.errorMessage" class="mt-2 text-xs text-amber-300">
         {{ props.errorMessage }}
       </p>
     </div>

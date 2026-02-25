@@ -70,21 +70,21 @@ watch(
 </script>
 
 <template>
-  <div class="sticky top-3 z-30 mx-auto w-full max-w-[1480px] px-4 pt-5 sm:px-8 lg:px-12">
+  <div class="sticky top-2 z-30 mx-auto w-full max-w-[1480px] px-4 pt-4 sm:px-8 lg:px-12">
     <header
-      class="rounded-2xl border border-[#2a2a2a] bg-[#121212d6] px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
+      class="rounded-xl border border-[#273346] bg-[#101827d9] px-3 py-2.5 shadow-[0_12px_26px_rgba(0,0,0,0.34)] backdrop-blur sm:px-4 sm:py-3"
     >
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center justify-between gap-2.5">
         <button
           type="button"
-          class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-200"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#273346] text-[#c3cfdf] transition hover:border-[#6f8fce] hover:text-white"
           @click="toggleSidebar"
           aria-label="Open sidebar"
           :aria-expanded="isSidebarOpen"
           aria-controls="site-sidebar"
         >
           <svg
-            class="h-5 w-5"
+            class="h-4 w-4"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -100,32 +100,36 @@ watch(
         </button>
 
         <RouterLink
-          class="inline-flex items-center gap-2.5 text-sm font-bold tracking-[0.12em] text-zinc-100"
+          class="inline-flex items-center gap-2 text-[13px] font-bold tracking-[0.08em] text-[#dde6f5]"
           :to="basePath"
         >
           <img
             :src="logoSrc"
             alt="HLab logo"
-            class="h-6 w-6 shrink-0 rounded-md border border-[#2a2a2a] bg-[#111111] object-contain sm:h-7 sm:w-7"
+            class="h-5 w-5 shrink-0 rounded-md border border-[#273346] bg-[#0f1726] object-contain sm:h-6 sm:w-6"
             loading="eager"
           />
           <span>KIMMINJAE</span>
         </RouterLink>
 
-        <div class="inline-flex rounded-full border border-[#2a2a2a] p-1">
+        <div class="inline-flex rounded-full border border-[#273346] bg-[#0f1726] p-1">
           <RouterLink
-            class="min-w-10 rounded-full px-2.5 py-1.5 text-center text-xs tracking-[0.08em] transition"
+            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
             :class="
-              locale === 'ko' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
+              locale === 'ko'
+                ? 'bg-[#6f8fce] !text-white shadow-[0_8px_18px_rgba(111,143,206,0.32)]'
+                : 'text-[#b4c0d3] hover:text-[#dde6f5]'
             "
             :to="koPath"
           >
             KO
           </RouterLink>
           <RouterLink
-            class="min-w-10 rounded-full px-2.5 py-1.5 text-center text-xs tracking-[0.08em] transition"
+            class="min-w-9 rounded-full px-2 py-1 text-center text-[11px] tracking-[0.08em] transition"
             :class="
-              locale === 'en' ? 'bg-white !text-[#0f0f0f]' : 'text-zinc-400 hover:text-zinc-100'
+              locale === 'en'
+                ? 'bg-[#6f8fce] !text-white shadow-[0_8px_18px_rgba(111,143,206,0.32)]'
+                : 'text-[#b4c0d3] hover:text-[#dde6f5]'
             "
             :to="enPath"
           >
@@ -138,16 +142,16 @@ watch(
 
   <aside
     id="site-sidebar"
-    class="fixed left-0 top-0 z-40 h-full w-[78%] max-w-[320px] border-r border-[#2a2a2a] bg-[#101010] p-4 shadow-2xl transition-transform duration-300 sm:w-[360px] sm:max-w-[360px]"
+    class="fixed left-0 top-0 z-40 h-full w-[76%] max-w-[300px] border-r border-[#273346] bg-[#0d1524] p-3.5 shadow-[0_24px_38px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:w-[340px] sm:max-w-[340px]"
     :class="
       isSidebarOpen ? 'pointer-events-auto translate-x-0' : 'pointer-events-none -translate-x-full'
     "
   >
-    <div class="mb-5 flex items-center justify-between">
-      <p class="text-xs tracking-[0.14em] text-zinc-400">MENU</p>
+    <div class="mb-4 flex items-center justify-between">
+      <p class="text-xs tracking-[0.14em] text-[#8494aa]">MENU</p>
       <button
         type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#2a2a2a] text-zinc-300"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#273346] text-[#c3cfdf] transition hover:border-[#6f8fce] hover:text-white"
         @click="closeSidebar"
         aria-label="Close sidebar"
       >

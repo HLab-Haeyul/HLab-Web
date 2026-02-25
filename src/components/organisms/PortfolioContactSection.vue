@@ -23,14 +23,14 @@ defineProps<{
 
     <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
       <a
-        class="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-semibold !text-[#0f0f0f] transition hover:!text-[#0f0f0f]"
+        class="inline-flex items-center justify-center rounded-full bg-[#6f8fce] px-4 py-3 text-sm font-semibold !text-white shadow-[0_10px_22px_rgba(79,141,255,0.3)] transition hover:bg-[#5f7fbe] hover:!text-white"
         :class="isAppLayout ? 'w-full' : 'min-w-40'"
         href="kimminje661@outlook.kr"
       >
         {{ copy.emailCta }}
       </a>
       <a
-        class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition"
+        class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:border-[#6f8fce] hover:text-white"
         :class="isAppLayout ? 'w-full' : 'min-w-40'"
         href="https://github.com/fixgramwork"
         target="_blank"

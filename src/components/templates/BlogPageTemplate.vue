@@ -159,6 +159,7 @@ const retrospectiveProjectOptions = computed(() => {
 })
 
 const getViewCount = (id: string) => getEstimatedViewCount(id)
+const getCardAnimationDelay = (index: number) => `${Math.min(index, 11) * 45}ms`
 const postThumbnailById = ref<Record<string, string>>({})
 let thumbnailLoadToken = 0
 
@@ -793,7 +794,7 @@ watch(
 <template>
   <div class="mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
     <main class="space-y-8">
-      <header class="space-y-2">
+      <header class="focus-fade-in space-y-2">
         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
         <h1 class="text-3xl font-semibold leading-tight text-zinc-100">{{ copy.heading }}</h1>
         <p class="max-w-[76ch] text-sm leading-7 text-zinc-400">{{ copy.description }}</p>
@@ -835,7 +836,7 @@ watch(
         @delete="handleDeletePost"
       />
 
-      <section id="blog-categories" class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
+      <section id="blog-categories" class="focus-fade-in-delayed rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
         <div class="flex flex-wrap gap-2 border-b border-[#2a2a2a] pb-3">
           <button
             v-for="group in groupedPosts"
@@ -844,7 +845,7 @@ watch(
             class="rounded-md px-3 py-1.5 text-sm font-medium transition"
             :class="
               selectedCategory === group.key
-                ? 'border border-[#5f5544] bg-[#211b12] text-amber-200'
+                ? 'category-pill-active border border-[#5f5544] bg-[#211b12] text-amber-200'
                 : 'border border-transparent text-zinc-400 hover:border-[#3a3731] hover:bg-[#171717] hover:text-zinc-100'
             "
             @click="selectCategory(group.key as BlogCategoryKey)"
@@ -897,14 +898,17 @@ watch(
             </select>
           </div>
 
-          <div
+          <TransitionGroup
             v-if="canRenderPostList && filteredSelectedPosts.length > 0"
+            name="blog-post-focus"
+            tag="div"
             class="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]"
           >
             <article
-              v-for="post in filteredSelectedPosts"
+              v-for="(post, postIndex) in filteredSelectedPosts"
               :key="`post-${post.id}`"
-              class="group rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513]"
+              class="group post-focus-card rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:-translate-y-[2px] hover:border-[#5f5544] hover:bg-[#161513]"
+              :style="{ animationDelay: getCardAnimationDelay(postIndex) }"
             >
               <RouterLink :to="buildPostPath(post.id)" class="block">
                 <div
@@ -944,7 +948,7 @@ watch(
                 </div>
               </RouterLink>
             </article>
-          </div>
+          </TransitionGroup>
 
           <div
             v-else
@@ -957,3 +961,78 @@ watch(
     </main>
   </div>
 </template>
+
+<style scoped>
+.focus-fade-in {
+  animation: focusFadeUp 420ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+.focus-fade-in-delayed {
+  animation: focusFadeUp 520ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+  animation-delay: 70ms;
+}
+
+.category-pill-active {
+  animation: focusPill 300ms ease-out;
+}
+
+.post-focus-card {
+  animation: focusCardIn 420ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+.blog-post-focus-enter-active,
+.blog-post-focus-leave-active {
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.blog-post-focus-enter-from,
+.blog-post-focus-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.993);
+}
+
+@keyframes focusFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes focusCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes focusPill {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 200, 126, 0.26);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(245, 200, 126, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-fade-in,
+  .focus-fade-in-delayed,
+  .category-pill-active,
+  .post-focus-card {
+    animation: none;
+  }
+
+  .blog-post-focus-enter-active,
+  .blog-post-focus-leave-active {
+    transition-duration: 1ms;
+  }
+}
+</style>
