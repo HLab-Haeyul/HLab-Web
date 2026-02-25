@@ -32,8 +32,8 @@ const isActive = (path: string) => route.path === path || route.path.startsWith(
 </script>
 
 <template>
-  <aside class="rounded-2xl border border-[#2a2a2a] bg-[#111111e0] p-3">
-    <p class="px-1 text-[11px] uppercase tracking-[0.11em] text-zinc-500">관리 메뉴</p>
+  <aside class="rounded-2xl border border-[#273346] bg-[#101827d9] p-3 shadow-[0_12px_24px_rgba(0,0,0,0.3)]">
+    <p class="px-1 text-[11px] uppercase tracking-[0.11em] text-[#8494aa]">관리 메뉴</p>
     <nav class="mt-2 space-y-1" aria-label="관리자 메뉴">
       <RouterLink
         v-for="item in navItems"
@@ -42,8 +42,8 @@ const isActive = (path: string) => route.path === path || route.path.startsWith(
         class="block rounded-lg px-3 py-2 text-sm font-medium transition"
         :class="
           isActive(item.to)
-            ? 'border border-[#5f5544] bg-[#211b12] text-amber-200'
-            : 'border border-transparent text-zinc-300 hover:border-[#3a3731] hover:bg-[#171717] hover:text-zinc-100'
+            ? 'border border-[#6f8fce] bg-[#152847] text-[#d3ddf2]'
+            : 'border border-transparent text-[#c3cfdf] hover:border-[#32405a] hover:bg-[#162237] hover:text-white'
         "
       >
         {{ item.label }}

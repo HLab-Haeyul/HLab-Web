@@ -18,10 +18,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="mt-5 rounded-2xl border border-[#e8eef2] bg-[#fcfefe] p-3.5 sm:p-4">
+  <section class="mt-5 rounded-2xl border border-[#273346] bg-[#111a27] p-3.5 sm:p-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="text-xs uppercase tracking-[0.11em] text-[#868e96]">{{ props.projectSelectorLabel }}</p>
-      <p class="text-xs text-[#868e96]">{{ props.projectSelectorHint }}</p>
+      <p class="text-xs uppercase tracking-[0.11em] text-zinc-500">{{ props.projectSelectorLabel }}</p>
+      <p class="text-xs text-zinc-500">{{ props.projectSelectorHint }}</p>
     </div>
 
     <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -32,23 +32,23 @@ const emit = defineEmits<{
         class="rounded-xl border p-3 text-left transition"
         :class="
           props.selectedProjectIndex === workIndex
-            ? 'border-[#12b886] bg-white shadow-[0_10px_20px_rgba(18,184,134,0.18)]'
-            : 'border-[#e5eaed] bg-white hover:border-[#ced4da] hover:bg-[#f8fafb]'
+            ? 'border-[#6f8fce] bg-[#14243d]'
+            : 'border-[#2b384f] bg-[#0f1726] hover:border-[#3c4f6d] hover:bg-[#152134]'
         "
         :aria-pressed="props.selectedProjectIndex === workIndex"
         @click="emit('select', workIndex)"
       >
-        <p class="text-sm font-semibold text-[#212529]">{{ work.title }}</p>
-        <p class="mt-1 text-xs text-[#868e96]">{{ work.summary }}</p>
-        <p class="mt-2 text-xs text-[#495057]">{{ work.impact }}</p>
+        <p class="text-sm font-semibold text-zinc-100">{{ work.title }}</p>
+        <p class="mt-1 text-xs text-zinc-500">{{ work.summary }}</p>
+        <p class="mt-2 text-xs text-zinc-300">{{ work.impact }}</p>
       </button>
     </div>
   </section>
 
   <div
-    class="mt-4 flex items-center justify-between gap-2 rounded-xl border border-[#e8eef2] bg-white px-3 py-2.5"
+    class="mt-4 flex items-center justify-between gap-2 rounded-xl border border-[#273346] bg-[#101827] px-3 py-2.5"
   >
-    <p class="text-sm font-semibold text-[#212529]">{{ props.retrospectiveHeadingLabel }}</p>
-    <p v-if="props.selectedProjectTitle" class="text-xs text-[#868e96]">{{ props.selectedProjectTitle }}</p>
+    <p class="text-sm font-semibold text-zinc-100">{{ props.retrospectiveHeadingLabel }}</p>
+    <p v-if="props.selectedProjectTitle" class="text-xs text-zinc-500">{{ props.selectedProjectTitle }}</p>
   </div>
 </template>

@@ -1,21 +1,23 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  --font-sans: 'Outfit', 'Segoe UI', sans-serif;
-  --font-display: 'Playfair Display', 'Times New Roman', serif;
+  --font-sans: 'Noto Sans KR', 'Manrope', 'Segoe UI', sans-serif;
+  --font-display: 'Manrope', 'Noto Sans KR', 'Segoe UI', sans-serif;
 
-  --bg-base: #0f0f0f;
+  --bg-base: #090f18;
   --bg-gradient:
-    radial-gradient(circle at 16% -5%, rgba(255, 255, 255, 0.08), transparent 34%),
-    radial-gradient(circle at 84% 110%, rgba(255, 255, 255, 0.06), transparent 28%),
-    linear-gradient(160deg, #0f0f0f 0%, #111111 52%, #121212 100%);
-  --bg-soft: #141414;
-  --line-soft: #2a2a2a;
+    radial-gradient(circle at 14% -8%, rgba(111, 143, 206, 0.18), transparent 38%),
+    radial-gradient(circle at 86% 116%, rgba(95, 127, 190, 0.16), transparent 42%),
+    linear-gradient(160deg, #090f18 0%, #0b1220 48%, #0d1524 100%);
+  --bg-soft: #111a27;
+  --line-soft: #253142;
 
-  --text-strong: #f5f5f5;
-  --text-soft: #c7c7c7;
-  --text-muted: #979797;
+  --text-strong: #dde6f5;
+  --text-soft: #b4c0d3;
+  --text-muted: #7e8fa8;
+  --brand-primary: #6f8fce;
+  --brand-primary-strong: #5f7fbe;
 }
 
 *,
@@ -55,6 +57,6 @@ a {
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(111, 143, 206, 0.32);
   color: #ffffff;
 }

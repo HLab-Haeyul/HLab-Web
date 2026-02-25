@@ -1,13 +1,30 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { blogPageCopyByLocale, type BlogPost } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useLocale } from '@/composables/useLocale'
 
-const { locale, blogPath } = useLocale()
+const { locale, blogPath, route } = useLocale()
 
 const projects = computed(() => worksByLocale[locale.value])
 const selectedProjectIndex = ref(0)
+const detailTransitionNonce = ref(0)
+const routeProjectIndex = computed(() => {
+  const raw = route.query.project
+  const value = Array.isArray(raw) ? raw[0] : raw
+
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const parsed = Number.parseInt(value, 10)
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null
+  }
+
+  return parsed
+})
 
 const selectedProject = computed(() => {
   const index = selectedProjectIndex.value
@@ -84,10 +101,49 @@ const copy = computed(() =>
         readLabel: '글 보기',
       },
 )
+
+const selectProject = async (index: number) => {
+  const changed = selectedProjectIndex.value !== index
+  selectedProjectIndex.value = index
+
+  if (!changed) {
+    return
+  }
+
+  detailTransitionNonce.value += 1
+
+  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+    await nextTick()
+    document.getElementById('project-detail')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+}
+
+watch(
+  [routeProjectIndex, projects],
+  ([routeIndex, currentProjects]) => {
+    if (currentProjects.length === 0) {
+      selectedProjectIndex.value = 0
+      return
+    }
+
+    if (routeIndex === null) {
+      if (selectedProjectIndex.value >= currentProjects.length) {
+        selectedProjectIndex.value = 0
+      }
+      return
+    }
+
+    selectedProjectIndex.value = Math.min(routeIndex, currentProjects.length - 1)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
+  <div class="relative isolate mx-auto min-h-screen w-full max-w-[1260px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
@@ -96,7 +152,7 @@ const copy = computed(() =>
     <main>
       <section id="projects-overview">
         <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
-        <h1 class="mt-3 text-[clamp(1.8rem,5vw,3rem)] leading-[1.03] text-zinc-100 [font-family:var(--font-display)]">
+        <h1 class="mt-3 text-[clamp(1.6rem,4.4vw,2.5rem)] leading-[1.05] text-zinc-100 [font-family:var(--font-display)]">
           {{ copy.heading }}
         </h1>
         <p class="mt-4 max-w-[72ch] text-zinc-300">{{ copy.lead }}</p>
@@ -109,51 +165,52 @@ const copy = computed(() =>
         </div>
       </section>
 
-      <section id="projects-list" class="mt-10">
-        <h2 class="text-2xl font-semibold text-zinc-100">{{ copy.listHeading }}</h2>
+      <section id="projects-list" class="mt-8">
+        <h2 class="text-xl font-semibold text-zinc-100">{{ copy.listHeading }}</h2>
         <p class="mt-2 text-sm text-zinc-400">{{ copy.listLead }}</p>
 
-        <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-4 grid grid-cols-1 justify-items-start gap-2.5 md:grid-cols-2 xl:grid-cols-3">
           <article
             v-for="(project, projectIndex) in projects"
             :key="project.title"
             role="button"
             tabindex="0"
-            class="cursor-pointer rounded-2xl border p-4 transition focus:outline-none"
+            class="project-card-enter w-full max-w-[320px] cursor-pointer rounded-xl border p-2.5 transition duration-300 focus:outline-none"
+            :style="{ animationDelay: `${projectIndex * 45}ms` }"
             :class="
               selectedProjectIndex === projectIndex
-                ? 'border-blue-500 bg-[#121826]'
-                : 'border-[#2a2a2a] bg-[#121212de] hover:border-[#3c3c3c]'
+                ? 'project-card-selected border-[#6f8fce] bg-[#14243d] shadow-[0_0_0_1px_rgba(111,143,206,0.45),0_14px_28px_rgba(8,14,24,0.48)]'
+                : 'border-[#2a2a2a] bg-[#121212de] hover:border-[#3c4a61] hover:-translate-y-[2px]'
             "
-            @click="selectedProjectIndex = projectIndex"
-            @keydown.enter.prevent="selectedProjectIndex = projectIndex"
-            @keydown.space.prevent="selectedProjectIndex = projectIndex"
+            @click="selectProject(projectIndex)"
+            @keydown.enter.prevent="selectProject(projectIndex)"
+            @keydown.space.prevent="selectProject(projectIndex)"
           >
             <figure class="overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#101010]">
               <img
                 v-if="project.imageSrc"
                 :src="project.imageSrc"
                 :alt="project.imageAlt ?? project.title"
-                class="h-40 w-full object-cover"
+                class="h-28 w-full object-cover"
                 loading="lazy"
               />
               <div
                 v-else
-                class="flex h-40 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
+                class="flex h-28 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
               >
                 {{ project.title }}
               </div>
             </figure>
 
-            <h3 class="mt-4 text-lg font-semibold text-zinc-100">{{ project.title }}</h3>
-            <p class="mt-2 text-sm text-zinc-300">{{ project.summary }}</p>
-            <p class="mt-3 text-sm text-zinc-200">{{ project.impact }}</p>
+            <h3 class="mt-2.5 text-sm font-semibold text-zinc-100">{{ project.title }}</h3>
+            <p class="mt-1 text-xs text-zinc-300">{{ project.summary }}</p>
+            <p class="mt-2 text-xs text-zinc-200">{{ project.impact }}</p>
 
-            <ul class="mt-3 flex flex-wrap gap-2">
+            <ul class="mt-1.5 flex flex-wrap gap-1.5">
               <li
                 v-for="item in project.stack"
                 :key="`${project.title}-${item}`"
-                class="rounded-full border border-[#2f2f2f] px-2 py-1 text-xs text-zinc-400"
+                class="rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-400"
               >
                 {{ item }}
               </li>
@@ -162,44 +219,130 @@ const copy = computed(() =>
         </div>
       </section>
 
-      <section v-if="selectedProject" id="project-detail" class="mt-10 rounded-2xl border border-[#2a2a2a] bg-[#121212de] p-5">
-        <h2 class="text-2xl font-semibold text-zinc-100">{{ copy.detailHeading }}</h2>
-        <p class="mt-2 text-sm text-zinc-400">{{ copy.detailLead }}</p>
+      <Transition name="detail-focus" mode="out-in">
+        <section
+          v-if="selectedProject"
+          id="project-detail"
+          :key="`${selectedProjectIndex}-${detailTransitionNonce}`"
+          class="mt-8 max-w-[860px] rounded-xl border border-[#2a2a2a] bg-[#121212de] p-3.5"
+        >
+          <h2 class="text-lg font-semibold text-zinc-100">{{ copy.detailHeading }}</h2>
+          <p class="mt-1.5 text-sm text-zinc-400">{{ copy.detailLead }}</p>
 
-        <article class="mt-5 rounded-xl border border-[#2a2a2a] bg-[#111111] p-4">
-          <h3 class="text-lg font-semibold text-zinc-100">{{ selectedProject.title }}</h3>
-          <p class="mt-2 text-sm text-zinc-300">{{ selectedProject.summary }}</p>
-          <p class="mt-3 text-sm text-zinc-200">{{ selectedProject.impact }}</p>
-          <ul class="mt-3 flex flex-wrap gap-2">
-            <li
-              v-for="item in selectedProject.stack"
-              :key="`${selectedProject.title}-detail-${item}`"
-              class="rounded-full border border-[#2f2f2f] px-2 py-1 text-xs text-zinc-400"
-            >
-              {{ item }}
-            </li>
-          </ul>
-        </article>
+          <article class="mt-3 rounded-xl border border-[#2a2a2a] bg-[#111111] p-2.5">
+            <figure class="mb-2.5 overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#101010]">
+              <img
+                v-if="selectedProject.imageSrc"
+                :src="selectedProject.imageSrc"
+                :alt="selectedProject.imageAlt ?? selectedProject.title"
+                class="h-32 w-full object-cover"
+                loading="lazy"
+              />
+              <div
+                v-else
+                class="flex h-32 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
+              >
+                  {{ selectedProject.title }}
+                </div>
+              </figure>
 
-        <article class="mt-4 rounded-xl border border-[#2a2a2a] bg-[#111111] p-4">
-          <h3 class="text-base font-semibold text-zinc-100">{{ copy.troubleshootingHeading }}</h3>
+            <h3 class="text-sm font-semibold text-zinc-100">{{ selectedProject.title }}</h3>
+            <p class="mt-1 text-xs text-zinc-300">{{ selectedProject.summary }}</p>
+            <p class="mt-1.5 text-xs text-zinc-200">{{ selectedProject.impact }}</p>
+            <ul class="mt-1.5 flex flex-wrap gap-1.5">
+              <li
+                v-for="item in selectedProject.stack"
+                :key="`${selectedProject.title}-detail-${item}`"
+                class="rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-400"
+              >
+                {{ item }}
+              </li>
+            </ul>
+          </article>
 
-          <div v-if="troubleshootingPosts.length > 0" class="mt-3 space-y-3">
-            <RouterLink
-              v-for="post in troubleshootingPosts"
-              :key="post.id"
-              :to="`${blogPath}/${post.id}`"
-              class="block rounded-lg border border-[#2b2b2b] bg-[#141414] p-3 transition hover:border-blue-500 hover:bg-[#172032]"
-            >
-              <p class="text-sm font-semibold text-zinc-100">{{ post.title }}</p>
-              <p class="mt-1 text-xs text-zinc-400">{{ post.excerpt }}</p>
-              <p class="mt-2 text-[11px] text-zinc-500">{{ post.publishedAt }}</p>
-            </RouterLink>
-          </div>
+          <article class="mt-2.5 rounded-xl border border-[#2a2a2a] bg-[#111111] p-2.5">
+            <h3 class="text-sm font-semibold text-zinc-100">{{ copy.troubleshootingHeading }}</h3>
 
-          <p v-else class="mt-3 text-sm text-zinc-500">{{ copy.troubleshootingEmpty }}</p>
-        </article>
-      </section>
+            <TransitionGroup v-if="troubleshootingPosts.length > 0" name="post-stagger" tag="div" class="mt-2 space-y-2">
+              <RouterLink
+                v-for="post in troubleshootingPosts"
+                :key="post.id"
+                :to="`${blogPath}/${post.id}`"
+                class="block rounded-lg border border-[#2b2b2b] bg-[#141414] p-2.5 transition hover:border-[#6f8fce] hover:bg-[#17263f]"
+              >
+                <p class="text-sm font-semibold text-zinc-100">{{ post.title }}</p>
+                <p class="mt-1 text-xs text-zinc-400">{{ post.excerpt }}</p>
+                <p class="mt-2 text-[11px] text-zinc-500">{{ post.publishedAt }}</p>
+              </RouterLink>
+            </TransitionGroup>
+
+            <p v-else class="mt-3 text-sm text-zinc-500">{{ copy.troubleshootingEmpty }}</p>
+          </article>
+        </section>
+      </Transition>
     </main>
   </div>
 </template>
+
+<style scoped>
+.project-card-enter {
+  animation: projectCardEnter 460ms cubic-bezier(0.2, 0.82, 0.2, 1) both;
+}
+
+.project-card-selected {
+  animation: selectedPulse 950ms ease-out 1;
+}
+
+.detail-focus-enter-active,
+.detail-focus-leave-active {
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.detail-focus-enter-from,
+.detail-focus-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.992);
+}
+
+.post-stagger-enter-active {
+  transition: opacity 280ms ease, transform 320ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.post-stagger-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes projectCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes selectedPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(111, 143, 206, 0.42);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(111, 143, 206, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card-enter,
+  .project-card-selected {
+    animation: none;
+  }
+
+  .detail-focus-enter-active,
+  .detail-focus-leave-active,
+  .post-stagger-enter-active {
+    transition-duration: 1ms;
+  }
+}
+</style>
