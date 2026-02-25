@@ -10,6 +10,8 @@ import AdminBlogPostView from '@/views/AdminBlogPostView.vue'
 import AdminBlogWriteView from '@/views/AdminBlogWriteView.vue'
 import AdminProjectManagerView from '@/views/AdminProjectManagerView.vue'
 import AdminPortfolioManagerView from '@/views/AdminPortfolioManagerView.vue'
+import AdminLoginView from '@/views/AdminLoginView.vue'
+import { ensureAdminAuthenticated } from '@/services/adminAuthService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -79,11 +81,21 @@ const router = createRouter({
       },
     },
     {
+      path: '/ko/admin/login',
+      name: 'admin-login-ko',
+      component: AdminLoginView,
+      meta: {
+        locale: 'ko',
+        isAdminLogin: true,
+      },
+    },
+    {
       path: '/ko/admin',
       name: 'admin-ko',
       component: AdminView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -92,6 +104,7 @@ const router = createRouter({
       component: AdminBlogManagerView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -100,6 +113,7 @@ const router = createRouter({
       component: AdminBlogWriteView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -108,6 +122,7 @@ const router = createRouter({
       component: AdminProjectManagerView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -116,6 +131,7 @@ const router = createRouter({
       component: AdminProjectManagerView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -124,6 +140,7 @@ const router = createRouter({
       component: AdminPortfolioManagerView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -132,6 +149,7 @@ const router = createRouter({
       component: AdminBlogPostView,
       meta: {
         locale: 'ko',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -175,11 +193,21 @@ const router = createRouter({
       },
     },
     {
+      path: '/en/admin/login',
+      name: 'admin-login-en',
+      component: AdminLoginView,
+      meta: {
+        locale: 'en',
+        isAdminLogin: true,
+      },
+    },
+    {
       path: '/en/admin',
       name: 'admin-en',
       component: AdminView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -188,6 +216,7 @@ const router = createRouter({
       component: AdminBlogManagerView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -196,6 +225,7 @@ const router = createRouter({
       component: AdminBlogWriteView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -204,6 +234,7 @@ const router = createRouter({
       component: AdminProjectManagerView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -212,6 +243,7 @@ const router = createRouter({
       component: AdminProjectManagerView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -220,6 +252,7 @@ const router = createRouter({
       component: AdminPortfolioManagerView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
     {
@@ -228,9 +261,53 @@ const router = createRouter({
       component: AdminBlogPostView,
       meta: {
         locale: 'en',
+        requiresAdminAuth: true,
       },
     },
   ],
+})
+
+const resolveLocalePrefix = (path: string) => (path.startsWith('/en') ? '/en' : '/ko')
+const isSafeRedirectPath = (value: string) => value.startsWith('/') && !value.startsWith('//')
+
+router.beforeEach(async (to) => {
+  const requiresAdminAuth = to.matched.some((record) => record.meta.requiresAdminAuth)
+  const isAdminLoginRoute = to.matched.some((record) => record.meta.isAdminLogin)
+
+  if (requiresAdminAuth) {
+    const isAuthenticated = await ensureAdminAuthenticated()
+
+    if (isAuthenticated) {
+      return true
+    }
+
+    return {
+      path: `${resolveLocalePrefix(to.path)}/admin/login`,
+      query: {
+        redirect: to.fullPath,
+      },
+    }
+  }
+
+  if (isAdminLoginRoute) {
+    const isAuthenticated = await ensureAdminAuthenticated()
+
+    if (!isAuthenticated) {
+      return true
+    }
+
+    const redirectQuery = Array.isArray(to.query.redirect)
+      ? to.query.redirect[0]
+      : to.query.redirect
+
+    if (typeof redirectQuery === 'string' && isSafeRedirectPath(redirectQuery)) {
+      return redirectQuery
+    }
+
+    return `${resolveLocalePrefix(to.path)}/admin`
+  }
+
+  return true
 })
 
 export default router

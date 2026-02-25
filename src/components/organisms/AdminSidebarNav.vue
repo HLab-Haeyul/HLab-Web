@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAdminAuth } from '@/composables/useAdminAuth'
 import { useLocale } from '@/composables/useLocale'
 
 type AdminNavItem = {
@@ -8,7 +10,11 @@ type AdminNavItem = {
   to: string
 }
 
-const { route, adminBlogPath, adminProjectPath, adminPortfolioPath } = useLocale()
+const { route, adminPath, adminBlogPath, adminProjectPath, adminPortfolioPath } = useLocale()
+const router = useRouter()
+const { logout } = useAdminAuth()
+
+const adminLoginPath = computed(() => `${adminPath.value}/login`)
 
 const navItems = computed<AdminNavItem[]>(() => [
   {
@@ -29,6 +35,11 @@ const navItems = computed<AdminNavItem[]>(() => [
 ])
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+
+const handleLogout = async () => {
+  await logout()
+  await router.replace(adminLoginPath.value)
+}
 </script>
 
 <template>
@@ -48,6 +59,13 @@ const isActive = (path: string) => route.path === path || route.path.startsWith(
       >
         {{ item.label }}
       </RouterLink>
+      <button
+        type="button"
+        class="mt-2 block w-full rounded-lg border border-[#7e3d3d] bg-[#2a1414] px-3 py-2 text-left text-sm font-medium text-rose-300 transition hover:border-[#a34a4a] hover:bg-[#341818] hover:text-rose-200"
+        @click="handleLogout"
+      >
+        로그아웃
+      </button>
     </nav>
   </aside>
 </template>

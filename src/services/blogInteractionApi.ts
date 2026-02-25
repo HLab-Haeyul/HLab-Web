@@ -1,5 +1,6 @@
 import type { BlogComment } from '@/data/blog/types'
 import type { Locale } from '@/data/portfolio/types'
+import { ensureAdminAuthenticated, getAdminAccessToken } from '@/services/adminAuthService'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 
 type FetchOptions = {
@@ -112,6 +113,20 @@ const resolvePostBaseUrl = (locale: Locale, id: string) => {
 
 const extractPayload = (payload: unknown) => (isRecord(payload) && 'data' in payload ? payload.data : payload)
 
+const withAdminAuthHeader = async (headers: Record<string, string>) => {
+  await ensureAdminAuthenticated()
+  const token = getAdminAccessToken()
+
+  if (!token) {
+    return headers
+  }
+
+  return {
+    ...headers,
+    Authorization: `Bearer ${token}`,
+  }
+}
+
 export const fetchBlogEngagement = async (
   locale: Locale,
   id: string,
@@ -192,10 +207,10 @@ export const toggleBlogLike = async (
 
   const response = await fetch(url.toString(), {
     method: 'POST',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify({ liked }),
     signal: options.signal,
   })
@@ -231,10 +246,10 @@ export const createBlogComment = async (
 
   const response = await fetch(url.toString(), {
     method: 'POST',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify(input),
     signal: options.signal,
   })
@@ -268,10 +283,10 @@ export const updateBlogComment = async (
 
   const response = await fetch(url.toString(), {
     method: 'PATCH',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify(input),
     signal: options.signal,
   })
@@ -304,9 +319,9 @@ export const deleteBlogComment = async (
 
   const response = await fetch(url.toString(), {
     method: 'DELETE',
-    headers: {
+    headers: await withAdminAuthHeader({
       Accept: 'application/json',
-    },
+    }),
     signal: options.signal,
   })
 
