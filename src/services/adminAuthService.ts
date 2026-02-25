@@ -187,8 +187,16 @@ export const loginAdminWithSms = async (
 export const ensureAdminAuthenticated = async () => {
   hydrate()
 
-  if (isAccessTokenValid()) {
-    return true
+  const token = getAdminAccessToken()
+
+  if (token) {
+    const profile = await fetchAdminMe(token)
+
+    if (profile) {
+      adminPhoneNumber.value = profile.phoneNumber
+      persistSessionStorage()
+      return true
+    }
   }
 
   clearSession()
@@ -216,6 +224,22 @@ export const ensureAdminAuthenticated = async () => {
       return false
     }
 
+    const refreshedToken = getAdminAccessToken()
+
+    if (!refreshedToken) {
+      clearSession()
+      return false
+    }
+
+    const profile = await fetchAdminMe(refreshedToken)
+
+    if (!profile) {
+      clearSession()
+      return false
+    }
+
+    adminPhoneNumber.value = profile.phoneNumber
+    persistSessionStorage()
     return true
   })()
 

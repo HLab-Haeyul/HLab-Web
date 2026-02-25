@@ -41,6 +41,17 @@ const router = createRouter({
       redirect: '/ko',
     },
     {
+      path: '/admin/:pathMatch(.*)*',
+      redirect: (to) => {
+        const rest = Array.isArray(to.params.pathMatch)
+          ? to.params.pathMatch.join('/')
+          : String(to.params.pathMatch ?? '')
+        const normalizedRest = rest.replace(/^\/+/, '')
+
+        return normalizedRest ? `/ko/admin/${normalizedRest}` : '/ko/admin'
+      },
+    },
+    {
       path: '/ko',
       name: 'portfolio-ko',
       component: PortfolioView,
@@ -269,10 +280,16 @@ const router = createRouter({
 
 const resolveLocalePrefix = (path: string) => (path.startsWith('/en') ? '/en' : '/ko')
 const isSafeRedirectPath = (value: string) => value.startsWith('/') && !value.startsWith('//')
+const isAdminPath = (path: string) => /^\/(?:admin|(?:ko|en)\/admin)(?:\/|$)/.test(path)
+const isAdminLoginPath = (path: string) =>
+  /^\/(?:admin\/login|(?:ko|en)\/admin\/login)\/?$/.test(path)
 
 router.beforeEach(async (to) => {
-  const requiresAdminAuth = to.matched.some((record) => record.meta.requiresAdminAuth)
-  const isAdminLoginRoute = to.matched.some((record) => record.meta.isAdminLogin)
+  const isAdminLoginRoute =
+    to.matched.some((record) => record.meta.isAdminLogin) || isAdminLoginPath(to.path)
+  const requiresAdminAuth =
+    to.matched.some((record) => record.meta.requiresAdminAuth) ||
+    (isAdminPath(to.path) && !isAdminLoginRoute)
 
   if (requiresAdminAuth) {
     const isAuthenticated = await ensureAdminAuthenticated()

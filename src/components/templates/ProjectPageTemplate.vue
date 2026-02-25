@@ -46,6 +46,26 @@ const projectKeywordMap: Record<string, string[]> = {
 
 const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 const normalizeTagToken = (value: string) => value.trim().replace(/^#/, '')
+const normalizeExternalLinkToken = (value: string) => value.toLocaleLowerCase().trim()
+
+const resolveExternalLinkBadge = (name: string, url: string) => {
+  const normalizedName = normalizeExternalLinkToken(name)
+  const normalizedUrl = normalizeExternalLinkToken(url)
+
+  if (normalizedName.includes('notion') || normalizedUrl.includes('notion.so')) {
+    return 'NOTION'
+  }
+
+  if (
+    normalizedName.includes('git') ||
+    normalizedName.includes('github') ||
+    normalizedUrl.includes('github.com')
+  ) {
+    return 'GIT'
+  }
+
+  return 'LINK'
+}
 
 const isTroubleshootingLinkedToProject = (post: BlogPost, projectTitle: string) => {
   const key = normalizeProjectKey(projectTitle)
@@ -85,6 +105,8 @@ const copy = computed(() =>
         listLead: 'Click a card to open project details.',
         detailHeading: 'Project Details',
         detailLead: 'Overview, impact, stack, and linked troubleshooting posts.',
+        linksHeading: 'Collaboration Links',
+        linksLead: 'Click a box to open the link in a new tab.',
         troubleshootingHeading: 'Troubleshooting',
         troubleshootingEmpty: 'No troubleshooting posts linked to this project yet.',
         readLabel: 'Read Post',
@@ -98,6 +120,8 @@ const copy = computed(() =>
         listLead: '카드를 클릭해서 프로젝트 상세를 확인하세요.',
         detailHeading: '프로젝트 상세',
         detailLead: '개요, 성과, 기술 스택, 연결된 트러블 슈팅 글을 제공합니다.',
+        linksHeading: '협업 링크',
+        linksLead: '박스를 클릭하면 새 탭으로 이동합니다.',
         troubleshootingHeading: '트러블 슈팅',
         troubleshootingEmpty: '연결된 트러블 슈팅 글이 아직 없습니다.',
         readLabel: '글 보기',
@@ -260,6 +284,32 @@ watch(
                 {{ item }}
               </li>
             </ul>
+
+            <div v-if="selectedProject.links && selectedProject.links.length > 0" class="mt-3">
+              <p class="text-[11px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.linksHeading }}</p>
+              <p class="mt-1 text-[11px] text-zinc-500">{{ copy.linksLead }}</p>
+              <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                <a
+                  v-for="link in selectedProject.links"
+                  :key="`${selectedProject.title}-${link.name}-${link.url}`"
+                  :href="link.url"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="group rounded-lg border border-[#2f2f2f] bg-[#141414] p-3 transition hover:border-[#6f8fce] hover:bg-[#17263f]"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <span
+                      class="rounded-md border border-[#343434] bg-[#1a1a1a] px-1.5 py-0.5 text-[10px] font-medium tracking-[0.08em] text-zinc-300"
+                    >
+                      {{ resolveExternalLinkBadge(link.name, link.url) }}
+                    </span>
+                    <span class="text-xs text-zinc-500 transition group-hover:text-zinc-300">↗</span>
+                  </div>
+                  <p class="mt-2 text-sm font-medium text-zinc-100">{{ link.name }}</p>
+                  <p class="mt-1 truncate text-[11px] text-zinc-400">{{ link.url }}</p>
+                </a>
+              </div>
+            </div>
           </article>
 
           <article class="mt-2.5 rounded-xl border border-[#2a2a2a] bg-[#111111] p-2.5">

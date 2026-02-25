@@ -39,5 +39,22 @@ defineProps<{
         {{ copy.githubCta }}
       </a>
     </div>
+
+    <div class="mt-6 border-t border-[#2a2a2a] pt-5">
+      <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.studyLinksTitle }}</p>
+      <div class="mt-3 grid gap-2" :class="isAppLayout ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'">
+        <a
+          v-for="link in copy.studyLinks"
+          :key="link.name"
+          :href="link.url"
+          target="_blank"
+          rel="noopener"
+          class="group flex items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#151515] px-4 py-3 transition hover:border-[#6f8fce] hover:bg-[#1a1a2e]"
+        >
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1e1e1e] text-xs font-bold text-blue-300 group-hover:bg-[#252545]">{{ link.icon }}</span>
+          <span class="text-sm font-medium text-zinc-300 group-hover:text-white">{{ link.name }}</span>
+        </a>
+      </div>
+    </div>
   </section>
 </template>
