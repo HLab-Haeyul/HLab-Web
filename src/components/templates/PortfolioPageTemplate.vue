@@ -22,11 +22,6 @@ const metricDisplayValues = ref<string[]>([])
 const currentYear = new Date().getFullYear()
 const showIntro = ref(false)
 
-const introKicker = computed(() => (locale.value === 'ko' ? 'INITIAL RENDER' : 'INITIAL RENDER'))
-const introSubtitle = computed(() =>
-  locale.value === 'ko' ? '페이지를 준비하고 있습니다' : 'Preparing your portfolio experience',
-)
-
 const viewportWidth = ref(1280)
 const viewportHeight = ref(800)
 const isStandaloneMode = ref(false)
@@ -162,20 +157,11 @@ onBeforeUnmount(() => {
   if (metricRaf) {
     cancelAnimationFrame(metricRaf)
   }
-
-  document.body.style.overflow = ''
-  document.documentElement.style.overflow = ''
 })
 
 const isAppLayout = computed(
   () => isStandaloneMode.value || (viewportWidth.value <= 560 && viewportHeight.value >= 620),
 )
-
-watch(showIntro, (introOpen) => {
-  const value = introOpen ? 'hidden' : ''
-  document.body.style.overflow = value
-  document.documentElement.style.overflow = value
-})
 
 watch(
   () => copy.value.metrics.map((metric) => metric.value).join('|'),
@@ -200,17 +186,6 @@ watch(
           : 'bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)]'
       "
     ></div>
-
-    <Transition name="intro-fade">
-      <section v-if="showIntro" class="intro-overlay" aria-label="Intro overlay">
-        <div class="intro-card">
-          <p class="intro-kicker">{{ introKicker }}</p>
-          <h1 class="intro-brand">KIMMINJAE</h1>
-          <p class="intro-subtitle">{{ introSubtitle }}</p>
-          <div class="intro-meter"><span></span></div>
-        </div>
-      </section>
-    </Transition>
 
     <main
       :class="
@@ -264,102 +239,6 @@ watch(
   animation-delay: var(--section-reveal-delay, 0ms);
 }
 
-.intro-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: 1.25rem;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(79, 141, 255, 0.12), transparent 42%),
-    radial-gradient(circle at 50% 110%, rgba(79, 141, 255, 0.08), transparent 34%),
-    linear-gradient(165deg, #0f0f0f 0%, #111111 52%, #121212 100%);
-}
-
-.intro-card {
-  width: min(560px, 100%);
-  border: 1px solid #2a2a2a;
-  border-radius: 1rem;
-  background: rgba(18, 18, 18, 0.86);
-  padding: clamp(1.25rem, 4vw, 2rem);
-  backdrop-filter: blur(10px);
-}
-
-.intro-kicker {
-  margin: 0;
-  color: #71717a;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-}
-
-.intro-brand {
-  margin: 0.35rem 0 0;
-  color: #ffffff;
-  font-size: clamp(1.45rem, 6vw, 2.35rem);
-  letter-spacing: 0.08em;
-  animation: intro-rise 620ms cubic-bezier(0.2, 0.82, 0.2, 1) both;
-}
-
-.intro-subtitle {
-  margin: 0.42rem 0 0;
-  color: #a1a1aa;
-  font-size: 0.9rem;
-}
-
-.intro-meter {
-  margin-top: 0.95rem;
-  height: 2px;
-  border-radius: 999px;
-  background: #27272a;
-  overflow: hidden;
-}
-
-.intro-meter span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: left center;
-  background: linear-gradient(90deg, #fafafa, #a1a1aa);
-  animation: intro-progress 1.25s linear both;
-}
-
-.intro-fade-leave-active {
-  transition:
-    opacity 420ms ease,
-    transform 420ms ease;
-}
-
-.intro-fade-leave-from {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.intro-fade-leave-to {
-  opacity: 0;
-  transform: scale(1.01);
-}
-
-@keyframes intro-rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes intro-progress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @keyframes section-fade-up {
   from {
     opacity: 0;
@@ -375,11 +254,6 @@ watch(
   .section-reveal {
     opacity: 1;
     transform: none;
-    animation: none;
-  }
-
-  .intro-brand,
-  .intro-meter span {
     animation: none;
   }
 }
