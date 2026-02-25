@@ -9,6 +9,7 @@ import {
   type BlogPostVideo,
 } from '@/data/blog/types'
 import type { Locale } from '@/data/portfolio/types'
+import { ensureAdminAuthenticated, getAdminAccessToken } from '@/services/adminAuthService'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 
 type FetchBlogOptions = {
@@ -252,6 +253,20 @@ const normalizeBlogPostDetailPayload = (payload: unknown): BlogPostDetail | null
   }
 }
 
+const withAdminAuthHeader = async (headers: Record<string, string>) => {
+  await ensureAdminAuthenticated()
+  const token = getAdminAccessToken()
+
+  if (!token) {
+    return headers
+  }
+
+  return {
+    ...headers,
+    Authorization: `Bearer ${token}`,
+  }
+}
+
 export const fetchBlogPageCopy = async (
   locale: Locale,
   options: FetchBlogOptions = {},
@@ -319,10 +334,10 @@ export const updateBlogMainPageCopy = async (
 
   const response = await fetch(resolveBlogMainPageApiUrl(locale), {
     method: 'PATCH',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify(input),
     signal: options.signal,
   })
@@ -364,10 +379,10 @@ export const createBlogPostWithStatus = async (
 
   const response = await fetch(resolveBlogListApiUrl(locale), {
     method: 'POST',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify(input),
     signal: options.signal,
   })
@@ -399,10 +414,10 @@ export const updateBlogPost = async (
 
   const response = await fetch(resolveBlogPostApiUrl(locale, id), {
     method: 'PATCH',
-    headers: {
+    headers: await withAdminAuthHeader({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    },
+    }),
     body: JSON.stringify(input),
     signal: options.signal,
   })
@@ -427,9 +442,9 @@ export const deleteBlogPost = async (
 
   const response = await fetch(resolveBlogPostApiUrl(locale, id), {
     method: 'DELETE',
-    headers: {
+    headers: await withAdminAuthHeader({
       Accept: 'application/json',
-    },
+    }),
     signal: options.signal,
   })
 
