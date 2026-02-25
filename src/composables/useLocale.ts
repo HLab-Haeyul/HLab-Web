@@ -13,11 +13,16 @@ export const useLocale = () => {
     () => route.path === adminPrefix.value || route.path.startsWith(`${adminPrefix.value}/`),
   )
   const blogPrefix = computed(() => `${basePath.value}/blog`)
+  const projectPrefix = computed(() => `${basePath.value}/projects`)
   const isBlogPage = computed(
     () => route.path === blogPrefix.value || route.path.startsWith(`${blogPrefix.value}/`),
   )
+  const isProjectPage = computed(
+    () => route.path === projectPrefix.value || route.path.startsWith(`${projectPrefix.value}/`),
+  )
   const stackPath = computed(() => `${basePath.value}/stack`)
   const blogPath = computed(() => `${basePath.value}/blog`)
+  const projectPath = computed(() => `${basePath.value}/projects`)
   const adminPath = computed(() => adminPrefix.value)
   const adminBlogPath = computed(() => `${adminPrefix.value}/blog`)
   const adminBlogWritePath = computed(() => `${adminPrefix.value}/blog/write`)
@@ -74,6 +79,10 @@ export const useLocale = () => {
       return '/ko/blog'
     }
 
+    if (isProjectPage.value) {
+      return '/ko/projects'
+    }
+
     return '/ko'
   })
   const enPath = computed(() => {
@@ -97,6 +106,10 @@ export const useLocale = () => {
       return '/en/blog'
     }
 
+    if (isProjectPage.value) {
+      return '/en/projects'
+    }
+
     return '/en'
   })
 
@@ -107,8 +120,10 @@ export const useLocale = () => {
     isStackPage,
     isAdminPage,
     isBlogPage,
+    isProjectPage,
     stackPath,
     blogPath,
+    projectPath,
     adminPath,
     adminBlogPath,
     adminBlogWritePath,

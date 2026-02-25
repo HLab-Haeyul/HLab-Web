@@ -11,6 +11,7 @@ type Props = {
   likeAriaLabel: string
   commentHeading: string
   commentCount: number
+  showCommentBadge?: boolean
 }
 
 const props = defineProps<Props>()
@@ -72,7 +73,10 @@ const emit = defineEmits<{
       <span>{{ props.likeLabel }} {{ props.likes }}</span>
     </button>
 
-    <span class="inline-flex items-center gap-1 rounded-full border border-[#343434] bg-[#171717] px-3 py-1.5 text-zinc-300">
+    <span
+      v-if="props.showCommentBadge !== false"
+      class="inline-flex items-center gap-1 rounded-full border border-[#343434] bg-[#171717] px-3 py-1.5 text-zinc-300"
+    >
       <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
           d="M20 14.5C20 16.4 18.4 18 16.5 18H9L5 21V18.2C3.8 17.7 3 16.6 3 15.3V7.5C3 5.6 4.6 4 6.5 4H16.5C18.4 4 20 5.6 20 7.5V14.5Z"
