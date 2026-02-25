@@ -15,7 +15,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     {
       title: 'CLUE',
       summary: '클라우드 기반 통합 교육 서비스',
-      impact: '기존 서비스 대비 사용자 30% 시간 절약',
+      impact: '기존 서비스 대비 사용자 이동 시간 80% 절약',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
       imageSrc: clueMainImageSrc,
       imageAlt: '캠페인 랜딩 페이지 화면',
@@ -43,7 +43,7 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     {
       title: 'CLUE',
       summary: 'Cloud-based integrated education service',
-      impact: 'Users save 30% more time than with the previous service',
+      impact: 'User navigation time reduced by 80%',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
       imageSrc: clueMainImageSrc,
       imageAlt: 'Campaign landing page interface',
