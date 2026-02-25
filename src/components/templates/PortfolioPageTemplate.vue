@@ -37,7 +37,6 @@ let introTimer: ReturnType<typeof setTimeout> | undefined
 let metricRaf: number | undefined
 
 const INTRO_DURATION_MS = 1450
-const INTRO_STORAGE_KEY = 'portfolio_intro_seen'
 const METRIC_DURATION_MS = 1050
 const SECTION_REVEAL_INTERVAL_MS = 95
 
@@ -129,7 +128,6 @@ onMounted(() => {
 
   displayModeQuery = window.matchMedia('(display-mode: standalone)')
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const hasSeenIntro = window.sessionStorage.getItem(INTRO_STORAGE_KEY) === '1'
   const iosStandalone = Boolean(
     (window.navigator as Navigator & { standalone?: boolean }).standalone,
   )
@@ -143,13 +141,11 @@ onMounted(() => {
   displayModeQuery.addEventListener?.('change', handleDisplayModeChange)
   window.addEventListener('resize', syncViewport)
 
-  if (!reducedMotion && !hasSeenIntro) {
-    showIntro.value = true
-    introTimer = setTimeout(() => {
-      showIntro.value = false
-      window.sessionStorage.setItem(INTRO_STORAGE_KEY, '1')
-    }, INTRO_DURATION_MS)
-  }
+  const introDuration = reducedMotion ? 700 : INTRO_DURATION_MS
+  showIntro.value = true
+  introTimer = setTimeout(() => {
+    showIntro.value = false
+  }, introDuration)
 })
 
 onBeforeUnmount(() => {
