@@ -3,6 +3,7 @@ import PortfolioView from '@/views/PortfolioView.vue'
 import StackDetailView from '@/views/StackDetailView.vue'
 import BlogView from '@/views/BlogView.vue'
 import BlogPostView from '@/views/BlogPostView.vue'
+import ProjectView from '@/views/ProjectView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminBlogManagerView from '@/views/AdminBlogManagerView.vue'
 import AdminBlogPostView from '@/views/AdminBlogPostView.vue'
@@ -70,6 +71,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/ko/projects',
+      name: 'projects-ko',
+      component: ProjectView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
       path: '/ko/admin',
       name: 'admin-ko',
       component: AdminView,
@@ -96,6 +105,14 @@ const router = createRouter({
     {
       path: '/ko/admin/projects',
       name: 'admin-projects-ko',
+      component: AdminProjectManagerView,
+      meta: {
+        locale: 'ko',
+      },
+    },
+    {
+      path: '/ko/admin/projects/:id',
+      name: 'admin-project-detail-ko',
       component: AdminProjectManagerView,
       meta: {
         locale: 'ko',
@@ -150,6 +167,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/en/projects',
+      name: 'projects-en',
+      component: ProjectView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
       path: '/en/admin',
       name: 'admin-en',
       component: AdminView,
@@ -176,6 +201,14 @@ const router = createRouter({
     {
       path: '/en/admin/projects',
       name: 'admin-projects-en',
+      component: AdminProjectManagerView,
+      meta: {
+        locale: 'en',
+      },
+    },
+    {
+      path: '/en/admin/projects/:id',
+      name: 'admin-project-detail-en',
       component: AdminProjectManagerView,
       meta: {
         locale: 'en',

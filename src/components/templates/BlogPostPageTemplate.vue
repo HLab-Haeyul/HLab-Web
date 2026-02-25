@@ -5,7 +5,6 @@ import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
 import { getEstimatedViewCount } from '@/utils/blogViews'
 import { markdownToHtml } from '@/utils/markdown'
-import BlogPostStatusBar from '@/components/molecules/BlogPostStatusBar.vue'
 import BlogTocPanel from '@/components/molecules/BlogTocPanel.vue'
 import BlogCommentSection from '@/components/organisms/BlogCommentSection.vue'
 import BlogPostHeroSection from '@/components/organisms/BlogPostHeroSection.vue'
@@ -48,10 +47,7 @@ const id = computed(() => {
 
 const {
   post,
-  dataSource,
-  isLoading: isPostLoading,
   errorMessage,
-  reload,
 } = useBlogPostContent(locale, id)
 const {
   likes,
@@ -62,8 +58,6 @@ const {
   totalCommentPages,
   hasPreviousCommentPage,
   hasNextCommentPage,
-  dataSource: engagementDataSource,
-  isLoading: isEngagementLoading,
   isCommentPageLoading,
   isSubmitting,
   isCommentActionLoading,
@@ -74,7 +68,6 @@ const {
   removeComment,
   goToPreviousCommentPage,
   goToNextCommentPage,
-  reload: reloadEngagement,
 } = useBlogEngagement(locale, id)
 
 const commentBody = ref('')
@@ -83,26 +76,6 @@ const backLabel = computed(
   () => props.backLabelOverride ?? (locale.value === 'en' ? 'Back to blog' : '블로그 목록으로'),
 )
 const backPath = computed(() => props.backPath ?? blogPath.value)
-const statusLabel = computed(() =>
-  dataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'API Connected'
-      : 'API 연결됨'
-    : locale.value === 'en'
-      ? 'Fallback Data'
-      : 'Fallback 데이터',
-)
-const engagementStatusLabel = computed(() =>
-  engagementDataSource.value === 'api'
-    ? locale.value === 'en'
-      ? 'Engagement Synced'
-      : '인터랙션 동기화됨'
-    : locale.value === 'en'
-      ? 'Engagement Fallback'
-      : '인터랙션 fallback',
-)
-const loadingLabel = computed(() => (locale.value === 'en' ? 'Loading...' : '불러오는 중...'))
-const retryLabel = computed(() => (locale.value === 'en' ? 'Reload' : '다시 불러오기'))
 const notFoundTitle = computed(() =>
   locale.value === 'en' ? 'Post not found' : '글을 찾을 수 없습니다',
 )
@@ -169,6 +142,7 @@ const isAdminCommentMode = computed(() => {
 
   return props.forceAdminCommentMode || envFlag === 'true' || queryValue === '1'
 })
+const shouldShowComments = computed(() => post.value?.category !== 'retrospective')
 const renderedMarkdown = computed(() => (post.value ? markdownToHtml(post.value.markdown) : ''))
 const headingTocItems = ref<Array<{ id: string; text: string; level: 1 | 2 }>>([])
 const viewCount = computed(() => (post.value ? getEstimatedViewCount(post.value.id) : 0))
@@ -397,11 +371,6 @@ const formatCommentDate = (value: string) => {
   })
 }
 
-const handleReload = () => {
-  reload()
-  reloadEngagement()
-}
-
 const handleSubmitComment = async () => {
   const nextBody = commentBody.value.trim()
 
@@ -481,17 +450,14 @@ watch(
         </RouterLink>
       </div>
 
-      <BlogPostStatusBar
-        :blog-path="backPath"
-        :back-label="backLabel"
-        :status-label="statusLabel"
-        :engagement-status-label="engagementStatusLabel"
-        :is-loading="isPostLoading || isEngagementLoading"
-        :loading-label="loadingLabel"
-        :retry-label="retryLabel"
-        :hide-status-text="props.hideStatusText"
-        @reload="handleReload"
-      />
+      <div class="flex items-center">
+        <RouterLink
+          :to="backPath"
+          class="inline-flex items-center rounded-lg border border-[#313131] px-2.5 py-1 text-xs text-zinc-300 transition hover:border-[#5b5b5b] hover:text-white"
+        >
+          {{ backLabel }}
+        </RouterLink>
+      </div>
 
       <p v-if="errorMessage" class="rounded-xl border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300">
         {{ errorMessage }}
@@ -504,7 +470,10 @@ watch(
         {{ engagementError }}
       </p>
 
-      <div v-if="post" class="xl:grid xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start xl:gap-10">
+      <div
+        v-if="post"
+        class="xl:mx-auto xl:grid xl:w-full xl:max-w-[1160px] xl:grid-cols-[minmax(0,860px)_240px] xl:items-start xl:gap-4 xl:pl-8"
+      >
         <article
           id="post-overview"
           class="rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7"
@@ -519,6 +488,7 @@ watch(
             :like-aria-label="likeAriaLabel"
             :comment-heading="commentHeading"
             :comment-count="totalCommentCount"
+            :show-comment-badge="shouldShowComments"
             @toggle-like="toggleLike"
           />
 
@@ -536,6 +506,7 @@ watch(
           ></div>
 
           <BlogCommentSection
+            v-if="shouldShowComments"
             :comment-heading="commentHeading"
             :comments="comments"
             :comment-total-count="totalCommentCount"
@@ -569,10 +540,7 @@ watch(
           />
         </article>
 
-        <aside
-          v-if="headingTocItems.length > 0"
-          class="hidden xl:block xl:sticky xl:top-24 xl:translate-x-6"
-        >
+        <aside v-if="headingTocItems.length > 0" class="hidden xl:block xl:sticky xl:top-24">
           <BlogTocPanel
             :toc-heading-label="tocHeadingLabel"
             :items="headingTocItems"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { stackTickerByLocale } from '@/data/stack/stackTicker'
 import { useLocale } from '@/composables/useLocale'
@@ -12,18 +12,16 @@ const {
   basePath,
   stackPath,
   blogPath,
+  projectPath,
   koPath,
   enPath,
 } = useLocale()
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const isSidebarOpen = ref(false)
-const headingSectionLinks = ref<SidebarLinkItem[]>([])
 
 const pageGroupTitle = computed(() => (locale.value === 'en' ? 'Page Navigation' : '페이지 이동'))
-const sectionGroupTitle = computed(() =>
-  locale.value === 'en' ? 'Section Navigation' : '페이지 내 위치 이동',
-)
 const homeNavLabel = computed(() => (locale.value === 'en' ? 'Main' : '메인'))
+const projectNavLabel = computed(() => (locale.value === 'en' ? 'Projects' : '프로젝트'))
 const blogNavLabel = computed(() => (locale.value === 'en' ? 'Blog' : '블로그'))
 
 type SidebarLinkItem = {
@@ -44,13 +42,16 @@ const pageLinks = computed<SidebarLinkItem[]>(() => [
     index: '02',
   },
   {
-    label: blogNavLabel.value,
-    to: blogPath.value,
+    label: projectNavLabel.value,
+    to: projectPath.value,
     index: '03',
   },
+  {
+    label: blogNavLabel.value,
+    to: blogPath.value,
+    index: '04',
+  },
 ])
-
-const sectionLinks = computed<SidebarLinkItem[]>(() => headingSectionLinks.value)
 
 const closeSidebar = () => {
   isSidebarOpen.value = false
@@ -60,144 +61,10 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
-const normalizeHeadingText = (value: string) => value.replace(/\s+/g, ' ').trim()
-
-const toHeadingId = (value: string) =>
-  value
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase()
-    .replace(/[^a-z0-9\u3131-\u318e\uac00-\ud7a3\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-
-let collectRafId: number | null = null
-let headingObserver: MutationObserver | null = null
-
-const collectHeadingLinks = () => {
-  const main = document.querySelector('main')
-
-  if (!main) {
-    headingSectionLinks.value = []
-    return
-  }
-
-  const usedIds = new Set<string>()
-  const links: SidebarLinkItem[] = []
-  const headings = Array.from(main.querySelectorAll('h1, h2, h3'))
-
-  headings.forEach((heading, headingIndex) => {
-    const text = normalizeHeadingText(heading.textContent ?? '')
-
-    if (!text) {
-      return
-    }
-
-    if (!(heading instanceof HTMLElement) || heading.offsetParent === null) {
-      return
-    }
-
-    let id = heading.id
-
-    if (!id) {
-      const baseId = toHeadingId(text) || `section-${headingIndex + 1}`
-      let nextId = baseId
-      let duplicateIndex = 2
-
-      while (usedIds.has(nextId) || document.getElementById(nextId)) {
-        nextId = `${baseId}-${duplicateIndex}`
-        duplicateIndex += 1
-      }
-
-      heading.id = nextId
-      id = nextId
-    }
-
-    usedIds.add(id)
-    links.push({
-      label: text,
-      to: {
-        path: route.path,
-        query: route.query,
-        hash: `#${id}`,
-      },
-      index: String(links.length + 1).padStart(2, '0'),
-    })
-  })
-
-  headingSectionLinks.value = links
-}
-
-const scheduleCollectHeadingLinks = () => {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  if (collectRafId !== null) {
-    cancelAnimationFrame(collectRafId)
-  }
-
-  collectRafId = window.requestAnimationFrame(() => {
-    collectRafId = null
-    collectHeadingLinks()
-  })
-}
-
-const disconnectHeadingObserver = () => {
-  if (!headingObserver) {
-    return
-  }
-
-  headingObserver.disconnect()
-  headingObserver = null
-}
-
-const connectHeadingObserver = () => {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  disconnectHeadingObserver()
-
-  const main = document.querySelector('main')
-
-  if (!main) {
-    return
-  }
-
-  headingObserver = new MutationObserver(() => {
-    scheduleCollectHeadingLinks()
-  })
-
-  headingObserver.observe(main, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  })
-}
-
-onMounted(() => {
-  scheduleCollectHeadingLinks()
-  connectHeadingObserver()
-})
-
-onBeforeUnmount(() => {
-  disconnectHeadingObserver()
-
-  if (collectRafId !== null) {
-    cancelAnimationFrame(collectRafId)
-    collectRafId = null
-  }
-})
-
 watch(
   () => route.fullPath,
-  async () => {
+  () => {
     closeSidebar()
-
-    await nextTick()
-    scheduleCollectHeadingLinks()
-    connectHeadingObserver()
   },
 )
 </script>
@@ -306,13 +173,6 @@ watch(
         :title="pageGroupTitle"
         nav-aria-label="Page Navigation"
         :links="pageLinks"
-        @link-click="closeSidebar"
-      />
-
-      <SidebarNavSection
-        :title="sectionGroupTitle"
-        nav-aria-label="Section Navigation"
-        :links="sectionLinks"
         @link-click="closeSidebar"
       />
     </div>
