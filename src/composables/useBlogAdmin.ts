@@ -1,19 +1,13 @@
 import { computed, type Ref } from 'vue'
-import {
-  BLOG_CATEGORY_KEYS,
-  type BlogCategoryKey,
-  type BlogPageCopySet,
-} from '@/data/blog/content'
+import { BLOG_CATEGORY_KEYS, type BlogCategoryKey, type BlogPageCopySet } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import type { Locale } from '@/data/portfolio/types'
 
 /* ── helpers ───────────────────────────────────────────── */
 
-const normalizeProjectKey = (value: string) =>
-  value.trim().toLocaleLowerCase().replace(/\s+/g, '')
+const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 
-const normalizeTagToken = (value: string) =>
-  value.trim().replace(/^#+/, '').toLocaleLowerCase()
+const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
 
 const isBlank = (value: string) => value.trim().length === 0
 
@@ -65,9 +59,7 @@ export const useBlogAdmin = (
 
   const isAdminPostMode = computed(() => {
     const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
-    const queryValue = Array.isArray(route.query.admin)
-      ? route.query.admin[0]
-      : route.query.admin
+    const queryValue = Array.isArray(route.query.admin) ? route.query.admin[0] : route.query.admin
     return envFlag === 'true' || queryValue === '1'
   })
 
@@ -95,38 +87,18 @@ export const useBlogAdmin = (
   const adminRetrospectiveProjectPlaceholder = computed(() =>
     locale.value === 'en' ? 'Select project' : '프로젝트 선택',
   )
-  const adminPublishedAtLabel = computed(() =>
-    locale.value === 'en' ? 'Published At' : '발행일',
-  )
-  const adminReadTimeLabel = computed(() =>
-    locale.value === 'en' ? 'Read Time' : '읽기 시간',
-  )
-  const adminHeroTagLabel = computed(() =>
-    locale.value === 'en' ? 'Hero Tag' : '히어로 태그',
-  )
-  const adminAuthorLabel = computed(() =>
-    locale.value === 'en' ? 'Author' : '작성자',
-  )
-  const adminMarkdownLabel = computed(() =>
-    locale.value === 'en' ? 'Markdown' : '마크다운 본문',
-  )
+  const adminPublishedAtLabel = computed(() => (locale.value === 'en' ? 'Published At' : '발행일'))
+  const adminReadTimeLabel = computed(() => (locale.value === 'en' ? 'Read Time' : '읽기 시간'))
+  const adminHeroTagLabel = computed(() => (locale.value === 'en' ? 'Hero Tag' : '히어로 태그'))
+  const adminAuthorLabel = computed(() => (locale.value === 'en' ? 'Author' : '작성자'))
+  const adminMarkdownLabel = computed(() => (locale.value === 'en' ? 'Markdown' : '마크다운 본문'))
   const adminMarkdownPlaceholder = computed(() =>
-    locale.value === 'en'
-      ? 'Write markdown content here...'
-      : '마크다운 본문을 입력하세요...',
+    locale.value === 'en' ? 'Write markdown content here...' : '마크다운 본문을 입력하세요...',
   )
-  const adminCreateLabel = computed(() =>
-    locale.value === 'en' ? 'Create Post' : '게시글 작성',
-  )
-  const adminUpdateLabel = computed(() =>
-    locale.value === 'en' ? 'Update Post' : '게시글 수정',
-  )
-  const adminDeleteLabel = computed(() =>
-    locale.value === 'en' ? 'Delete Post' : '게시글 삭제',
-  )
-  const adminResetLabel = computed(() =>
-    locale.value === 'en' ? 'Reset' : '초기화',
-  )
+  const adminCreateLabel = computed(() => (locale.value === 'en' ? 'Create Post' : '게시글 작성'))
+  const adminUpdateLabel = computed(() => (locale.value === 'en' ? 'Update Post' : '게시글 수정'))
+  const adminDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete Post' : '게시글 삭제'))
+  const adminResetLabel = computed(() => (locale.value === 'en' ? 'Reset' : '초기화'))
 
   /* ── category options ────────────────────────────────── */
 
@@ -248,9 +220,7 @@ export const useBlogAdmin = (
     const hasField = Object.values(payload).some((v) => typeof v !== 'undefined')
     if (!hasField) {
       if (typeof window !== 'undefined') {
-        window.alert(
-          locale.value === 'en' ? 'No fields to update.' : '수정할 항목을 입력해주세요.',
-        )
+        window.alert(locale.value === 'en' ? 'No fields to update.' : '수정할 항목을 입력해주세요.')
       }
       return
     }
