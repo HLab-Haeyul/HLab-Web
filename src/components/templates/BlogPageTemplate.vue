@@ -105,7 +105,9 @@ const {
   <div class="mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
     <main class="space-y-8">
       <header class="focus-fade-in space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+          {{ copy.kicker }}
+        </p>
         <h1 class="text-3xl font-semibold leading-tight text-zinc-100">{{ copy.heading }}</h1>
         <p class="max-w-[76ch] text-sm leading-7 text-zinc-400">{{ copy.description }}</p>
       </header>

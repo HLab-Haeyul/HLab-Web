@@ -37,11 +37,9 @@ const parseCategoryQuery = (value: unknown): BlogCategoryKey | null => {
   return BLOG_CATEGORY_KEYS.find((key) => key === candidate) ?? null
 }
 
-const normalizeProjectKey = (value: string) =>
-  value.trim().toLocaleLowerCase().replace(/\s+/g, '')
+const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 
-const normalizeTagToken = (value: string) =>
-  value.trim().replace(/^#+/, '').toLocaleLowerCase()
+const normalizeTagToken = (value: string) => value.trim().replace(/^#+/, '').toLocaleLowerCase()
 
 export const normalizeTagLabel = (value: string) => value.replace(/^#+/, '')
 
@@ -103,8 +101,7 @@ const filterPostsBySearchTerms = (
     const keywordTarget = `${title} ${excerpt}`
 
     const matchesKeywords =
-      terms.keywords.length === 0 ||
-      terms.keywords.every((kw) => keywordTarget.includes(kw))
+      terms.keywords.length === 0 || terms.keywords.every((kw) => keywordTarget.includes(kw))
     const matchesTags =
       terms.tagTerms.length === 0 ||
       terms.tagTerms.every((tt) => normalizedTags.some((tag) => tag.includes(tt)))
@@ -163,18 +160,14 @@ export const useBlogPage = (
   const noPostsLabel = computed(() =>
     locale.value === 'en' ? 'No posts have been published yet.' : '아직 게시글이 없습니다.',
   )
-  const searchResultTitle = computed(() =>
-    locale.value === 'en' ? 'Search Results' : '검색 결과',
-  )
+  const searchResultTitle = computed(() => (locale.value === 'en' ? 'Search Results' : '검색 결과'))
   const searchResultDescription = computed(() =>
     locale.value === 'en'
       ? 'Showing posts across all categories.'
       : '기술, 프로젝트 회고, 자기 개발 전체에서 검색 결과를 보여줍니다.',
   )
   const viewLabel = computed(() => (locale.value === 'en' ? 'Views' : '조회수'))
-  const projectSelectorLabel = computed(() =>
-    locale.value === 'en' ? 'Project' : '프로젝트',
-  )
+  const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'Project' : '프로젝트'))
   const projectSelectorPlaceholder = computed(() =>
     locale.value === 'en' ? 'Select project' : '프로젝트 선택',
   )
@@ -214,9 +207,7 @@ export const useBlogPage = (
   )
 
   const selectedGroup = computed(
-    () =>
-      groupedPosts.value.find((g) => g.key === selectedCategory.value) ??
-      groupedPosts.value[0],
+    () => groupedPosts.value.find((g) => g.key === selectedCategory.value) ?? groupedPosts.value[0],
   )
 
   const updateCategoryQuery = (category: BlogCategoryKey) => {
@@ -283,9 +274,7 @@ export const useBlogPage = (
     const project = selectedProject.value
     if (!project) return []
 
-    return searchedPosts.filter((post) =>
-      isRetrospectiveLinkedToProject(post, project.title),
-    )
+    return searchedPosts.filter((post) => isRetrospectiveLinkedToProject(post, project.title))
   })
 
   const canRenderPostList = computed(
@@ -306,23 +295,17 @@ export const useBlogPage = (
   })
 
   const activeSectionTitle = computed(() =>
-    isSearchActive.value
-      ? searchResultTitle.value
-      : (selectedGroup.value?.title ?? ''),
+    isSearchActive.value ? searchResultTitle.value : (selectedGroup.value?.title ?? ''),
   )
   const activeSectionDescription = computed(() =>
-    isSearchActive.value
-      ? searchResultDescription.value
-      : (selectedGroup.value?.description ?? ''),
+    isSearchActive.value ? searchResultDescription.value : (selectedGroup.value?.description ?? ''),
   )
 
   /* ── utilities ───────────────────────────────────────── */
 
-  const categoryTitle = (category: BlogCategoryKey) =>
-    copy.value.categories[category].title
+  const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
 
-  const buildPostPath = (id: string) =>
-    `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
+  const buildPostPath = (id: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
 
   const getViewCount = (id: string) => getEstimatedViewCount(id)
   const getCardAnimationDelay = (index: number) => `${Math.min(index, 11) * 45}ms`
@@ -374,9 +357,7 @@ export const useBlogPage = (
     BLOG_CATEGORY_KEYS.forEach((key) => categoryCount.set(key, 0))
 
     copy.value.posts.forEach((post) => {
-      const hasMatch = post.tags.some((t) =>
-        t.toLocaleLowerCase().includes(normalizedTag),
-      )
+      const hasMatch = post.tags.some((t) => t.toLocaleLowerCase().includes(normalizedTag))
       if (!hasMatch) return
       categoryCount.set(post.category, (categoryCount.get(post.category) ?? 0) + 1)
     })
@@ -412,10 +393,7 @@ export const useBlogPage = (
         selectedProjectIndex.value = null
         return
       }
-      if (
-        selectedProjectIndex.value !== null &&
-        selectedProjectIndex.value > count - 1
-      ) {
+      if (selectedProjectIndex.value !== null && selectedProjectIndex.value > count - 1) {
         selectedProjectIndex.value = null
       }
     },

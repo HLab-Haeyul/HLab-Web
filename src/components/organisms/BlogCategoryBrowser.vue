@@ -146,7 +146,9 @@ const searchModel = computed({
 
 .blog-post-focus-enter-active,
 .blog-post-focus-leave-active {
-  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 0.8, 0.2, 1);
+  transition:
+    opacity 220ms ease,
+    transform 260ms cubic-bezier(0.22, 0.8, 0.2, 1);
 }
 
 .blog-post-focus-enter-from,
