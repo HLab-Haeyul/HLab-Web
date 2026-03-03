@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import SkillIcon from '@/components/atoms/SkillIcon.vue'
 import type { BlogPost } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
+import { resolveStackVisual } from '@/utils/stackVisuals'
 
 const { locale, blogPath, route } = useLocale()
 const { copy: blogCopy } = useBlogContent(locale)
@@ -47,6 +49,7 @@ const projectKeywordMap: Record<string, string[]> = {
 const normalizeProjectKey = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, '')
 const normalizeTagToken = (value: string) => value.trim().replace(/^#/, '')
 const normalizeExternalLinkToken = (value: string) => value.toLocaleLowerCase().trim()
+const resolveProjectStackVisual = (stackLabel: string) => resolveStackVisual(locale.value, stackLabel)
 
 const resolveExternalLinkBadge = (name: string, url: string) => {
   const normalizedName = normalizeExternalLinkToken(name)
@@ -105,6 +108,8 @@ const copy = computed(() =>
         listLead: 'Click a card to open project details.',
         detailHeading: 'Project Details',
         detailLead: 'Overview, impact, stack, and linked troubleshooting posts.',
+        roleHeading: 'Role',
+        contributionHeading: 'What I Did',
         linksHeading: 'Collaboration Links',
         linksLead: 'Click a box to open the link in a new tab.',
         troubleshootingHeading: 'Troubleshooting',
@@ -120,6 +125,8 @@ const copy = computed(() =>
         listLead: '카드를 클릭해서 프로젝트 상세를 확인하세요.',
         detailHeading: '프로젝트 상세',
         detailLead: '개요, 성과, 기술 스택, 연결된 트러블 슈팅 글을 제공합니다.',
+        roleHeading: '나의 역할',
+        contributionHeading: '내가 한 일',
         linksHeading: '협업 링크',
         linksLead: '박스를 클릭하면 새 탭으로 이동합니다.',
         troubleshootingHeading: '트러블 슈팅',
@@ -191,7 +198,7 @@ watch(
         </div>
       </section>
 
-      <section id="projects-list" class="mt-8">
+      <section id="projects-list" class="mt-8 w-full max-w-[320px] md:max-w-[650px] xl:max-w-[980px]">
         <h2 class="text-xl font-semibold text-zinc-100">{{ copy.listHeading }}</h2>
         <p class="mt-2 text-sm text-zinc-400">{{ copy.listLead }}</p>
 
@@ -232,13 +239,46 @@ watch(
             <p class="mt-1 text-xs text-zinc-300">{{ project.summary }}</p>
             <p class="mt-2 text-xs text-zinc-200">{{ project.impact }}</p>
 
+            <div
+              v-if="project.role || (project.contributions && project.contributions.length > 0)"
+              class="mt-2 rounded-lg border border-[#2a2a2a] bg-[#101010] p-2"
+            >
+              <div v-if="project.role">
+                <p class="text-[10px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.roleHeading }}</p>
+                <p class="mt-0.5 text-xs text-zinc-200">{{ project.role }}</p>
+              </div>
+
+              <div v-if="project.contributions && project.contributions.length > 0" class="mt-1.5">
+                <p class="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
+                  {{ copy.contributionHeading }}
+                </p>
+                <ul class="mt-1 space-y-1">
+                  <li
+                    v-for="(item, contributionIndex) in project.contributions.slice(0, 2)"
+                    :key="`${project.title}-list-contribution-${contributionIndex}`"
+                    class="text-[11px] leading-4 text-zinc-300"
+                  >
+                    • {{ item }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <ul class="mt-1.5 flex flex-wrap gap-1.5">
               <li
                 v-for="item in project.stack"
                 :key="`${project.title}-${item}`"
-                class="rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-400"
+                class="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] bg-[#111111] px-2 py-1"
               >
-                {{ item }}
+                <SkillIcon
+                  :image-src="resolveProjectStackVisual(item).imageSrc"
+                  :image-alt="resolveProjectStackVisual(item).imageAlt"
+                  :icon="resolveProjectStackVisual(item).icon"
+                  :label="item"
+                  image-class="h-3.5 w-3.5 object-contain"
+                  icon-class="text-[10px] leading-none"
+                />
+                <span class="text-[11px] text-zinc-300">{{ item }}</span>
               </li>
             </ul>
           </article>
@@ -250,7 +290,7 @@ watch(
           v-if="selectedProject"
           id="project-detail"
           :key="`${selectedProjectIndex}-${detailTransitionNonce}`"
-          class="mt-8 max-w-[860px] rounded-xl border border-[#2a2a2a] bg-[#121212de] p-3.5"
+          class="mt-8 w-full max-w-[320px] md:max-w-[650px] xl:max-w-[980px] rounded-xl border border-[#2a2a2a] bg-[#121212de] p-3.5"
         >
           <h2 class="text-lg font-semibold text-zinc-100">{{ copy.detailHeading }}</h2>
           <p class="mt-1.5 text-sm text-zinc-400">{{ copy.detailLead }}</p>
@@ -275,13 +315,50 @@ watch(
             <h3 class="text-sm font-semibold text-zinc-100">{{ selectedProject.title }}</h3>
             <p class="mt-1 text-xs text-zinc-300">{{ selectedProject.summary }}</p>
             <p class="mt-1.5 text-xs text-zinc-200">{{ selectedProject.impact }}</p>
+
+            <div
+              v-if="selectedProject.role || (selectedProject.contributions && selectedProject.contributions.length > 0)"
+              class="mt-2.5 rounded-lg border border-[#2a2a2a] bg-[#101010] p-2.5"
+            >
+              <div v-if="selectedProject.role">
+                <p class="text-[10px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.roleHeading }}</p>
+                <p class="mt-1 text-xs text-zinc-200">{{ selectedProject.role }}</p>
+              </div>
+
+              <div
+                v-if="selectedProject.contributions && selectedProject.contributions.length > 0"
+                class="mt-2"
+              >
+                <p class="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
+                  {{ copy.contributionHeading }}
+                </p>
+                <ul class="mt-1.5 space-y-1">
+                  <li
+                    v-for="(item, contributionIndex) in selectedProject.contributions"
+                    :key="`${selectedProject.title}-detail-contribution-${contributionIndex}`"
+                    class="text-xs leading-5 text-zinc-300"
+                  >
+                    • {{ item }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <ul class="mt-1.5 flex flex-wrap gap-1.5">
               <li
                 v-for="item in selectedProject.stack"
                 :key="`${selectedProject.title}-detail-${item}`"
-                class="rounded-full border border-[#2f2f2f] px-2 py-0.5 text-[11px] text-zinc-400"
+                class="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] bg-[#111111] px-2 py-1"
               >
-                {{ item }}
+                <SkillIcon
+                  :image-src="resolveProjectStackVisual(item).imageSrc"
+                  :image-alt="resolveProjectStackVisual(item).imageAlt"
+                  :icon="resolveProjectStackVisual(item).icon"
+                  :label="item"
+                  image-class="h-3.5 w-3.5 object-contain"
+                  icon-class="text-[10px] leading-none"
+                />
+                <span class="text-[11px] text-zinc-300">{{ item }}</span>
               </li>
             </ul>
 

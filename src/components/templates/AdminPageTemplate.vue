@@ -93,7 +93,7 @@ const plannedCards: AdminActionCard[] = [
   {
     id: 'admin-main-data',
     title: '메인 데이터 편집기',
-    description: '수상, 기술 스택, 출시 프로젝트, Lighthouse, 보안 경력을 수정합니다.',
+    description: '수상/자격증/경험/취미, 기술 스택, 출시 프로젝트, 프로젝트 수, 보안 경력을 수정합니다.',
     status: copy.statusPlanned,
   },
   {

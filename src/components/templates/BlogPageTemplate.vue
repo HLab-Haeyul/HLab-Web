@@ -3,33 +3,47 @@ import type { BlogCategoryKey, BlogPageCopySet } from '@/data/blog/content'
 import type { Ref } from 'vue'
 import { useBlogPage } from '@/composables/useBlogPage'
 import { useBlogAdmin } from '@/composables/useBlogAdmin'
+import { useBlogContent } from '@/composables/useBlogContent'
+import { useLocale } from '@/composables/useLocale'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 import BlogCategoryBrowser from '@/components/organisms/BlogCategoryBrowser.vue'
 
-const props = defineProps<{
-  locale: 'ko' | 'en'
-  copy: BlogPageCopySet
-  isManagingPost: boolean
-  createPost: (input: {
-    title: string
-    excerpt: string
-    category: BlogCategoryKey
-    tags: string[]
-    markdown: string
-  }) => Promise<void>
-  updatePost: (
-    id: string,
-    payload: { title?: string; tags?: string[]; markdown?: string },
-  ) => Promise<void>
-  removePost: (id: string) => Promise<void>
-}>()
-
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-const localeRef = toRef(props, 'locale') as Readonly<Ref<'ko' | 'en'>>
-const copyRef = computed(() => props.copy)
+const { locale } = useLocale()
+const {
+  copy,
+  isManagingPost,
+  createPost,
+  updatePost,
+  removePost,
+} = useBlogContent(locale)
+
+const localeRef = locale as Readonly<Ref<'ko' | 'en'>>
+const copyRef = computed<BlogPageCopySet>(() => copy.value)
 const route = useRoute()
+
+const createPostAction = async (input: {
+  title: string
+  excerpt: string
+  category: BlogCategoryKey
+  tags: string[]
+  markdown: string
+}) => {
+  await createPost(input)
+}
+
+const updatePostAction = async (
+  id: string,
+  payload: { title?: string; tags?: string[]; markdown?: string },
+) => {
+  await updatePost(id, payload)
+}
+
+const removePostAction = async (id: string) => {
+  await removePost(id)
+}
 
 const {
   categoryLabel,
@@ -59,7 +73,7 @@ const {
   getCardAnimationDelay,
 } = useBlogPage(localeRef, copyRef)
 
-const isManagingPostRef = computed(() => props.isManagingPost)
+const isManagingPostRef = computed(() => isManagingPost.value)
 
 const {
   isAdminPostMode,
@@ -88,17 +102,17 @@ const {
   handleCreatePost,
   handleUpdatePost,
   handleDeletePost,
-} = useBlogAdmin(
-  localeRef,
-  copyRef,
-  {
-    createPost: props.createPost,
-    updatePost: props.updatePost,
-    removePost: props.removePost,
-    isManagingPost: isManagingPostRef,
-  },
-  { query: route.query as Record<string, unknown> },
-)
+  } = useBlogAdmin(
+    localeRef,
+    copyRef,
+    {
+      createPost: createPostAction,
+      updatePost: updatePostAction,
+      removePost: removePostAction,
+      isManagingPost: isManagingPostRef,
+    },
+    { query: route.query as Record<string, unknown> },
+  )
 </script>
 
 <template>

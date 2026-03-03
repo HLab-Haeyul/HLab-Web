@@ -7,8 +7,8 @@ const { basePath, adminPath } = useLocale()
 const editableSections = [
   {
     id: 'portfolio-awards',
-    title: '수상 경력',
-    description: '메인 페이지에 노출되는 수상 이력 데이터를 관리합니다.',
+    title: '수상/자격증/경험/취미',
+    description: '메인 페이지에 노출되는 수상, 자격증, 경험, 취미 데이터를 관리합니다.',
   },
   {
     id: 'portfolio-stack',
@@ -22,8 +22,8 @@ const editableSections = [
   },
   {
     id: 'portfolio-quality',
-    title: '평균 Lighthouse / 보안 경력',
-    description: '품질/보안 지표 노출 값을 관리합니다.',
+    title: '프로젝트 수 / 보안 경력',
+    description: '프로젝트 수/보안 지표 노출 값을 관리합니다.',
   },
   {
     id: 'portfolio-featured',
