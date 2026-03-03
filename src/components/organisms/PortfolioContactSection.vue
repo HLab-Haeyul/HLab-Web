@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { PortfolioCopySet } from '@/data/portfolio/types'
 
-defineProps<{
+const props = defineProps<{
   copy: PortfolioCopySet
   isAppLayout: boolean
 }>()
+
+const gmailComposeUrl = computed(
+  () => `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(props.copy.gmailAddress)}`,
+)
 </script>
 
 <template>
@@ -21,11 +26,34 @@ defineProps<{
       {{ copy.contactHeading }}
     </h2>
 
+    <article class="mt-5 rounded-xl border border-[#2a2a2a] bg-[#111111] p-4">
+      <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.contactInfoTitle }}</p>
+      <div class="mt-3 grid gap-2" :class="isAppLayout ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
+        <div class="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2.5">
+          <p class="text-[11px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.gmailLabel }}</p>
+          <a
+            :href="gmailComposeUrl"
+            target="_blank"
+            rel="noopener"
+            class="mt-1 block text-sm font-medium text-zinc-200 transition hover:text-blue-300"
+          >
+            {{ copy.gmailAddress }}
+          </a>
+        </div>
+        <div class="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2.5">
+          <p class="text-[11px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.contactLabel }}</p>
+          <p class="mt-1 text-sm font-medium text-zinc-200">{{ copy.contactValue }}</p>
+        </div>
+      </div>
+    </article>
+
     <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
       <a
         class="inline-flex items-center justify-center rounded-full bg-[#6f8fce] px-4 py-3 text-sm font-semibold !text-white shadow-[0_10px_22px_rgba(79,141,255,0.3)] transition hover:bg-[#5f7fbe] hover:!text-white"
         :class="isAppLayout ? 'w-full' : 'min-w-40'"
-        href="kimminje661@outlook.kr"
+        :href="gmailComposeUrl"
+        target="_blank"
+        rel="noopener"
       >
         {{ copy.emailCta }}
       </a>

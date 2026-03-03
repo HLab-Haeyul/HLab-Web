@@ -18,7 +18,7 @@ const selectedCategory = ref('all')
 const onlyProjectUsed = ref(false)
 const onlyPracticalUsed = ref(false)
 const onlyInternalsExplored = ref(false)
-const sortOption = ref<StackSortOption>('default')
+const sortOption = ref<StackSortOption>('proficiencyDesc')
 
 const sortOptions = computed(() => buildStackSortOptions(locale.value))
 const uiCopy = computed(() => buildStackUiCopy(locale.value))
@@ -41,7 +41,7 @@ const resetFilters = () => {
   onlyProjectUsed.value = false
   onlyPracticalUsed.value = false
   onlyInternalsExplored.value = false
-  sortOption.value = 'default'
+  sortOption.value = 'proficiencyDesc'
 }
 
 watch(locale, () => {

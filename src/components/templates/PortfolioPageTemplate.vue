@@ -7,9 +7,7 @@ import { useLocale } from '@/composables/useLocale'
 import PortfolioAwardsSection from '@/components/organisms/PortfolioAwardsSection.vue'
 import PortfolioContactSection from '@/components/organisms/PortfolioContactSection.vue'
 import PortfolioHeroSection from '@/components/organisms/PortfolioHeroSection.vue'
-import PortfolioMetricsSection from '@/components/organisms/PortfolioMetricsSection.vue'
 import PortfolioPrinciplesSection from '@/components/organisms/PortfolioPrinciplesSection.vue'
-import PortfolioStackTickerSection from '@/components/organisms/PortfolioStackTickerSection.vue'
 import PortfolioWorkSection from '@/components/organisms/PortfolioWorkSection.vue'
 
 const { locale } = useLocale()
@@ -17,7 +15,6 @@ const { locale } = useLocale()
 const copy = computed(() => portfolioCopyByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
-const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
 const metricDisplayValues = ref<string[]>([])
 const currentYear = new Date().getFullYear()
 const showIntro = ref(false)
@@ -195,35 +192,33 @@ watch(
       "
     >
       <div class="section-reveal" :style="getSectionRevealStyle(0)">
-        <PortfolioHeroSection :copy="copy" :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
-      </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(1)">
-        <PortfolioMetricsSection
+        <PortfolioHeroSection
+          :copy="copy"
+          :profile-showcase="profileShowcase"
+          :stack-kicker="stackTicker.kicker"
+          :stack-items="stackTicker.items"
           :metrics="copy.metrics"
           :metric-display-values="metricDisplayValues"
           :is-app-layout="isAppLayout"
         />
       </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(2)">
-        <PortfolioStackTickerSection :ticker-loop-items="tickerLoopItems" :is-app-layout="isAppLayout" />
-      </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(3)">
-        <PortfolioAwardsSection :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
-      </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(4)">
+      <div class="section-reveal" :style="getSectionRevealStyle(1)">
         <PortfolioWorkSection :copy="copy" :is-app-layout="isAppLayout" />
       </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(5)">
+      <div class="section-reveal" :style="getSectionRevealStyle(2)">
+        <PortfolioAwardsSection :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
+      </div>
+      <div class="section-reveal" :style="getSectionRevealStyle(3)">
         <PortfolioPrinciplesSection :copy="copy" :is-app-layout="isAppLayout" />
       </div>
-      <div class="section-reveal" :style="getSectionRevealStyle(6)">
+      <div class="section-reveal" :style="getSectionRevealStyle(4)">
         <PortfolioContactSection :copy="copy" :is-app-layout="isAppLayout" />
       </div>
     </main>
 
     <footer
       class="section-reveal"
-      :style="getSectionRevealStyle(7)"
+      :style="getSectionRevealStyle(5)"
       :class="isAppLayout ? 'mt-4 text-center' : 'mt-5 text-center'"
     >
       <p class="text-sm text-zinc-500">© {{ currentYear }} {{ copy.footerName }}</p>

@@ -22,23 +22,25 @@ defineProps<{
       </h2>
     </div>
 
-    <article class="mt-4 rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
-      <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
-      <div class="relative mt-4">
-        <span
-          aria-hidden="true"
-          class="pointer-events-none absolute inset-y-6 left-3 z-0 w-px bg-gradient-to-b from-transparent via-[#343434] to-transparent md:left-1/2 md:-translate-x-1/2"
-        ></span>
+    <div class="mt-4">
+      <article class="rounded-2xl border border-[#2a2a2a] bg-[#131313] p-4">
+        <p class="text-sm text-zinc-400">{{ profileShowcase.awardsTitle }}</p>
+        <div class="relative mt-4">
+          <span
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-y-6 left-3 z-0 w-px bg-gradient-to-b from-transparent via-[#343434] to-transparent md:left-1/2 md:-translate-x-1/2"
+          ></span>
 
-        <ul>
-          <AwardTimelineCard
-            v-for="(award, awardIndex) in profileShowcase.awards"
-            :key="`${award.year}-${award.title}`"
-            :award="award"
-            :index="awardIndex"
-          />
-        </ul>
-      </div>
-    </article>
+          <ul>
+            <AwardTimelineCard
+              v-for="(award, awardIndex) in profileShowcase.awards"
+              :key="`${award.year}-${award.title}`"
+              :award="award"
+              :index="awardIndex"
+            />
+          </ul>
+        </div>
+      </article>
+    </div>
   </section>
 </template>
