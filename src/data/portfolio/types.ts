@@ -15,6 +15,18 @@ export type WorkItem = {
   links?: ExternalLink[]
 }
 
+export type CertificateItem = {
+  title: string
+  issuer: string
+  issuedAt: string
+  credentialId?: string
+  description: string
+  tags: string[]
+  status?: string
+  imageSrc?: string
+  imageAlt?: string
+}
+
 export type MetricItem = {
   label: string
   value: string
@@ -24,6 +36,8 @@ export type AwardItem = {
   year: string
   title: string
   organizer: string
+  imageSrc?: string
+  imageAlt?: string
 }
 
 export type ProfileShowcaseCopy = {
@@ -35,6 +49,19 @@ export type ProfileShowcaseCopy = {
   photoAlt: string
   awardsTitle: string
   awards: AwardItem[]
+}
+
+export type PortfolioCertificatesCopy = {
+  kicker: string
+  heading: string
+  body: string
+  issuerLabel: string
+  issuedAtLabel: string
+  credentialIdLabel: string
+  imageHint: string
+  emptyTitle: string
+  emptyBody: string
+  certificates: CertificateItem[]
 }
 
 export type StudyLink = {

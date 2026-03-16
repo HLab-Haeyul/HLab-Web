@@ -11,6 +11,7 @@ import {
 export const useAdminAuth = () => ({
   accessToken: adminAuthState.accessToken,
   adminPhoneNumber: adminAuthState.adminPhoneNumber,
+  adminRole: adminAuthState.adminRole,
   isAuthenticated: adminAuthState.isAuthenticated,
   rememberLoginPreference: adminAuthState.rememberLoginPreference,
   requestSmsCode: requestAdminSmsCode,

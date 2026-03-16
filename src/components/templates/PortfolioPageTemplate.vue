@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import PortfolioCertificatesSection from '@/components/organisms/PortfolioCertificatesSection.vue'
 import { portfolioCopyByLocale } from '@/data/portfolio/copy'
+import { portfolioCertificatesByLocale } from '@/data/portfolio/certificates'
 import { profileShowcaseByLocale } from '@/data/portfolio/profileShowcase'
 import { stackTickerByLocale } from '@/data/stack/stackTicker'
 import { useLocale } from '@/composables/useLocale'
@@ -10,11 +12,11 @@ import PortfolioHeroSection from '@/components/organisms/PortfolioHeroSection.vu
 import PortfolioMetricsSection from '@/components/organisms/PortfolioMetricsSection.vue'
 import PortfolioPrinciplesSection from '@/components/organisms/PortfolioPrinciplesSection.vue'
 import PortfolioStackTickerSection from '@/components/organisms/PortfolioStackTickerSection.vue'
-import PortfolioWorkSection from '@/components/organisms/PortfolioWorkSection.vue'
 
 const { locale } = useLocale()
 
 const copy = computed(() => portfolioCopyByLocale[locale.value])
+const certificatesCopy = computed(() => portfolioCertificatesByLocale[locale.value])
 const profileShowcase = computed(() => profileShowcaseByLocale[locale.value])
 const stackTicker = computed(() => stackTickerByLocale[locale.value])
 const tickerLoopItems = computed(() => [...stackTicker.value.items, ...stackTicker.value.items])
@@ -182,8 +184,8 @@ watch(
       class="pointer-events-none fixed inset-0 -z-10 [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
       :class="
         isAppLayout
-          ? 'bg-[radial-gradient(circle_at_50%_-10%,rgba(255,255,255,0.09),transparent_36%),radial-gradient(circle_at_50%_110%,rgba(255,255,255,0.06),transparent_34%)]'
-          : 'bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)]'
+          ? 'bg-[radial-gradient(circle_at_50%_-10%,rgba(79,141,255,0.16),transparent_34%),radial-gradient(circle_at_50%_110%,rgba(58,106,204,0.1),transparent_32%)]'
+          : 'bg-[radial-gradient(circle_at_18%_-4%,rgba(79,141,255,0.14),transparent_32%),radial-gradient(circle_at_82%_108%,rgba(58,106,204,0.11),transparent_34%)]'
       "
     ></div>
 
@@ -211,7 +213,7 @@ watch(
         <PortfolioAwardsSection :profile-showcase="profileShowcase" :is-app-layout="isAppLayout" />
       </div>
       <div class="section-reveal" :style="getSectionRevealStyle(4)">
-        <PortfolioWorkSection :copy="copy" :is-app-layout="isAppLayout" />
+        <PortfolioCertificatesSection :copy="certificatesCopy" :is-app-layout="isAppLayout" />
       </div>
       <div class="section-reveal" :style="getSectionRevealStyle(5)">
         <PortfolioPrinciplesSection :copy="copy" :is-app-layout="isAppLayout" />

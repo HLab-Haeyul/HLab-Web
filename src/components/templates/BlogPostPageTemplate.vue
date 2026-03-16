@@ -437,14 +437,14 @@ watch(
   <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_16%_-8%,rgba(79,141,255,0.14),transparent_34%),radial-gradient(circle_at_84%_112%,rgba(58,106,204,0.1),transparent_32%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(0,0,0,0.44))]"
     ></div>
 
     <main class="space-y-4">
       <div v-if="props.editPostPath" class="flex justify-end">
         <RouterLink
           :to="props.editPostPath"
-          class="inline-flex items-center rounded-lg border border-[#4d3b1f] bg-[#2c2418] px-3 py-1.5 text-xs text-amber-200 transition hover:border-[#765a2b] hover:text-amber-100"
+          class="inline-flex items-center rounded-lg border border-[#33518f] bg-[#14223a] px-3 py-1.5 text-xs text-blue-200 transition hover:border-[#5f8cff] hover:bg-[#193055] hover:text-blue-100"
         >
           {{ props.editPostLabel }}
         </RouterLink>

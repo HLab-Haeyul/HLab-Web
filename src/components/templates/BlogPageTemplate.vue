@@ -3,8 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   BLOG_CATEGORY_KEYS,
+  getMockBlogPostDetail,
   type BlogCategoryKey,
   type BlogPost,
+  type PopularPost,
 } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
@@ -14,10 +16,10 @@ import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { getEstimatedViewCount } from '@/utils/blogViews'
 import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 
-const { locale } = useLocale()
+const { locale, projectPath } = useLocale()
 const route = useRoute()
 const router = useRouter()
-const { copy, isManagingPost, createPost, updatePost, removePost } = useBlogContent(locale)
+const { copy, dataSource, isManagingPost, createPost, updatePost, removePost } = useBlogContent(locale)
 
 const normalizeTagInput = (value: string) =>
   value
@@ -70,18 +72,21 @@ const searchResultDescription = computed(() =>
 )
 const viewLabel = computed(() => (locale.value === 'en' ? 'Views' : '조회수'))
 const projectSelectorLabel = computed(() => (locale.value === 'en' ? 'Project' : '프로젝트'))
-const projectSelectorPlaceholder = computed(() =>
-  locale.value === 'en' ? 'Select project' : '프로젝트 선택',
-)
 const retrospectiveUnselectedLabel = computed(() =>
   locale.value === 'en'
-    ? 'Select a project to see related retrospectives.'
-    : '프로젝트를 선택하면 관련 회고 글이 표시됩니다.',
+    ? 'Click a project box to open the project page and read linked retrospectives inside it.'
+    : '프로젝트 박스를 클릭하면 프로젝트 페이지로 이동해 안에서 연결된 회고를 볼 수 있습니다.',
 )
 const retrospectiveEmptyLabel = computed(() =>
   locale.value === 'en'
-    ? 'No retrospective post is linked to this project yet.'
-    : '선택한 프로젝트에 연결된 회고 글이 아직 없습니다.',
+    ? 'No retrospective content is linked yet.'
+    : '연결된 회고 콘텐츠가 아직 없습니다.',
+)
+const projectArchiveCtaLabel = computed(() =>
+  locale.value === 'en' ? 'Open project and read retrospectives' : '프로젝트로 들어가 회고 보기',
+)
+const projectArchiveEmptyLabel = computed(() =>
+  locale.value === 'en' ? 'No projects are available yet.' : '둘러볼 프로젝트가 아직 없습니다.',
 )
 const isAdminPostMode = computed(() => {
   const envFlag = (import.meta.env.VITE_BLOG_POST_ADMIN_ENABLED as string | undefined)?.trim()
@@ -126,8 +131,65 @@ const adminCreateLabel = computed(() => (locale.value === 'en' ? 'Create Post' :
 const adminUpdateLabel = computed(() => (locale.value === 'en' ? 'Update Post' : '게시글 수정'))
 const adminDeleteLabel = computed(() => (locale.value === 'en' ? 'Delete Post' : '게시글 삭제'))
 const adminResetLabel = computed(() => (locale.value === 'en' ? 'Reset' : '초기화'))
+const totalCountLabel = computed(() => (locale.value === 'en' ? 'Total Archive' : '전체 아카이브'))
+const totalCountDescription = computed(() =>
+  locale.value === 'en'
+    ? 'Published notes are collected in one continuous stream.'
+    : '발행한 글을 하나의 흐름으로 모아두었습니다.',
+)
+const activeCountLabel = computed(() => (locale.value === 'en' ? 'Visible Now' : '현재 보기'))
+const activeCountDescription = computed(() => {
+  if (isSearchActive.value) {
+    return locale.value === 'en'
+      ? 'Search is applied across every category at once.'
+      : '검색 결과가 전체 카테고리에 동시에 적용됩니다.'
+  }
+
+  if (selectedGroup.value?.key === 'retrospective') {
+    return locale.value === 'en'
+      ? 'Project boxes open the project page where linked retrospectives are collected.'
+      : '프로젝트 박스를 누르면 프로젝트 페이지 안에서 연결된 회고를 모아 볼 수 있습니다.'
+  }
+
+  return locale.value === 'en'
+    ? 'The feed is focused on the currently selected topic.'
+    : '선택한 토픽을 기준으로 피드를 정리했습니다.'
+})
+const searchGuideLabel = computed(() => (locale.value === 'en' ? 'Search Guide' : '검색 가이드'))
+const searchGuideText = computed(() =>
+  locale.value === 'en'
+    ? 'Use #tag or chain multiple tags like #vue #typescript.'
+    : '#태그 검색 또는 #vue #typescript처럼 복수 태그를 함께 사용할 수 있습니다.',
+)
+const clearSearchLabel = computed(() => (locale.value === 'en' ? 'Clear' : '지우기'))
+const projectFilterTitle = computed(() => (locale.value === 'en' ? 'Project Filter' : '프로젝트 필터'))
+const filterCardTitle = computed(() => (locale.value === 'en' ? 'Current Filter' : '현재 필터'))
+const featuredLabel = computed(() => (locale.value === 'en' ? 'Featured Story' : '대표 글'))
+const featureFallbackLabel = computed(() =>
+  locale.value === 'en' ? 'No featured post yet.' : '대표 글이 아직 없습니다.',
+)
+const featureFallbackDescription = computed(() =>
+  locale.value === 'en'
+    ? 'Once posts are published, this slot will highlight a lead story.'
+    : '글이 발행되면 이 영역에 대표 글을 우선 배치합니다.',
+)
+const trendRailTitle = computed(() => (locale.value === 'en' ? 'Trending This Week' : '이번 주 트렌딩'))
+const trendRailDescription = computed(() =>
+  locale.value === 'en'
+    ? 'A compact side rail inspired by editorial tech blogs and feed products.'
+    : '편집형 기술 블로그와 피드 서비스의 트렌딩 레일을 섞은 구성입니다.',
+)
+const archiveTitle = computed(() => (locale.value === 'en' ? 'Browse by Topic' : '토픽별 둘러보기'))
+const currentTopicLabel = computed(() => (locale.value === 'en' ? 'Topic In Focus' : '현재 토픽'))
 
 const buildPostPath = (id: string) => `${locale.value === 'en' ? '/en' : '/ko'}/blog/${id}`
+const buildProjectDetailPath = (projectIndex: number) => ({
+  path: projectPath.value,
+  query: {
+    project: String(projectIndex),
+  },
+  hash: '#project-detail',
+})
 
 const adminCategoryOptions = computed(() =>
   BLOG_CATEGORY_KEYS.map((key) => ({
@@ -190,19 +252,37 @@ const sanitizeImageUrl = (raw?: string | null) => {
   return null
 }
 
+const getThumbnailFromMockDetail = (postId: string) => {
+  const detail = getMockBlogPostDetail(locale.value, postId)
+
+  if (!detail?.images || detail.images.length === 0) {
+    return null
+  }
+
+  for (const image of detail.images) {
+    const src = sanitizeImageUrl(image.src)
+
+    if (src) {
+      return src
+    }
+  }
+
+  return null
+}
+
 const loadPostThumbnails = async () => {
   const requestToken = ++thumbnailLoadToken
   const postIds = copy.value.posts.map((post) => post.id)
   const nextThumbnailById: Record<string, string> = {}
 
-  if (isBlogApiEnabled() && postIds.length > 0) {
+  if (dataSource.value === 'api' && isBlogApiEnabled() && postIds.length > 0) {
     const thumbnailResults = await Promise.all(
       postIds.map(async (postId) => {
         try {
           const detail = await fetchBlogPostDetail(locale.value, postId)
 
           if (!detail?.images || detail.images.length === 0) {
-            return [postId, null] as const
+            return [postId, getThumbnailFromMockDetail(postId)] as const
           }
 
           for (const image of detail.images) {
@@ -213,9 +293,9 @@ const loadPostThumbnails = async () => {
             }
           }
 
-          return [postId, null] as const
+          return [postId, getThumbnailFromMockDetail(postId)] as const
         } catch {
-          return [postId, null] as const
+          return [postId, getThumbnailFromMockDetail(postId)] as const
         }
       }),
     )
@@ -229,6 +309,14 @@ const loadPostThumbnails = async () => {
         nextThumbnailById[postId] = thumbnailSrc
       }
     })
+  } else {
+    postIds.forEach((postId) => {
+      const thumbnailSrc = getThumbnailFromMockDetail(postId)
+
+      if (thumbnailSrc) {
+        nextThumbnailById[postId] = thumbnailSrc
+      }
+    })
   }
 
   if (requestToken !== thumbnailLoadToken) {
@@ -238,38 +326,7 @@ const loadPostThumbnails = async () => {
   postThumbnailById.value = nextThumbnailById
 }
 
-const selectedProjectIndex = ref<number | null>(null)
 const projectWorks = computed(() => worksByLocale[locale.value])
-const selectedProject = computed(() => {
-  const index = selectedProjectIndex.value
-
-  if (index === null || index < 0 || index >= projectWorks.value.length) {
-    return null
-  }
-
-  return projectWorks.value[index]
-})
-
-const projectKeywordMap: Record<string, string[]> = {
-  hlab: ['hlab', 'docker', 'deploy', 'pipeline', '배포'],
-  clue: ['clue', 'portfolio', '포트폴리오', 'planning', 'v1'],
-  sizz: ['sizz', 'news', '뉴스'],
-}
-
-const isRetrospectiveLinkedToProject = (post: BlogPost, projectTitle: string) => {
-  const key = normalizeProjectKey(projectTitle)
-  const normalizedTags = post.tags.map((tag) => normalizeProjectKey(normalizeTagToken(tag)))
-
-  if (normalizedTags.some((tag) => tag === key)) {
-    return true
-  }
-
-  const hints = projectKeywordMap[key] ?? []
-  const keywords = [...new Set([projectTitle.toLocaleLowerCase(), ...hints])]
-  const source = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLocaleLowerCase()
-
-  return keywords.some((keyword) => source.includes(keyword.toLocaleLowerCase()))
-}
 
 const categoryAnchorMap: Record<BlogCategoryKey, string> = {
   tech: 'tech',
@@ -331,23 +388,21 @@ const selectCategory = (category: BlogCategoryKey) => {
   updateCategoryQuery(category)
 }
 
-const selectProjectWork = (index: number) => {
-  selectedProjectIndex.value = index
-}
+const clearSearch = () => {
+  searchQuery.value = ''
 
-const handleProjectChange = (value: string) => {
-  if (!value) {
-    selectedProjectIndex.value = null
+  if (!('tag' in route.query)) {
     return
   }
 
-  const index = Number(value)
+  const nextQuery = { ...route.query }
+  delete nextQuery.tag
 
-  if (Number.isNaN(index)) {
-    return
-  }
-
-  selectProjectWork(index)
+  void router.replace({
+    path: route.path,
+    query: nextQuery,
+    hash: route.hash || '#blog-search',
+  })
 }
 
 const selectedGroup = computed(
@@ -431,22 +486,13 @@ const filteredSelectedPosts = computed(() => {
     return searchedPosts
   }
 
-  if (group.key !== 'retrospective') {
-    return searchedPosts
-  }
-
-  const project = selectedProject.value
-
-  if (!project) {
-    return []
-  }
-
-  return searchedPosts.filter((post) => isRetrospectiveLinkedToProject(post, project.title))
+  return searchedPosts
 })
 
-const canRenderPostList = computed(
-  () => isSearchActive.value || selectedGroup.value?.key !== 'retrospective' || Boolean(selectedProject.value),
+const shouldShowRetrospectiveProjectArchive = computed(
+  () => !isSearchActive.value && selectedGroup.value?.key === 'retrospective',
 )
+const canRenderPostList = computed(() => !shouldShowRetrospectiveProjectArchive.value)
 
 const emptyStateLabel = computed(() => {
   if (isSearchActive.value) {
@@ -461,18 +507,103 @@ const emptyStateLabel = computed(() => {
     return searchNoResult.value
   }
 
-  if (!selectedProject.value) {
-    return retrospectiveUnselectedLabel.value
-  }
-
   return retrospectiveEmptyLabel.value
 })
 
 const activeSectionTitle = computed(() =>
   isSearchActive.value ? searchResultTitle.value : (selectedGroup.value?.title ?? ''),
 )
-const activeSectionDescription = computed(() =>
-  isSearchActive.value ? searchResultDescription.value : (selectedGroup.value?.description ?? ''),
+const activeSectionDescription = computed(() => {
+  if (isSearchActive.value) {
+    return searchResultDescription.value
+  }
+
+  if (selectedGroup.value?.key === 'tech') {
+    return ''
+  }
+
+  return selectedGroup.value?.description ?? ''
+})
+const totalPostCount = computed(() => copy.value.posts.length)
+const visiblePostCount = computed(() =>
+  shouldShowRetrospectiveProjectArchive.value
+    ? projectWorks.value.length
+    : (canRenderPostList.value ? filteredSelectedPosts.value.length : 0),
+)
+const filterTokens = computed(() => {
+  return [
+    ...searchTerms.value.keywords,
+    ...searchTerms.value.tagTerms.map((tag) => `#${tag}`),
+  ]
+})
+
+const heroFeatureSource = computed<PopularPost | null>(() => copy.value.popularPosts[0] ?? null)
+const heroFeaturePost = computed<BlogPost | null>(() => {
+  const source = heroFeatureSource.value
+
+  if (source) {
+    return copy.value.posts.find((post) => post.id === source.id) ?? source
+  }
+
+  return copy.value.posts[0] ?? null
+})
+const heroFeatureTag = computed(() =>
+  heroFeatureSource.value?.heroTag ?? (locale.value === 'en' ? 'Editor Pick' : '에디터 픽'),
+)
+const heroFeatureHighlight = computed(() =>
+  heroFeatureSource.value?.highlight ??
+  (locale.value === 'en'
+    ? 'A lead note displayed like a magazine cover story.'
+    : '매거진 커버처럼 먼저 노출하는 대표 노트입니다.'),
+)
+const heroFeatureBackground = computed(
+  () =>
+    heroFeatureSource.value?.bannerBackground ??
+    'linear-gradient(135deg, #0f1726 0%, #1d3049 56%, #6f8fce 100%)',
+)
+
+type TrendRailPost = BlogPost & Partial<Pick<PopularPost, 'heroTag'>>
+
+const trendRailPosts = computed<TrendRailPost[]>(() => {
+  const collected: TrendRailPost[] = []
+  const seen = new Set<string>()
+
+  copy.value.popularPosts.forEach((post) => {
+    if (seen.has(post.id)) {
+      return
+    }
+
+    collected.push(post)
+    seen.add(post.id)
+  })
+
+  copy.value.posts.forEach((post) => {
+    if (seen.has(post.id)) {
+      return
+    }
+
+    collected.push(post)
+    seen.add(post.id)
+  })
+
+  return collected.slice(0, 5)
+})
+
+const getTrendPostLabel = (post: TrendRailPost) => {
+  const heroTag = post.heroTag?.trim()
+
+  if (heroTag) {
+    return heroTag
+  }
+
+  return categoryTitle(post.category)
+}
+
+const sectionLeadPost = computed<BlogPost | null>(() =>
+  canRenderPostList.value ? (filteredSelectedPosts.value[0] ?? null) : null,
+)
+const sectionGridPosts = computed(() =>
+  sectionLeadPost.value ? filteredSelectedPosts.value.slice(1) : filteredSelectedPosts.value,
 )
 
 const findBestCategoryByTag = (tag: string): BlogCategoryKey | null => {
@@ -690,21 +821,6 @@ watch(
   () => locale.value,
   () => {
     searchQuery.value = ''
-    selectedProjectIndex.value = null
-  },
-)
-
-watch(
-  () => projectWorks.value.length,
-  (count) => {
-    if (count === 0) {
-      selectedProjectIndex.value = null
-      return
-    }
-
-    if (selectedProjectIndex.value !== null && selectedProjectIndex.value > count - 1) {
-      selectedProjectIndex.value = null
-    }
   },
 )
 
@@ -756,7 +872,7 @@ watch(
 )
 
 watch(
-  [() => locale.value, () => copy.value.posts.map((post) => post.id).join('|')],
+  [() => locale.value, () => dataSource.value, () => copy.value.posts.map((post) => post.id).join('|')],
   () => {
     void loadPostThumbnails()
   },
@@ -765,14 +881,8 @@ watch(
 </script>
 
 <template>
-  <div class="mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8 lg:px-12">
+  <div class="mx-auto min-h-screen w-full max-w-[1560px] px-4 pb-24 pt-8 sm:px-8 lg:px-12">
     <main class="space-y-8">
-      <header class="focus-fade-in space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ copy.kicker }}</p>
-        <h1 class="text-3xl font-semibold leading-tight text-zinc-100">{{ copy.heading }}</h1>
-        <p class="max-w-[76ch] text-sm leading-7 text-zinc-400">{{ copy.description }}</p>
-      </header>
-
       <BlogPostAdminPanel
         v-if="isAdminPostMode"
         :panel-title="adminPanelTitle"
@@ -809,133 +919,856 @@ watch(
         @delete="handleDeletePost"
       />
 
-      <section id="blog-categories" class="focus-fade-in-delayed rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5">
-        <div class="flex flex-wrap gap-2 border-b border-[#2a2a2a] pb-3">
-          <button
-            v-for="group in groupedPosts"
-            :key="`category-${group.key}`"
-            type="button"
-            class="rounded-md px-3 py-1.5 text-sm font-medium transition"
-            :class="
-              selectedCategory === group.key
-                ? 'category-pill-active border border-[#5f5544] bg-[#211b12] text-amber-200'
-                : 'border border-transparent text-zinc-400 hover:border-[#3a3731] hover:bg-[#171717] hover:text-zinc-100'
-            "
-            @click="selectCategory(group.key as BlogCategoryKey)"
-          >
-            {{ group.title }}
-          </button>
-        </div>
-
-        <section id="blog-search" class="mt-4 space-y-2">
-          <label class="text-xs font-medium text-zinc-500" for="blog-search-input">{{ searchLabel }}</label>
-          <input
-            id="blog-search-input"
-            v-model="searchQuery"
-            type="search"
-            :placeholder="searchPlaceholder"
-            class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
-          />
-        </section>
-
-        <section
-          v-if="selectedGroup"
-          :id="isSearchActive ? 'blog-search-results' : selectedGroup.anchor"
-          :key="isSearchActive ? 'search-results' : `category-${selectedGroup.key}`"
-          class="mt-4 space-y-4"
-        >
-          <div>
-            <p class="text-xs font-medium text-zinc-500">{{ categoryLabel }}</p>
-            <h2 class="mt-1 text-2xl font-semibold text-zinc-100">{{ activeSectionTitle }}</h2>
-            <p class="mt-1 text-sm text-zinc-400">{{ activeSectionDescription }}</p>
-          </div>
-
-          <div v-if="selectedGroup.key === 'retrospective' && !isSearchActive" class="space-y-2">
-            <label class="text-xs font-medium text-zinc-500" for="retrospective-project-select">
-              {{ projectSelectorLabel }}
-            </label>
-            <select
-              id="retrospective-project-select"
-              :value="selectedProjectIndex === null ? '' : String(selectedProjectIndex)"
-              class="w-full rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-sm text-zinc-100 focus:border-[#5a5a5a] focus:outline-none"
-              @change="handleProjectChange(($event.target as HTMLSelectElement).value)"
-            >
-              <option value="">{{ projectSelectorPlaceholder }}</option>
-              <option
-                v-for="(work, workIndex) in projectWorks"
-                :key="`retrospective-work-${work.title}`"
-                :value="String(workIndex)"
+      <section class="blog-editorial-shell focus-fade-in">
+        <div class="blog-editorial-grid">
+          <div class="space-y-6">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button
+                v-for="group in groupedPosts"
+                :key="`hero-category-${group.key}`"
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition"
+                :class="
+                  selectedCategory === group.key
+                    ? 'border-[#6f8fce80] bg-[#6f8fce1f] text-[#dde6f5] shadow-[0_12px_24px_rgba(111,143,206,0.18)]'
+                    : 'border-[#253142] bg-[#101827cc] text-[#b4c0d3] hover:border-[#6f8fce66] hover:bg-[#13203a]'
+                "
+                @click="selectCategory(group.key)"
               >
-                {{ work.title }}
-              </option>
-            </select>
+                <span>{{ group.title }}</span>
+                <span
+                  class="rounded-full px-2 py-0.5 text-[11px]"
+                  :class="
+                    selectedCategory === group.key
+                      ? 'bg-[#0f1726] text-[#dde6f5]'
+                      : 'bg-[#162131] text-[#7e8fa8]'
+                  "
+                >
+                  {{ group.posts.length }}
+                </span>
+              </button>
+
+              <span
+                v-if="isSearchActive"
+                class="inline-flex items-center rounded-full border border-[#6f8fce66] bg-[#101827] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#9ab4ea]"
+              >
+                {{ locale === 'en' ? 'Filtered Feed' : '필터 적용중' }}
+              </span>
+            </div>
+
+            <header class="space-y-4">
+              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#8fa6c9]">
+                {{ copy.kicker }}
+              </p>
+              <div class="space-y-4">
+                <h1
+                  class="max-w-[12ch] text-[clamp(2.2rem,5.8vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-[#dde6f5]"
+                >
+                  {{ copy.heading }}
+                </h1>
+              </div>
+            </header>
+
+            <div class="blog-stat-grid">
+              <article class="paper-card blog-stat-card">
+                <p class="paper-stat-kicker">{{ totalCountLabel }}</p>
+                <p class="paper-stat-value">{{ totalPostCount }}</p>
+                <p class="paper-stat-copy">{{ totalCountDescription }}</p>
+              </article>
+
+              <article class="paper-card blog-stat-card">
+                <p class="paper-stat-kicker">{{ activeCountLabel }}</p>
+                <p class="paper-stat-value">{{ visiblePostCount }}</p>
+                <p class="paper-stat-copy">{{ activeCountDescription }}</p>
+              </article>
+            </div>
+
+            <div
+              id="blog-search"
+              class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(250px,320px)]"
+            >
+              <label class="paper-card flex items-start gap-3 px-4 py-4 sm:px-5" for="blog-search-input">
+                <span
+                  class="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0f1726] text-[#8fa6c9]"
+                >
+                  <svg
+                    class="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M11 18C14.866 18 18 14.866 18 11C18 7.13401 14.866 4 11 4C7.13401 4 4 7.13401 4 11C4 14.866 7.13401 18 11 18Z"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    />
+                    <path
+                      d="M20 20L16.65 16.65"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </span>
+
+                <div class="min-w-0 flex-1">
+                  <span class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e8fa8]">
+                    {{ searchLabel }}
+                  </span>
+                  <input
+                    id="blog-search-input"
+                    v-model="searchQuery"
+                    type="search"
+                    :placeholder="searchPlaceholder"
+                    class="mt-2 w-full border-0 bg-transparent px-0 text-[15px] font-medium text-[#dde6f5] placeholder:text-[#6d7d95] focus:outline-none"
+                  />
+                  <p class="mt-2 text-xs leading-5 text-[#7e8fa8]">{{ searchGuideText }}</p>
+                </div>
+
+                <button
+                  v-if="searchQuery"
+                  type="button"
+                  class="rounded-full border border-[#253142] bg-[#0f1726] px-3 py-1.5 text-xs font-semibold text-[#b4c0d3] transition hover:border-[#6f8fce66] hover:text-[#dde6f5]"
+                  @click.prevent="clearSearch"
+                >
+                  {{ clearSearchLabel }}
+                </button>
+              </label>
+
+              <section
+                v-if="selectedGroup?.key === 'retrospective' && !isSearchActive"
+                class="paper-card px-4 py-4 sm:px-5"
+              >
+                <p class="paper-stat-kicker">{{ projectFilterTitle }}</p>
+                <h2 class="mt-2 text-lg font-semibold text-[#dde6f5]">{{ projectSelectorLabel }}</h2>
+                <p class="mt-1 text-sm leading-6 text-[#b4c0d3]">{{ retrospectiveUnselectedLabel }}</p>
+                <div v-if="projectWorks.length > 0" class="mt-4 grid gap-2">
+                  <RouterLink
+                    v-for="(work, workIndex) in projectWorks"
+                    :key="`retrospective-work-${work.title}`"
+                    :to="buildProjectDetailPath(workIndex)"
+                    class="project-archive-shortcut"
+                  >
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-[#dde6f5]">{{ work.title }}</p>
+                      <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#7e8fa8]">
+                        {{ work.summary }}
+                      </p>
+                    </div>
+                    <span class="project-archive-shortcut-arrow">↗</span>
+                  </RouterLink>
+                </div>
+                <p v-else class="mt-4 text-sm text-[#7e8fa8]">{{ projectArchiveEmptyLabel }}</p>
+              </section>
+
+              <section v-else class="paper-card px-4 py-4 sm:px-5">
+                <p class="paper-stat-kicker">{{ filterCardTitle }}</p>
+                <h2 class="mt-2 text-lg font-semibold text-[#dde6f5]">
+                  {{ isSearchActive ? searchResultTitle : currentTopicLabel }}
+                </h2>
+                <p v-if="activeSectionDescription" class="mt-1 text-sm leading-6 text-[#b4c0d3]">
+                  {{ isSearchActive ? searchResultDescription : activeSectionDescription }}
+                </p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span v-if="filterTokens.length === 0" class="filter-chip filter-chip-muted">
+                    {{ selectedGroup?.title }}
+                  </span>
+                  <span v-for="token in filterTokens" :key="`active-token-${token}`" class="filter-chip">
+                    {{ token }}
+                  </span>
+                </div>
+              </section>
+            </div>
           </div>
 
-          <TransitionGroup
-            v-if="canRenderPostList && filteredSelectedPosts.length > 0"
-            name="blog-post-focus"
-            tag="div"
-            class="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]"
-          >
-            <article
-              v-for="(post, postIndex) in filteredSelectedPosts"
-              :key="`post-${post.id}`"
-              class="group post-focus-card rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:-translate-y-[2px] hover:border-[#5f5544] hover:bg-[#161513]"
-              :style="{ animationDelay: getCardAnimationDelay(postIndex) }"
-            >
-              <RouterLink :to="buildPostPath(post.id)" class="block">
-                <div
-                  v-if="postThumbnailById[post.id]"
-                  class="mb-3 overflow-hidden rounded-lg border border-[#2f2f2f] bg-[#161616]"
-                >
+          <div class="space-y-4">
+            <article v-if="heroFeaturePost" class="feature-story-card">
+              <RouterLink :to="buildPostPath(heroFeaturePost.id)" class="block">
+                <div class="feature-story-visual" :style="{ background: heroFeatureBackground }">
                   <img
-                    :src="postThumbnailById[post.id]"
-                    :alt="`${post.title} 썸네일`"
-                    class="h-36 w-full object-cover"
+                    v-if="postThumbnailById[heroFeaturePost.id]"
+                    :src="postThumbnailById[heroFeaturePost.id]"
+                    :alt="`${heroFeaturePost.title} 썸네일`"
                     loading="lazy"
                   />
+                  <div class="feature-story-veil"></div>
+
+                  <div class="relative flex items-center justify-between gap-3">
+                    <span class="feature-story-pill">{{ heroFeatureTag }}</span>
+                    <span class="feature-story-note">{{ featuredLabel }}</span>
+                  </div>
+
+                  <div class="relative mt-auto">
+                    <p class="feature-story-meta">
+                      {{ heroFeaturePost.publishedAt }} · {{ heroFeaturePost.readTime }}
+                    </p>
+                    <h2 class="mt-3 text-2xl font-semibold leading-snug text-white sm:text-[2rem]">
+                      {{ heroFeaturePost.title }}
+                    </h2>
+                    <p class="mt-3 max-w-[42ch] text-sm leading-6 text-[#dde6f5] sm:text-[15px]">
+                      {{ heroFeatureHighlight }}
+                    </p>
+                  </div>
                 </div>
 
-                <h3 class="line-clamp-2 text-base font-semibold text-zinc-100">{{ post.title }}</h3>
-                <p class="mt-1 line-clamp-2 text-sm text-zinc-400">{{ post.excerpt }}</p>
-
-                <div class="mt-3 flex items-center justify-between gap-2 text-xs">
-                  <span class="rounded-full border border-[#343434] px-2 py-0.5 text-zinc-300">
-                    {{ categoryTitle(post.category) }}
-                  </span>
-                  <span class="text-zinc-500">{{ post.publishedAt }}</span>
-                </div>
-
-                <p class="mt-2 text-xs text-zinc-500">
-                  {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
-                </p>
-
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <span
-                    v-for="tag in post.tags"
-                    :key="`${post.id}-${tag}`"
-                    class="rounded-full border border-[#343434] bg-[#161616] px-2 py-0.5 text-[11px] text-zinc-300"
-                  >
-                    #{{ normalizeTagLabel(tag) }}
-                  </span>
+                <div class="feature-story-body">
+                  <p class="text-sm leading-6 text-[#b4c0d3]">{{ heroFeaturePost.excerpt }}</p>
+                  <div class="mt-4 flex flex-wrap items-center gap-2.5 text-xs text-[#7e8fa8]">
+                    <span class="topic-chip">{{ categoryTitle(heroFeaturePost.category) }}</span>
+                    <span>{{ viewLabel }} {{ getViewCount(heroFeaturePost.id).toLocaleString() }}</span>
+                    <span v-if="heroFeaturePost.tags[0]" class="font-semibold text-[#9ab4ea]">
+                      #{{ normalizeTagLabel(heroFeaturePost.tags[0]) }}
+                    </span>
+                  </div>
                 </div>
               </RouterLink>
             </article>
-          </TransitionGroup>
 
+            <div v-else class="paper-card px-5 py-6">
+              <p class="paper-stat-kicker">{{ featuredLabel }}</p>
+              <h2 class="mt-2 text-xl font-semibold text-[#dde6f5]">{{ featureFallbackLabel }}</h2>
+              <p class="mt-2 text-sm leading-6 text-[#b4c0d3]">{{ featureFallbackDescription }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section id="blog-categories" class="paper-panel focus-fade-in-delayed">
           <div
-            v-else
-            class="rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3 py-4 text-center text-sm text-zinc-500"
+            v-if="selectedGroup"
+            :id="isSearchActive ? 'blog-search-results' : selectedGroup.anchor"
+            :key="isSearchActive ? 'search-results' : `category-${selectedGroup.key}`"
+            class="space-y-6"
           >
-            {{ emptyStateLabel }}
+            <div
+              class="flex flex-col gap-4 border-b border-[#253142] pb-5 lg:flex-row lg:items-end lg:justify-between"
+            >
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e8fa8]">
+                  {{ categoryLabel }}
+                </p>
+                <h2
+                  class="mt-2 text-[clamp(1.6rem,3vw,2.4rem)] font-semibold tracking-[-0.03em] text-[#dde6f5]"
+                >
+                  {{ activeSectionTitle }}
+                </h2>
+                <p v-if="activeSectionDescription" class="mt-2 max-w-[60ch] text-sm leading-6 text-[#b4c0d3]">
+                  {{ activeSectionDescription }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="summary-chip">{{ activeCountLabel }} {{ visiblePostCount }}</span>
+                <span class="summary-chip">{{ currentTopicLabel }} {{ selectedGroup.title }}</span>
+              </div>
+            </div>
+
+            <div v-if="shouldShowRetrospectiveProjectArchive" class="grid gap-4 md:grid-cols-2">
+              <RouterLink
+                v-for="(work, workIndex) in projectWorks"
+                :key="`retrospective-entry-${work.title}`"
+                :to="buildProjectDetailPath(workIndex)"
+                class="project-archive-card"
+              >
+                <div class="project-archive-card-media">
+                  <img
+                    v-if="work.imageSrc"
+                    :src="work.imageSrc"
+                    :alt="work.imageAlt ?? work.title"
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div v-else class="project-archive-card-placeholder">{{ work.title }}</div>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                  <span class="topic-chip topic-chip-accent">{{ projectSelectorLabel }}</span>
+                  <span class="text-xs text-[#7e8fa8]">{{ copy.categories.retrospective.title }}</span>
+                </div>
+
+                <h3 class="mt-3 text-[1.12rem] font-semibold leading-7 text-[#dde6f5]">
+                  {{ work.title }}
+                </h3>
+                <p class="mt-2 text-sm leading-6 text-[#b4c0d3]">{{ work.summary }}</p>
+                <p class="mt-2 text-sm font-medium text-[#9ab4ea]">{{ work.impact }}</p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span
+                    v-for="item in work.stack.slice(0, 4)"
+                    :key="`${work.title}-${item}`"
+                    class="filter-chip"
+                  >
+                    {{ item }}
+                  </span>
+                </div>
+
+                <p class="mt-auto pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-[#9ab4ea]">
+                  {{ projectArchiveCtaLabel }}
+                </p>
+              </RouterLink>
+            </div>
+
+            <div v-else-if="canRenderPostList && filteredSelectedPosts.length > 0" class="space-y-5">
+              <RouterLink v-if="sectionLeadPost" :to="buildPostPath(sectionLeadPost.id)" class="lead-story-card">
+                <div
+                  class="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] lg:items-stretch"
+                >
+                  <div class="space-y-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="topic-chip topic-chip-accent">
+                        {{ categoryTitle(sectionLeadPost.category) }}
+                      </span>
+                      <span class="text-xs text-[#7e8fa8]">{{ sectionLeadPost.publishedAt }}</span>
+                      <span class="text-xs text-[#7e8fa8]">{{ sectionLeadPost.readTime }}</span>
+                    </div>
+
+                    <div class="space-y-3">
+                      <h3
+                        class="text-[clamp(1.45rem,2.6vw,2.3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[#dde6f5]"
+                      >
+                        {{ sectionLeadPost.title }}
+                      </h3>
+                      <p class="text-sm leading-7 text-[#b4c0d3] sm:text-[15px]">
+                        {{ sectionLeadPost.excerpt }}
+                      </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                      <span
+                        v-for="tag in sectionLeadPost.tags"
+                        :key="`${sectionLeadPost.id}-${tag}`"
+                        class="filter-chip"
+                      >
+                        #{{ normalizeTagLabel(tag) }}
+                      </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-[#7e8fa8]">
+                      <span>{{ viewLabel }} {{ getViewCount(sectionLeadPost.id).toLocaleString() }}</span>
+                      <span class="font-semibold uppercase tracking-[0.14em] text-[#9ab4ea]">
+                        {{ copy.readLabel }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="lead-story-visual">
+                    <img
+                      v-if="postThumbnailById[sectionLeadPost.id]"
+                      :src="postThumbnailById[sectionLeadPost.id]"
+                      :alt="`${sectionLeadPost.title} 썸네일`"
+                      class="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div v-else class="lead-story-placeholder">
+                      <span>{{ sectionLeadPost.tags[0] ? `#${normalizeTagLabel(sectionLeadPost.tags[0])}` : 'BLOG' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </RouterLink>
+
+              <TransitionGroup
+                v-if="sectionGridPosts.length > 0"
+                name="blog-post-focus"
+                tag="div"
+                class="grid gap-4 md:grid-cols-2"
+              >
+                <article
+                  v-for="(post, postIndex) in sectionGridPosts"
+                  :key="`post-${post.id}`"
+                  class="post-focus-card feed-article-card"
+                  :style="{ animationDelay: getCardAnimationDelay(postIndex + 1) }"
+                >
+                  <RouterLink :to="buildPostPath(post.id)" class="flex h-full flex-col">
+                    <div v-if="postThumbnailById[post.id]" class="feed-article-media">
+                      <img
+                        :src="postThumbnailById[post.id]"
+                        :alt="`${post.title} 썸네일`"
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    <div class="flex flex-1 flex-col">
+                      <div
+                        class="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7e8fa8]"
+                      >
+                        <span>{{ categoryTitle(post.category) }}</span>
+                        <span class="h-1 w-1 rounded-full bg-[#33445c]"></span>
+                        <span>{{ post.publishedAt }}</span>
+                      </div>
+
+                      <h3 class="mt-3 line-clamp-2 text-[1.08rem] font-semibold leading-7 text-[#dde6f5]">
+                        {{ post.title }}
+                      </h3>
+                      <p class="mt-2 line-clamp-3 text-sm leading-6 text-[#b4c0d3]">{{ post.excerpt }}</p>
+
+                      <div class="mt-4 flex flex-wrap gap-2">
+                        <span v-for="tag in post.tags" :key="`${post.id}-${tag}`" class="filter-chip">
+                          #{{ normalizeTagLabel(tag) }}
+                        </span>
+                      </div>
+
+                      <p class="mt-auto pt-4 text-xs text-[#7e8fa8]">
+                        {{ post.readTime }} · {{ viewLabel }} {{ getViewCount(post.id).toLocaleString() }}
+                      </p>
+                    </div>
+                  </RouterLink>
+                </article>
+              </TransitionGroup>
+            </div>
+
+            <div
+              v-else
+              class="rounded-[1.5rem] border border-dashed border-[#253142] bg-[#101827] px-6 py-10 text-center"
+            >
+              <p class="text-sm font-medium text-[#dde6f5]">{{ emptyStateLabel }}</p>
+              <p class="mt-2 text-xs leading-6 text-[#7e8fa8]">
+                {{
+                  selectedGroup.key === 'retrospective' && !isSearchActive
+                    ? projectArchiveEmptyLabel
+                    : searchGuideText
+                }}
+              </p>
+            </div>
           </div>
         </section>
-      </section>
+
+        <aside class="space-y-4">
+          <section class="paper-card px-5 py-5">
+            <p class="paper-stat-kicker">{{ trendRailTitle }}</p>
+            <p class="mt-2 text-sm leading-6 text-[#b4c0d3]">{{ trendRailDescription }}</p>
+
+            <ol v-if="trendRailPosts.length > 0" class="mt-4 space-y-3">
+              <li v-for="(post, index) in trendRailPosts" :key="`trend-post-${post.id}`">
+                <RouterLink :to="buildPostPath(post.id)" class="trend-link">
+                  <span class="trend-rank">{{ String(index + 1).padStart(2, '0') }}</span>
+                  <div class="min-w-0">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7e8fa8]">
+                      {{ getTrendPostLabel(post) }}
+                    </p>
+                    <p class="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-[#dde6f5]">
+                      {{ post.title }}
+                    </p>
+                    <p class="mt-1 text-xs text-[#7e8fa8]">{{ post.publishedAt }} · {{ post.readTime }}</p>
+                  </div>
+                </RouterLink>
+              </li>
+            </ol>
+
+            <p v-else class="mt-4 text-sm text-[#7e8fa8]">{{ noPostsLabel }}</p>
+          </section>
+
+          <section class="paper-card px-5 py-5">
+            <p class="paper-stat-kicker">{{ archiveTitle }}</p>
+            <div class="mt-4 space-y-2">
+              <button
+                v-for="group in groupedPosts"
+                :key="`archive-button-${group.key}`"
+                type="button"
+                class="archive-nav-button"
+                :class="selectedCategory === group.key ? 'archive-nav-button-active' : ''"
+                @click="selectCategory(group.key)"
+              >
+                <span class="font-semibold">{{ group.title }}</span>
+                <span class="text-sm text-[#7e8fa8]">{{ group.posts.length }}</span>
+              </button>
+            </div>
+          </section>
+
+          <section v-if="filterTokens.length > 0" class="paper-card px-5 py-5">
+            <p class="paper-stat-kicker">{{ filterCardTitle }}</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span v-for="token in filterTokens" :key="`side-token-${token}`" class="filter-chip">
+                {{ token }}
+              </span>
+            </div>
+          </section>
+        </aside>
+      </div>
     </main>
   </div>
 </template>
 
 <style scoped>
+.blog-editorial-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #253142;
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at left top, rgba(111, 143, 206, 0.18), transparent 28%),
+    radial-gradient(circle at right 20%, rgba(95, 127, 190, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(13, 21, 36, 0.98) 0%, rgba(9, 15, 24, 0.98) 100%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+}
+
+.blog-editorial-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0%, transparent 49%, rgba(37, 49, 66, 0.42) 49%, transparent 50%),
+    linear-gradient(rgba(37, 49, 66, 0.18) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 24px;
+  opacity: 0.46;
+  pointer-events: none;
+}
+
+.blog-editorial-grid {
+  position: relative;
+  display: grid;
+  gap: 2rem;
+  padding: clamp(1.4rem, 2vw, 2.25rem);
+}
+
+.paper-panel {
+  border: 1px solid #253142;
+  border-radius: 1.75rem;
+  background: linear-gradient(180deg, rgba(17, 26, 39, 0.94) 0%, rgba(13, 21, 36, 0.98) 100%);
+  padding: clamp(1.25rem, 2vw, 2rem);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.22);
+}
+
+.paper-card {
+  border: 1px solid #253142;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(17, 26, 39, 0.96) 0%, rgba(15, 23, 38, 0.98) 100%);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+}
+
+.blog-stat-grid {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 38rem;
+}
+
+.blog-stat-card {
+  padding: 0.95rem 1rem;
+}
+
+.paper-stat-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7e8fa8;
+}
+
+.paper-stat-value {
+  margin: 0.4rem 0 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #dde6f5;
+}
+
+.paper-stat-copy {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #b4c0d3;
+}
+
+.feature-story-card {
+  overflow: hidden;
+  border: 1px solid #253142;
+  border-radius: 1.6rem;
+  background: linear-gradient(180deg, rgba(17, 26, 39, 0.98) 0%, rgba(15, 23, 38, 0.98) 100%);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.22);
+}
+
+.feature-story-visual {
+  position: relative;
+  display: flex;
+  min-height: 360px;
+  flex-direction: column;
+  padding: 1.35rem;
+  overflow: hidden;
+}
+
+.feature-story-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.32;
+}
+
+.feature-story-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 15, 24, 0.16) 0%, rgba(9, 15, 24, 0.78) 100%);
+}
+
+.feature-story-pill,
+.feature-story-note {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.feature-story-pill {
+  padding: 0.45rem 0.8rem;
+  color: #dde6f5;
+  background: rgba(111, 143, 206, 0.14);
+  border: 1px solid rgba(111, 143, 206, 0.28);
+}
+
+.feature-story-note {
+  padding: 0.4rem 0.75rem;
+  color: #dde6f5;
+  background: rgba(15, 23, 38, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.feature-story-meta {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(221, 230, 245, 0.82);
+}
+
+.feature-story-body {
+  padding: 1.35rem;
+  border-top: 1px solid #253142;
+}
+
+.summary-chip,
+.filter-chip,
+.topic-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+}
+
+.summary-chip {
+  border: 1px solid #253142;
+  background: #101827;
+  padding: 0.48rem 0.8rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #b4c0d3;
+}
+
+.summary-chip-accent,
+.topic-chip-accent {
+  border-color: rgba(111, 143, 206, 0.32);
+  background: rgba(111, 143, 206, 0.14);
+  color: #dde6f5;
+}
+
+.filter-chip,
+.topic-chip {
+  border: 1px solid #253142;
+  background: #101827;
+  padding: 0.38rem 0.72rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #b4c0d3;
+}
+
+.filter-chip-muted {
+  background: rgba(15, 23, 38, 0.72);
+  color: #7e8fa8;
+}
+
+.lead-story-card {
+  display: block;
+  border: 1px solid #253142;
+  border-radius: 1.6rem;
+  background: linear-gradient(135deg, rgba(17, 26, 39, 0.98), rgba(13, 21, 36, 0.96));
+  padding: 1.2rem;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.lead-story-card:hover {
+  transform: translateY(-2px);
+  border-color: #6f8fce66;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.26);
+}
+
+.lead-story-visual {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid #253142;
+  background: linear-gradient(135deg, #111a27 0%, #1d3049 100%);
+  min-height: 240px;
+}
+
+.lead-story-placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8fa6c9;
+}
+
+.feed-article-card {
+  border: 1px solid #253142;
+  border-radius: 1.4rem;
+  background: rgba(17, 26, 39, 0.96);
+  padding: 1rem;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.feed-article-card:hover {
+  transform: translateY(-3px);
+  border-color: #6f8fce66;
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.24);
+}
+
+.feed-article-media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 1.05rem;
+  border: 1px solid #253142;
+  background: #101827;
+  margin-bottom: 0.9rem;
+}
+
+.trend-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  transition: transform 180ms ease;
+}
+
+.trend-link:hover {
+  transform: translateX(2px);
+}
+
+.trend-rank {
+  display: inline-flex;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, rgba(111, 143, 206, 0.3), rgba(95, 127, 190, 0.12));
+  color: #dde6f5;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.archive-nav-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #253142;
+  border-radius: 1rem;
+  background: rgba(16, 24, 39, 0.82);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: #dde6f5;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.archive-nav-button:hover {
+  transform: translateY(-1px);
+  border-color: #6f8fce66;
+  background: #13203a;
+}
+
+.archive-nav-button-active {
+  border-color: rgba(111, 143, 206, 0.32);
+  background: rgba(111, 143, 206, 0.12);
+}
+
+.project-archive-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  border: 1px solid #253142;
+  border-radius: 1.15rem;
+  background: rgba(16, 24, 39, 0.9);
+  padding: 0.9rem 1rem;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.project-archive-shortcut:hover {
+  transform: translateY(-1px);
+  border-color: #6f8fce66;
+  background: #13203a;
+}
+
+.project-archive-shortcut-arrow {
+  color: #9ab4ea;
+  font-size: 0.95rem;
+}
+
+.project-archive-card {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  border: 1px solid #253142;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(17, 26, 39, 0.98) 0%, rgba(13, 21, 36, 0.98) 100%);
+  padding: 1rem;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.project-archive-card:hover {
+  transform: translateY(-3px);
+  border-color: #6f8fce66;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.24);
+}
+
+.project-archive-card-media {
+  overflow: hidden;
+  border-radius: 1.15rem;
+  border: 1px solid #253142;
+  background: linear-gradient(135deg, #111a27 0%, #1d3049 100%);
+  aspect-ratio: 16 / 10;
+}
+
+.project-archive-card-placeholder {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  padding: 1.5rem;
+  color: #8fa6c9;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .focus-fade-in {
   animation: focusFadeUp 420ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
 }
@@ -988,10 +1821,22 @@ watch(
 
 @keyframes focusPill {
   0% {
-    box-shadow: 0 0 0 0 rgba(245, 200, 126, 0.26);
+    box-shadow: 0 0 0 0 rgba(111, 143, 206, 0.22);
   }
   100% {
-    box-shadow: 0 0 0 10px rgba(245, 200, 126, 0);
+    box-shadow: 0 0 0 12px rgba(111, 143, 206, 0);
+  }
+}
+
+@media (min-width: 1280px) {
+  .blog-editorial-grid {
+    grid-template-columns: minmax(0, 1.24fr) 380px;
+  }
+}
+
+@media (min-width: 640px) {
+  .blog-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

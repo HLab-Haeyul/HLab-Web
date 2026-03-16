@@ -33,11 +33,6 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
       },
       {
         year: '2024',
-        title: '2024 동계 AppJam (최우수상, 1등)',
-        organizer: 'AppJam',
-      },
-      {
-        year: '2024',
         title: '2024 부경대학교 정보보안 영재 교육 (우수 학생)',
         organizer: '부경대학교 영재교육원',
       },

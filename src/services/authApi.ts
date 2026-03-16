@@ -1,15 +1,19 @@
+import {
+  normalizeUserRole,
+  type AuthenticatedUser,
+} from '@/types/user'
+
 type FetchOptions = {
   signal?: AbortSignal
 }
 
 type RecordUnknown = Record<string, unknown>
 
-export type AuthSessionPayload = {
+export type AuthSessionPayload = AuthenticatedUser & {
   accessToken: string
   tokenType: string
   expiresIn: number
   expiresAt: string
-  phoneNumber: string
   rememberLogin: boolean
 }
 
@@ -81,6 +85,7 @@ const normalizeSessionPayload = (payload: unknown): AuthSessionPayload | null =>
   const expiresIn = asNumber(normalized.expiresIn ?? normalized.expires_in)
   const expiresAt = asString(normalized.expiresAt ?? normalized.expires_at)
   const phoneNumber = asString(normalized.phoneNumber ?? normalized.phone_number)
+  const role = normalizeUserRole(normalized.role)
   const rememberLogin = asBoolean(normalized.rememberLogin ?? normalized.remember_login)
 
   if (!accessToken || !expiresAt || !phoneNumber || expiresIn <= 0) {
@@ -93,6 +98,7 @@ const normalizeSessionPayload = (payload: unknown): AuthSessionPayload | null =>
     expiresIn,
     expiresAt,
     phoneNumber,
+    role,
     rememberLogin,
   }
 }
@@ -226,7 +232,7 @@ export const refreshAdminSession = async (
 export const fetchAdminMe = async (
   accessToken: string,
   options: FetchOptions = {},
-): Promise<{ phoneNumber: string } | null> => {
+): Promise<AuthenticatedUser | null> => {
   try {
     const response = await fetch(resolveAuthApiUrl('/me'), {
       method: 'GET',
@@ -248,6 +254,7 @@ export const fetchAdminMe = async (
     }
 
     const phoneNumber = asString(payload.phoneNumber ?? payload.phone_number)
+    const role = normalizeUserRole(payload.role)
 
     if (!phoneNumber) {
       return null
@@ -255,6 +262,7 @@ export const fetchAdminMe = async (
 
     return {
       phoneNumber,
+      role,
     }
   } catch {
     return null

@@ -65,23 +65,24 @@ watch(
   place-items: center;
   padding: 1.25rem;
   background:
-    radial-gradient(circle at 50% -10%, rgba(79, 141, 255, 0.12), transparent 42%),
-    radial-gradient(circle at 50% 110%, rgba(79, 141, 255, 0.08), transparent 34%),
-    linear-gradient(165deg, #0f0f0f 0%, #111111 52%, #121212 100%);
+    radial-gradient(circle at 50% -10%, rgba(79, 141, 255, 0.16), transparent 40%),
+    radial-gradient(circle at 50% 110%, rgba(58, 106, 204, 0.12), transparent 34%),
+    linear-gradient(165deg, #020305 0%, #05080d 52%, #08101a 100%);
 }
 
 .app-intro-card {
   width: min(560px, 100%);
-  border: 1px solid #2a2a2a;
+  border: 1px solid #243654;
   border-radius: 1rem;
-  background: rgba(18, 18, 18, 0.86);
+  background: rgba(6, 10, 16, 0.88);
   padding: clamp(1.25rem, 4vw, 2rem);
   backdrop-filter: blur(10px);
+  box-shadow: 0 18px 48px rgba(8, 24, 54, 0.34);
 }
 
 .app-intro-kicker {
   margin: 0;
-  color: #71717a;
+  color: #8fa6c9;
   font-size: 0.72rem;
   letter-spacing: 0.14em;
 }
@@ -96,7 +97,7 @@ watch(
 
 .app-intro-subtitle {
   margin: 0.42rem 0 0;
-  color: #a1a1aa;
+  color: #b4c0d3;
   font-size: 0.9rem;
 }
 
@@ -104,7 +105,7 @@ watch(
   margin-top: 0.95rem;
   height: 2px;
   border-radius: 999px;
-  background: #27272a;
+  background: #172233;
   overflow: hidden;
 }
 
@@ -113,7 +114,7 @@ watch(
   width: 100%;
   height: 100%;
   transform-origin: left center;
-  background: linear-gradient(90deg, #fafafa, #a1a1aa);
+  background: linear-gradient(90deg, #5f8cff, #8eb2ff);
   animation: app-intro-progress 1.25s linear both;
 }
 

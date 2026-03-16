@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import type { BlogPost } from '@/data/blog/content'
 import { worksByLocale } from '@/data/portfolio/works'
 import { useBlogContent } from '@/composables/useBlogContent'
 import { useLocale } from '@/composables/useLocale'
 
 const { locale, blogPath, route } = useLocale()
+const router = useRouter()
 const { copy: blogCopy } = useBlogContent(locale)
 
 const projects = computed(() => worksByLocale[locale.value])
@@ -99,44 +101,62 @@ const copy = computed(() =>
     ? {
         kicker: 'PROJECT ARCHIVE',
         heading: 'All Projects',
-        lead: 'Select a project to view its details and troubleshooting posts.',
+        lead: 'Select a project to view its details and the retrospectives linked to it.',
         countLabel: 'Total Projects',
         listHeading: 'Select Project',
-        listLead: 'Click a card to open project details.',
+        listLead: 'Click a card to open project details and linked retrospectives.',
         detailHeading: 'Project Details',
-        detailLead: 'Overview, impact, stack, and linked troubleshooting posts.',
+        detailLead: 'Overview, impact, stack, and the retrospectives linked to this project.',
         linksHeading: 'Collaboration Links',
         linksLead: 'Click a box to open the link in a new tab.',
-        troubleshootingHeading: 'Troubleshooting',
-        troubleshootingEmpty: 'No troubleshooting posts linked to this project yet.',
+        troubleshootingHeading: 'Project Retrospectives',
+        troubleshootingEmpty: 'No retrospective posts are linked to this project yet.',
         readLabel: 'Read Post',
       }
     : {
         kicker: 'PROJECT ARCHIVE',
         heading: '프로젝트 전체 보기',
-        lead: '프로젝트를 선택하면 상세 정보와 트러블 슈팅 글을 볼 수 있습니다.',
+        lead: '프로젝트를 선택하면 상세 정보와 연결된 회고 글을 볼 수 있습니다.',
         countLabel: '전체 프로젝트 수',
         listHeading: '프로젝트 선택',
-        listLead: '카드를 클릭해서 프로젝트 상세를 확인하세요.',
+        listLead: '카드를 클릭해서 프로젝트 상세와 연결된 회고를 확인하세요.',
         detailHeading: '프로젝트 상세',
-        detailLead: '개요, 성과, 기술 스택, 연결된 트러블 슈팅 글을 제공합니다.',
+        detailLead: '개요, 성과, 기술 스택, 그리고 연결된 프로젝트 회고를 제공합니다.',
         linksHeading: '협업 링크',
         linksLead: '박스를 클릭하면 새 탭으로 이동합니다.',
-        troubleshootingHeading: '트러블 슈팅',
-        troubleshootingEmpty: '연결된 트러블 슈팅 글이 아직 없습니다.',
+        troubleshootingHeading: '프로젝트 회고',
+        troubleshootingEmpty: '연결된 프로젝트 회고 글이 아직 없습니다.',
         readLabel: '글 보기',
       },
 )
 
-const selectProject = async (index: number) => {
-  const changed = selectedProjectIndex.value !== index
-  selectedProjectIndex.value = index
+const buildProjectDetailLocation = (index: number) => ({
+  path: route.path,
+  query: {
+    ...route.query,
+    project: String(index),
+  },
+  hash: '#project-detail',
+})
 
-  if (!changed) {
+const selectProject = async (index: number) => {
+  if (index < 0 || index >= projects.value.length) {
     return
   }
 
-  detailTransitionNonce.value += 1
+  const changed = selectedProjectIndex.value !== index
+  selectedProjectIndex.value = index
+
+  const queryProject = Array.isArray(route.query.project) ? route.query.project[0] : route.query.project
+  const normalizedQueryProject = typeof queryProject === 'string' ? queryProject : null
+
+  if (normalizedQueryProject !== String(index) || route.hash !== '#project-detail') {
+    await router.replace(buildProjectDetailLocation(index))
+  }
+
+  if (changed) {
+    detailTransitionNonce.value += 1
+  }
 
   if (typeof window !== 'undefined' && window.innerWidth < 1024) {
     await nextTick()
@@ -172,7 +192,7 @@ watch(
   <div class="relative isolate mx-auto min-h-screen w-full max-w-[1260px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_-4%,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_108%,rgba(255,255,255,0.07),transparent_34%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.42))]"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_16%_-8%,rgba(79,141,255,0.14),transparent_34%),radial-gradient(circle_at_84%_112%,rgba(58,106,204,0.1),transparent_32%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(0,0,0,0.44))]"
     ></div>
 
     <main>
@@ -222,7 +242,7 @@ watch(
               />
               <div
                 v-else
-                class="flex h-28 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
+                class="flex h-28 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(79,141,255,0.18),transparent_42%),linear-gradient(160deg,#07101b,#0d1524)] px-3 text-center text-sm text-zinc-300"
               >
                 {{ project.title }}
               </div>
@@ -266,7 +286,7 @@ watch(
               />
               <div
                 v-else
-                class="flex h-32 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),linear-gradient(160deg,#181818,#101010)] px-3 text-center text-sm text-zinc-300"
+                class="flex h-32 w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(79,141,255,0.18),transparent_42%),linear-gradient(160deg,#07101b,#0d1524)] px-3 text-center text-sm text-zinc-300"
               >
                   {{ selectedProject.title }}
                 </div>

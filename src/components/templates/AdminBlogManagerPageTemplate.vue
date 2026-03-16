@@ -8,22 +8,12 @@ import { useBlogPostContent } from '@/composables/useBlogPostContent'
 import { useLocale } from '@/composables/useLocale'
 import { fetchBlogPostDetail } from '@/services/blogApi'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
-import BlogPostAdminPanel from '@/components/organisms/BlogPostAdminPanel.vue'
 import AdminSidebarNav from '@/components/organisms/AdminSidebarNav.vue'
-
-type BlogPostAdminDraft = {
-  id: string
-  title: string
-  excerpt: string
-  category: BlogCategoryKey
-  tags: string
-  retrospectiveProjectKey: string
-  publishedAt: string
-  readTime: string
-  heroTag: string
-  authorName: string
-  markdown: string
-}
+import AdminBlogManagerHeroSection from '@/components/organisms/AdminBlogManagerHeroSection.vue'
+import AdminBlogManagerOverviewSection from '@/components/organisms/AdminBlogManagerOverviewSection.vue'
+import AdminBlogManagerComposerSection from '@/components/organisms/AdminBlogManagerComposerSection.vue'
+import AdminBlogPostListSection from '@/components/organisms/AdminBlogPostListSection.vue'
+import type { AdminBlogPostCardItem, BlogPostAdminDraft } from '@/types/adminBlog'
 
 type Props = {
   writeMode?: boolean
@@ -421,13 +411,23 @@ const openPostFromCard = async (id: string) => {
   await router.push(openPostPath(id))
 }
 const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[category].title
+const postCardItems = computed<AdminBlogPostCardItem[]>(() =>
+  copy.value.posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    categoryTitle: categoryTitle(post.category),
+    publishedAt: post.publishedAt,
+    thumbnailSrc: postThumbnailById.value[post.id] ?? null,
+  })),
+)
 </script>
 
 <template>
   <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(245,158,11,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(59,130,246,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(79,141,255,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(58,106,204,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
     ></div>
 
     <main class="grid gap-5 xl:grid-cols-[230px_minmax(0,1fr)] xl:items-start">
@@ -436,210 +436,50 @@ const categoryTitle = (category: BlogCategoryKey) => copy.value.categories[categ
       </div>
 
       <div class="space-y-5">
-        <section class="rounded-[1.6rem] border border-[#2b2a28] bg-[#101010d6] p-5 sm:p-7">
-          <p class="text-[11px] uppercase tracking-[0.12em] text-amber-400">
-            {{ props.writeMode ? 'ADMIN / BLOG WRITE' : 'ADMIN / BLOG' }}
-          </p>
-          <h1 class="mt-2 text-2xl font-semibold text-zinc-100 sm:text-3xl">{{ pageHeading }}</h1>
-          <p class="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">{{ panelDescription }}</p>
+        <AdminBlogManagerHeroSection
+          :write-mode="props.writeMode"
+          :page-heading="pageHeading"
+          :panel-description="panelDescription"
+          :admin-blog-path="adminBlogPath"
+          :admin-blog-write-path="adminBlogWritePath"
+          :admin-path="adminPath"
+          :base-path="basePath"
+          :is-busy="isLoading || isManagingPost"
+          @reload="reload"
+        />
 
-          <div class="mt-4 flex flex-wrap gap-2">
-            <RouterLink
-              v-if="!props.writeMode"
-              :to="adminBlogWritePath"
-              class="inline-flex items-center rounded-lg border border-[#5f5544] bg-[#211b12] px-3 py-1.5 text-xs text-amber-200 transition hover:border-[#8f784d] hover:text-amber-100"
-            >
-              글 작성하기
-            </RouterLink>
-            <RouterLink
-              v-else
-              :to="adminBlogPath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
-            >
-              글 관리로
-            </RouterLink>
-            <RouterLink
-              :to="adminPath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
-            >
-              관리자 메인
-            </RouterLink>
-            <RouterLink
-              :to="basePath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
-            >
-              메인으로
-            </RouterLink>
-            <button
-              type="button"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white disabled:opacity-50"
-              :disabled="isLoading || isManagingPost"
-              @click="reload"
-            >
-              새로고침
-            </button>
-          </div>
-        </section>
-
-        <section
+        <AdminBlogManagerOverviewSection
           v-if="!props.writeMode"
-          id="admin-blog-overview"
-          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5"
-        >
-          <p class="mt-1 text-xs text-zinc-500">동기화 상태와 현재 게시글 수를 확인합니다.</p>
+          :post-count="copy.posts.length"
+          :error-message="errorMessage"
+        />
 
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">
-            <article class="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-4">
-              <p class="text-xs uppercase tracking-[0.08em] text-zinc-500">게시글 수</p>
-              <p class="mt-2 text-xl font-semibold text-zinc-100">{{ copy.posts.length }}</p>
-              <p class="mt-1 text-xs text-zinc-400">현재 로케일 기준 목록</p>
-            </article>
-          </div>
-
-          <p
-            v-if="errorMessage"
-            class="mt-3 rounded-xl border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300"
-          >
-            {{ errorMessage }}
-          </p>
-        </section>
-
-        <section
+        <AdminBlogManagerComposerSection
           v-if="showComposerSection"
-          :id="composerSectionId"
-          :class="
-            props.writeMode
-              ? 'w-full'
-              : 'w-full rounded-[1.4rem] border border-[#2a2a2a] bg-[#101010cc] p-5 sm:p-7'
-          "
-        >
-          <p v-if="!props.writeMode && isEditComposerMode" class="mb-3 text-xs text-zinc-500">
-            수정 모드입니다. 대상 글 ID: <span class="font-mono text-zinc-300">{{ editQueryId }}</span>
-          </p>
-          <p
-            v-if="!props.writeMode && isEditComposerMode && isEditTargetPostLoading"
-            class="mb-3 rounded-lg border border-[#2f2f2f] bg-[#141414] px-3 py-2 text-xs text-zinc-400"
-          >
-            기존 글 본문을 불러오는 중입니다.
-          </p>
-          <p
-            v-if="!props.writeMode && isEditComposerMode && editTargetPostErrorMessage"
-            class="mb-3 rounded-lg border border-[#47361b] bg-[#2a1f11] px-3 py-2 text-xs text-amber-300"
-          >
-            {{ editTargetPostErrorMessage }}
-          </p>
-          <BlogPostAdminPanel
-            panel-title="게시글 관리자"
-            panel-description="ID를 기준으로 게시글 생성/수정/삭제를 수행합니다."
-            id-label="게시글 ID"
-            title-label="제목"
-            excerpt-label="요약"
-            category-label="카테고리"
-            tags-label="태그"
-            tags-placeholder="vue,typescript,회고"
-            retrospective-project-label="연결 프로젝트"
-            retrospective-project-placeholder="프로젝트 선택"
-            published-at-label="발행일"
-            read-time-label="읽기 시간"
-            hero-tag-label="히어로 태그"
-            author-label="작성자"
-            markdown-label="마크다운 본문"
-            markdown-placeholder="마크다운 본문을 입력하세요..."
-            create-label="작성 완료"
-            update-label="게시글 수정"
-            delete-label="게시글 삭제"
-            reset-label="초기화"
-            :is-submitting="isManagingPost"
-            :category-options="adminCategoryOptions"
-            :retrospective-project-options="retrospectiveProjectOptions"
-            :show-id-field="false"
-            :show-excerpt-field="false"
-            :show-author-field="false"
-            :show-published-at-field="false"
-            :show-read-time-field="false"
-            :show-hero-tag-field="false"
-            :show-create-button="props.writeMode"
-            :show-update-button="!props.writeMode && isEditComposerMode"
-            :show-delete-button="!props.writeMode"
-            :minimal-boxes="props.writeMode"
-            :seed-draft="composerSeedDraft"
-            :seed-key="composerSeedKey"
-            @create="handleCreatePost"
-            @update="handleUpdatePost"
-            @delete="handleDeletePost"
-          />
-        </section>
+          :section-id="composerSectionId"
+          :write-mode="props.writeMode"
+          :is-edit-composer-mode="isEditComposerMode"
+          :edit-query-id="editQueryId"
+          :is-edit-target-post-loading="isEditTargetPostLoading"
+          :edit-target-post-error-message="editTargetPostErrorMessage"
+          :is-submitting="isManagingPost"
+          :category-options="adminCategoryOptions"
+          :retrospective-project-options="retrospectiveProjectOptions"
+          :seed-draft="composerSeedDraft"
+          :seed-key="composerSeedKey"
+          @create="handleCreatePost"
+          @update="handleUpdatePost"
+          @delete="handleDeletePost"
+        />
 
-        <section
+        <AdminBlogPostListSection
           v-if="!props.writeMode"
-          id="admin-blog-list"
-          class="rounded-[1.2rem] border border-[#2a2a2a] bg-[#121212dd] p-4 sm:p-5"
-        >
-        <h2 class="text-base font-semibold text-zinc-100 sm:text-lg">섹션 3. 게시글 목록</h2>
-        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <p class="text-sm text-zinc-400">기존 글을 선택하거나 카드에서 바로 삭제할 수 있습니다.</p>
-          <div class="flex items-center gap-3">
-            <p class="text-xs text-zinc-500">박스를 선택하면 댓글 관리 화면으로 이동합니다.</p>
-            <RouterLink
-              :to="adminBlogWritePath"
-              class="inline-flex items-center rounded-md border border-blue-500 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:border-blue-400 hover:bg-blue-500"
-            >
-              새 글 작성
-            </RouterLink>
-          </div>
-        </div>
-
-        <div v-if="copy.posts.length > 0" class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          <article
-            v-for="post in copy.posts"
-            :key="post.id"
-            role="button"
-            tabindex="0"
-            class="group cursor-pointer rounded-xl border border-[#2d2d2d] bg-[#111111] p-4 transition hover:border-[#5f5544] hover:bg-[#161513] focus:outline-none focus-visible:border-[#8f784d]"
-            @click="openPostFromCard(post.id)"
-            @keydown.enter.prevent="openPostFromCard(post.id)"
-            @keydown.space.prevent="openPostFromCard(post.id)"
-          >
-            <div
-              v-if="postThumbnailById[post.id]"
-              class="mb-3 overflow-hidden rounded-lg border border-[#2f2f2f] bg-[#161616]"
-            >
-              <img
-                :src="postThumbnailById[post.id]"
-                :alt="`${post.title} 썸네일`"
-                class="h-36 w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <p class="font-mono text-[11px] text-zinc-500">{{ post.id }}</p>
-            <h3 class="mt-2 line-clamp-2 text-sm font-semibold text-zinc-100">{{ post.title }}</h3>
-            <p class="mt-1 line-clamp-2 text-xs text-zinc-400">{{ post.excerpt }}</p>
-            <div class="mt-3 flex items-center justify-between gap-2 text-xs">
-              <span class="rounded-full border border-[#343434] px-2 py-0.5 text-zinc-300">
-                {{ categoryTitle(post.category) }}
-              </span>
-              <span class="text-zinc-500">{{ post.publishedAt }}</span>
-            </div>
-            <div class="mt-3 flex items-center justify-between gap-2">
-              <p class="text-xs text-amber-300">
-                댓글 관리 화면으로 이동
-              </p>
-              <button
-                type="button"
-                class="rounded-md border border-[#5a2f2f] px-2.5 py-1 text-[11px] text-rose-300 transition hover:border-[#7e3d3d] hover:text-rose-200 disabled:opacity-50"
-                :disabled="isManagingPost"
-                @click.stop="handleDeletePost({ id: post.id })"
-              >
-                글 삭제
-              </button>
-            </div>
-          </article>
-        </div>
-
-        <div v-else class="mt-3 rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3 py-4 text-center text-xs text-zinc-500">
-          게시글이 없습니다.
-        </div>
-        </section>
+          :items="postCardItems"
+          :is-managing-post="isManagingPost"
+          :admin-blog-write-path="adminBlogWritePath"
+          @open="openPostFromCard"
+          @delete="handleDeletePost({ id: $event })"
+        />
       </div>
     </main>
   </div>

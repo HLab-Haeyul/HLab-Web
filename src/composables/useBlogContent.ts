@@ -1,5 +1,9 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import { blogPageCopyByLocale, type BlogPageCopySet, type BlogPost } from '@/data/blog/content'
+import {
+  getMockBlogPageCopy,
+  type BlogPageCopySet,
+  type BlogPost,
+} from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import {
@@ -13,21 +17,17 @@ import {
   updateBlogPost,
 } from '@/services/blogApi'
 
-type BlogDataSource = 'api' | 'unavailable'
+type BlogDataSource = 'api' | 'mock' | 'unavailable'
 type CreatePostResult = {
   ok: boolean
   status: number | null
 }
 
-const createEmptyCopy = (currentLocale: Locale): BlogPageCopySet => ({
-  ...blogPageCopyByLocale[currentLocale],
-  posts: [],
-  popularPosts: [],
-})
+const createMockCopy = (currentLocale: Locale): BlogPageCopySet => getMockBlogPageCopy(currentLocale)
 
 export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
-  const copy = ref<BlogPageCopySet>(createEmptyCopy(locale.value))
-  const dataSource = ref<BlogDataSource>('unavailable')
+  const copy = ref<BlogPageCopySet>(createMockCopy(locale.value))
+  const dataSource = ref<BlogDataSource>('mock')
   const isLoading = ref(false)
   const isUpdating = ref(false)
   const isManagingPost = ref(false)
@@ -42,24 +42,18 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     }
   }
 
-  const getApiUnavailableMessage = (currentLocale: Locale) =>
-    currentLocale === 'en'
-      ? 'Blog API is disabled. No local mock data is used.'
-      : '블로그 API가 비활성화되어 있습니다. 로컬 모의 데이터는 사용하지 않습니다.'
-
-  const getFetchFailedMessage = (currentLocale: Locale) =>
-    currentLocale === 'en'
-      ? 'Failed to load posts from API.'
-      : 'API에서 글 목록을 불러오지 못했습니다.'
+  const applyMockCopy = (message: string | null) => {
+    copy.value = createMockCopy(locale.value)
+    dataSource.value = 'mock'
+    errorMessage.value = message
+    isLoading.value = false
+  }
 
   const load = async () => {
     abortCurrentRequest()
 
     if (!isBlogApiEnabled()) {
-      copy.value = createEmptyCopy(locale.value)
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
-      isLoading.value = false
+      applyMockCopy(null)
       return
     }
 
@@ -81,17 +75,13 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
         return
       }
 
-      copy.value = createEmptyCopy(locale.value)
-      dataSource.value = 'unavailable'
-      errorMessage.value = getFetchFailedMessage(locale.value)
+      applyMockCopy(null)
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
 
-      copy.value = createEmptyCopy(locale.value)
-      dataSource.value = 'unavailable'
-      errorMessage.value = getFetchFailedMessage(locale.value)
+      applyMockCopy(null)
     } finally {
       if (!controller.signal.aborted && currentController === controller) {
         isLoading.value = false
@@ -104,6 +94,11 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     void load()
   }
 
+  const getManageUnavailableMessage = (currentLocale: Locale) =>
+    currentLocale === 'en'
+      ? 'Blog API is disabled, so admin editing is unavailable.'
+      : '블로그 API가 비활성화되어 있어 관리자 편집 기능을 사용할 수 없습니다.'
+
   const getUpdateFailedMessage = (currentLocale: Locale) =>
     currentLocale === 'en'
       ? 'Failed to update main page content.'
@@ -111,7 +106,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
 
   const updateMainPageCopy = async (input: BlogMainPagePatchInput) => {
     if (!isBlogApiEnabled()) {
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = getManageUnavailableMessage(locale.value)
       return false
     }
 
@@ -201,7 +196,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = getManageUnavailableMessage(locale.value)
       isManagingPost.value = false
       return {
         ok: false,
@@ -264,7 +259,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = getManageUnavailableMessage(locale.value)
       isManagingPost.value = false
       return false
     }
@@ -307,7 +302,7 @@ export const useBlogContent = (locale: Readonly<Ref<Locale>>) => {
     errorMessage.value = null
 
     if (!isBlogApiEnabled()) {
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = getManageUnavailableMessage(locale.value)
       isManagingPost.value = false
       return false
     }

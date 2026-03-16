@@ -1,14 +1,14 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import type { BlogPostDetail } from '@/data/blog/types'
+import { getMockBlogPostDetail, type BlogPostDetail } from '@/data/blog/content'
 import type { Locale } from '@/data/portfolio/types'
 import { isBlogApiEnabled } from '@/services/blogApiConfig'
 import { fetchBlogPostDetail } from '@/services/blogApi'
 
-type BlogDataSource = 'api' | 'unavailable'
+type BlogDataSource = 'api' | 'mock' | 'unavailable'
 
 export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<Ref<string>>) => {
-  const post = ref<BlogPostDetail | null>(null)
-  const dataSource = ref<BlogDataSource>('unavailable')
+  const post = ref<BlogPostDetail | null>(getMockBlogPostDetail(locale.value, id.value))
+  const dataSource = ref<BlogDataSource>(post.value ? 'mock' : 'unavailable')
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
@@ -21,15 +21,14 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
     }
   }
 
-  const getApiUnavailableMessage = (currentLocale: Locale) =>
-    currentLocale === 'en'
-      ? 'Blog API is disabled. No local mock data is used.'
-      : '블로그 API가 비활성화되어 있습니다. 로컬 모의 데이터는 사용하지 않습니다.'
+  const applyMockPost = (message: string | null) => {
+    const mockPost = getMockBlogPostDetail(locale.value, id.value)
 
-  const getFetchFailedMessage = (currentLocale: Locale) =>
-    currentLocale === 'en'
-      ? 'Failed to load this post from API.'
-      : 'API에서 글 상세를 불러오지 못했습니다.'
+    post.value = mockPost
+    dataSource.value = mockPost ? 'mock' : 'unavailable'
+    errorMessage.value = mockPost ? message : null
+    isLoading.value = false
+  }
 
   const load = async () => {
     abortCurrentRequest()
@@ -42,10 +41,7 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
     }
 
     if (!isBlogApiEnabled()) {
-      post.value = null
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
-      isLoading.value = false
+      applyMockPost(null)
       return
     }
 
@@ -69,17 +65,13 @@ export const useBlogPostContent = (locale: Readonly<Ref<Locale>>, id: Readonly<R
         return
       }
 
-      post.value = null
-      dataSource.value = 'unavailable'
-      errorMessage.value = getFetchFailedMessage(locale.value)
+      applyMockPost(null)
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
 
-      post.value = null
-      dataSource.value = 'unavailable'
-      errorMessage.value = getFetchFailedMessage(locale.value)
+      applyMockPost(null)
     } finally {
       if (!controller.signal.aborted && currentController === controller) {
         isLoading.value = false

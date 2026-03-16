@@ -318,11 +318,11 @@ const handleDelete = () => {
 const rootSectionClass = computed(() =>
   props.minimalBoxes
     ? 'p-0'
-    : 'rounded-[1.2rem] border border-[#2a2a2a] bg-[#101010cc] p-4 sm:p-5',
+    : 'rounded-[1.2rem] border border-[#223249] bg-[#08101be0] p-4 sm:p-5',
 )
 
 const tempDraftBoxClass = computed(() =>
-  props.minimalBoxes ? 'mt-4 p-0' : 'mt-4 rounded-lg border border-[#2f2f2f] bg-[#141414] p-3',
+  props.minimalBoxes ? 'mt-4 p-0' : 'mt-4 rounded-lg border border-[#243654] bg-[#0d1522] p-3',
 )
 </script>
 
@@ -330,7 +330,7 @@ const tempDraftBoxClass = computed(() =>
   <section :class="rootSectionClass">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <p class="text-[11px] uppercase tracking-[0.11em] text-zinc-500">PUBLISH EDITOR</p>
+        <p class="text-[11px] uppercase tracking-[0.11em] text-[#8fa6c9]">PUBLISH EDITOR</p>
         <h3 class="mt-1 text-base font-semibold text-zinc-100">{{ props.panelTitle }}</h3>
         <p class="mt-1 text-xs text-zinc-400">{{ props.panelDescription }}</p>
       </div>
@@ -350,7 +350,7 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="id"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -358,7 +358,7 @@ const tempDraftBoxClass = computed(() =>
         <span class="text-xs text-zinc-400">{{ props.categoryLabel }}</span>
         <select
           v-model="category"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 focus:border-[#5f8cff] focus:outline-none"
         >
           <option v-for="option in props.categoryOptions" :key="option.key" :value="option.key">
             {{ option.label }}
@@ -371,7 +371,7 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="title"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -379,7 +379,7 @@ const tempDraftBoxClass = computed(() =>
         <span class="text-xs text-zinc-400">{{ props.excerptLabel }}</span>
         <textarea
           v-model="excerpt"
-          class="min-h-20 w-full resize-y rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="min-h-20 w-full resize-y rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         ></textarea>
       </label>
 
@@ -389,7 +389,7 @@ const tempDraftBoxClass = computed(() =>
           v-model="tags"
           type="text"
           :placeholder="props.tagsPlaceholder"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -400,7 +400,7 @@ const tempDraftBoxClass = computed(() =>
         <span class="text-xs text-zinc-400">{{ props.retrospectiveProjectLabel }}</span>
         <select
           v-model="retrospectiveProjectKey"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 focus:border-[#5f8cff] focus:outline-none"
         >
           <option value="">{{ props.retrospectiveProjectPlaceholder }}</option>
           <option
@@ -418,7 +418,7 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="publishedAt"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -427,7 +427,7 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="readTime"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -436,7 +436,7 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="heroTag"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
@@ -445,14 +445,14 @@ const tempDraftBoxClass = computed(() =>
         <input
           v-model="authorName"
           type="text"
-          class="w-full rounded-lg border border-[#2f2f2f] bg-[#171717] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5a5a5a] focus:outline-none"
+          class="w-full rounded-lg border border-[#243654] bg-[#0b1320] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-[#5f8cff] focus:outline-none"
         />
       </label>
 
     </div>
 
     <div class="mt-3 space-y-1">
-      <span class="text-xs text-zinc-400">{{ props.markdownLabel }}</span>
+      <span class="text-xs text-[#8fa6c9]">{{ props.markdownLabel }}</span>
       <MarkdownLiveEditor
         v-model="markdown"
         :placeholder="props.markdownPlaceholder"
@@ -465,7 +465,7 @@ const tempDraftBoxClass = computed(() =>
       <div class="mt-2 flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
+          class="rounded-lg border border-[#243654] bg-[#0a1120] px-3 py-1.5 text-xs text-[#dce7ff] transition hover:border-[#5f8cff] hover:bg-[#13203a] hover:text-white disabled:opacity-50"
           :disabled="props.isSubmitting"
           @click="handleSaveTempDraft"
         >
@@ -473,7 +473,7 @@ const tempDraftBoxClass = computed(() =>
         </button>
         <button
           type="button"
-          class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
+          class="rounded-lg border border-[#243654] bg-[#0a1120] px-3 py-1.5 text-xs text-[#dce7ff] transition hover:border-[#5f8cff] hover:bg-[#13203a] hover:text-white disabled:opacity-50"
           :disabled="props.isSubmitting"
           @click="handleLoadTempDraft"
         >
@@ -496,7 +496,7 @@ const tempDraftBoxClass = computed(() =>
       <button
         v-if="props.showCreateButton"
         type="button"
-        class="rounded-lg border border-blue-500 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:border-blue-400 hover:bg-blue-500 disabled:opacity-50"
+        class="rounded-lg border border-[#5f8cff] bg-[#4677eb] px-3 py-1.5 text-xs font-medium text-white transition hover:border-[#8eb2ff] hover:bg-[#5f8cff] disabled:opacity-50"
         :disabled="props.isSubmitting"
         @click="handleCreate"
       >
@@ -505,7 +505,7 @@ const tempDraftBoxClass = computed(() =>
       <button
         v-if="props.showUpdateButton"
         type="button"
-        class="rounded-lg border border-[#313131] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5b5b5b] hover:text-white disabled:opacity-50"
+        class="rounded-lg border border-[#243654] bg-[#0a1120] px-3 py-1.5 text-xs text-[#dce7ff] transition hover:border-[#5f8cff] hover:bg-[#13203a] hover:text-white disabled:opacity-50"
         :disabled="props.isSubmitting"
         @click="handleUpdate"
       >

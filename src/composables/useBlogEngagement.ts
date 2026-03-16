@@ -11,7 +11,7 @@ import {
   updateBlogComment,
 } from '@/services/blogInteractionApi'
 
-type EngagementDataSource = 'api' | 'unavailable'
+type EngagementDataSource = 'api' | 'mock' | 'unavailable'
 
 const DEFAULT_COMMENT_PAGE_SIZE = 5
 
@@ -32,11 +32,6 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
 
   let currentController: AbortController | null = null
 
-  const getApiUnavailableMessage = (currentLocale: Locale) =>
-    currentLocale === 'en'
-      ? 'Comment/like API is disabled. No local mock data is used.'
-      : '댓글/좋아요 API가 비활성화되어 있습니다. 로컬 모의 데이터는 사용하지 않습니다.'
-
   const getSyncErrorMessage = (currentLocale: Locale) =>
     currentLocale === 'en'
       ? 'Failed to sync comments/likes with API.'
@@ -49,6 +44,14 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     commentPage.value = 1
     commentPageSize.value = DEFAULT_COMMENT_PAGE_SIZE
     totalCommentCount.value = 0
+  }
+
+  const applyMockPreview = () => {
+    resetState()
+    dataSource.value = 'mock'
+    errorMessage.value = null
+    isLoading.value = false
+    isCommentPageLoading.value = false
   }
 
   const totalCommentPages = computed(() => {
@@ -89,9 +92,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
-      resetState()
+      applyMockPreview()
       return
     }
 
@@ -121,8 +122,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
       }
 
       if (!pageData) {
-        dataSource.value = 'unavailable'
-        errorMessage.value = getSyncErrorMessage(locale.value)
+        applyMockPreview()
         return
       }
 
@@ -133,8 +133,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
         return
       }
 
-      dataSource.value = 'unavailable'
-      errorMessage.value = getSyncErrorMessage(locale.value)
+      applyMockPreview()
     } finally {
       if (!controller.signal.aborted && currentController === controller) {
         isCommentPageLoading.value = false
@@ -155,10 +154,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      resetState()
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
-      isLoading.value = false
+      applyMockPreview()
       return
     }
 
@@ -192,9 +188,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
       }
 
       if (!engagementData || !pageData) {
-        dataSource.value = 'unavailable'
-        errorMessage.value = getSyncErrorMessage(locale.value)
-        resetState()
+        applyMockPreview()
         return
       }
 
@@ -207,9 +201,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
         return
       }
 
-      dataSource.value = 'unavailable'
-      errorMessage.value = getSyncErrorMessage(locale.value)
-      resetState()
+      applyMockPreview()
     } finally {
       if (!controller.signal.aborted && currentController === controller) {
         isLoading.value = false
@@ -224,8 +216,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = null
       return
     }
 
@@ -266,8 +257,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = null
       return
     }
 
@@ -318,8 +308,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = null
       return false
     }
 
@@ -364,8 +353,7 @@ export const useBlogEngagement = (locale: Readonly<Ref<Locale>>, id: Readonly<Re
     }
 
     if (!isBlogApiEnabled()) {
-      dataSource.value = 'unavailable'
-      errorMessage.value = getApiUnavailableMessage(locale.value)
+      errorMessage.value = null
       return false
     }
 

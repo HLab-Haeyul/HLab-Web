@@ -5,19 +5,19 @@
   --font-sans: 'Noto Sans KR', 'Manrope', 'Segoe UI', sans-serif;
   --font-display: 'Manrope', 'Noto Sans KR', 'Segoe UI', sans-serif;
 
-  --bg-base: #090f18;
+  --bg-base: #030507;
   --bg-gradient:
-    radial-gradient(circle at 14% -8%, rgba(111, 143, 206, 0.18), transparent 38%),
-    radial-gradient(circle at 86% 116%, rgba(95, 127, 190, 0.16), transparent 42%),
-    linear-gradient(160deg, #090f18 0%, #0b1220 48%, #0d1524 100%);
-  --bg-soft: #111a27;
-  --line-soft: #253142;
+    radial-gradient(circle at 14% -8%, rgba(79, 141, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 86% 116%, rgba(54, 101, 196, 0.15), transparent 38%),
+    linear-gradient(160deg, #030507 0%, #060b12 48%, #08111d 100%);
+  --bg-soft: #0d1522;
+  --line-soft: #223249;
 
   --text-strong: #dde6f5;
   --text-soft: #b4c0d3;
   --text-muted: #7e8fa8;
-  --brand-primary: #6f8fce;
-  --brand-primary-strong: #5f7fbe;
+  --brand-primary: #5f8cff;
+  --brand-primary-strong: #4677eb;
 }
 
 *,

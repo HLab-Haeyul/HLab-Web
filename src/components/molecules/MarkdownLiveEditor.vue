@@ -56,7 +56,7 @@ const TOAST_UI_JS_ID = 'toast-ui-editor-js'
 const TOAST_UI_OVERRIDE_STYLE_ID = 'toast-ui-editor-overrides'
 const TOAST_UI_OVERRIDE_CSS = `
 .toastui-editor-toolbar {
-  background: #15120e !important;
+  background: #0d1522 !important;
 }
 
 .toastui-editor-md-container,
@@ -363,28 +363,28 @@ watch(
 <style scoped>
 :deep(.toastui-editor-defaultUI) {
   overflow: hidden;
-  border: 1px solid #3c3427;
+  border: 1px solid #223249;
   border-radius: 0.75rem;
-  background: #120f0b;
+  background: #08101b;
 }
 
 :deep(.toastui-editor-toolbar) {
-  border-bottom: 1px solid #332c22;
-  background: #15120e;
+  border-bottom: 1px solid #223249;
+  background: #0d1522;
 }
 
 :deep(.toastui-editor-toolbar button) {
-  color: #d4d4d8;
+  color: #dce7ff;
 }
 
 :deep(.toastui-editor-toolbar button:hover) {
-  background: #231d16;
+  background: #13203a;
 }
 
 :deep(.toastui-editor-md-container),
 :deep(.toastui-editor-md-preview),
 :deep(.toastui-editor-ww-container) {
-  background: #120f0b;
+  background: #08101b;
 }
 
 :deep(.toastui-editor-md-container .CodeMirror),
@@ -424,7 +424,7 @@ watch(
 }
 
 :deep(.toastui-editor-md-tab-container) {
-  border-bottom: 1px solid #332c22;
-  background: #15120e;
+  border-bottom: 1px solid #223249;
+  background: #0d1522;
 }
 </style>

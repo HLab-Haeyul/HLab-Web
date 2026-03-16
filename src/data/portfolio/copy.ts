@@ -10,11 +10,11 @@ export const portfolioCopyByLocale: Record<Locale, PortfolioCopySet> = {
     heroTitle: '무한한 공학의 세계',
     heroLead:
       '공학은 무한한 탐구의 여정입니다. 저는 이 여정에서 매일 새로운 도전을 즐기며, 깊이 있는 분석과 창의적인 솔루션을 통해 문제를 해결하는 것을 좋아합니다.',
-    primaryCta: '주요 작업 보기',
+    primaryCta: '자격증 보기',
     secondaryCta: '프로젝트 시작하기',
     metrics: [
-      { label: '출시 프로젝트', value: '1' },
-      { label: '평균 Lighthouse', value: '96' },
+      { label: '프로젝트', value: '3' },
+      { label: '방문자 수', value: '2' },
       { label: '보안+개발 경력', value: '0년' },
     ],
     workKicker: '주요 작업',
@@ -55,11 +55,11 @@ export const portfolioCopyByLocale: Record<Locale, PortfolioCopySet> = {
     heroTitle: 'The Infinite World of Engineering',
     heroLead:
       'Engineering is an endless journey of exploration. On this journey, I enjoy taking on new challenges every day and solving problems through in-depth analysis and creative solutions.',
-    primaryCta: 'View Key Projects',
+    primaryCta: 'View Certificates',
     secondaryCta: 'Start a Project',
     metrics: [
-      { label: 'Shipped Projects', value: '1' },
-      { label: 'Average Lighthouse', value: '96' },
+      { label: 'Projects Worked On', value: '1' },
+      { label: 'Certificates', value: '96' },
       { label: 'Security + Development Experience', value: '0 years' },
     ],
     workKicker: 'Key Projects',

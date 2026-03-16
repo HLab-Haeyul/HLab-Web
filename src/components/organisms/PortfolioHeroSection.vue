@@ -31,7 +31,7 @@ const profilePhotoSrc = computed(() => props.profileShowcase.photoSrc)
           <a
             class="inline-flex items-center justify-center rounded-full bg-[#6f8fce] px-4 py-3 text-sm font-semibold !text-white shadow-[0_10px_22px_rgba(79,141,255,0.3)] transition hover:-translate-y-0.5 hover:bg-[#5f7fbe] hover:!text-white"
             :class="isAppLayout ? 'w-full' : 'min-w-40'"
-            href="#work"
+            href="#certificates"
           >
             {{ copy.primaryCta }}
           </a>

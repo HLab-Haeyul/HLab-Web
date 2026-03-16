@@ -93,13 +93,13 @@ const plannedCards: AdminActionCard[] = [
   {
     id: 'admin-main-data',
     title: '메인 데이터 편집기',
-    description: '수상, 기술 스택, 출시 프로젝트, Lighthouse, 보안 경력을 수정합니다.',
+    description: '수상, 기술 스택, 작업한 프로젝트 수, 자격증 개수, 보안 경력을 수정합니다.',
     status: copy.statusPlanned,
   },
   {
-    id: 'admin-featured',
-    title: '대표 프로젝트 3개 선택',
-    description: '메인 페이지 대표 프로젝트 3개를 선택하고 순서를 지정합니다.',
+    id: 'admin-certificates',
+    title: '자격증',
+    description: '메인 페이지 자격증 카드와 발급 정보를 관리합니다.',
     status: copy.statusPlanned,
   },
 ]
@@ -111,7 +111,7 @@ const backToMainLabel = '메인으로'
   <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(245,158,11,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(59,130,246,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(79,141,255,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(58,106,204,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
     ></div>
 
     <main class="grid gap-5 xl:grid-cols-[230px_minmax(0,1fr)] xl:items-start">
@@ -120,15 +120,15 @@ const backToMainLabel = '메인으로'
       </div>
 
       <div class="space-y-6">
-        <section class="rounded-[1.6rem] border border-[#2b2a28] bg-[#101010d6] p-5 sm:p-7">
-          <p class="text-[11px] uppercase tracking-[0.12em] text-amber-400">{{ copy.kicker }}</p>
+        <section class="rounded-[1.6rem] border border-[#243654] bg-[#0a0f17d9] p-5 sm:p-7">
+          <p class="text-[11px] uppercase tracking-[0.12em] text-blue-300">{{ copy.kicker }}</p>
           <h1 class="mt-2 text-2xl font-semibold text-zinc-100 sm:text-3xl">{{ copy.heading }}</h1>
           <p class="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">{{ copy.description }}</p>
 
           <div class="mt-4">
             <RouterLink
               :to="basePath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+              class="inline-flex items-center rounded-lg border border-[#243654] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
             >
               {{ backToMainLabel }}
             </RouterLink>
@@ -158,12 +158,12 @@ const backToMainLabel = '메인으로'
               :id="card.id"
               :key="card.id"
               :to="card.to || basePath"
-              class="group rounded-2xl border border-[#2f2d2a] bg-[#141414d9] p-4 transition hover:border-[#605239] hover:bg-[#171614]"
+              class="group rounded-2xl border border-[#263140] bg-[#0f141dd9] p-4 transition hover:border-[#4f76c7] hover:bg-[#121b2a]"
             >
               <div class="flex items-center justify-between gap-2">
                 <h2 class="text-base font-semibold text-zinc-100">{{ card.title }}</h2>
                 <span
-                  class="rounded-full border border-[#494238] bg-[#2c261d] px-2 py-0.5 text-[11px] text-amber-300"
+                  class="rounded-full border border-[#34538f] bg-[#14223a] px-2 py-0.5 text-[11px] text-blue-200"
                 >
                   {{ card.status }}
                 </span>

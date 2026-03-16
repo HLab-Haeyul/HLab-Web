@@ -371,7 +371,7 @@ watch(
   <div class="relative isolate mx-auto min-h-screen w-full max-w-[1480px] px-4 pb-14 pt-5 sm:px-8 lg:px-12">
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(245,158,11,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(59,130,246,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_-6%,rgba(79,141,255,0.16),transparent_34%),radial-gradient(circle_at_85%_115%,rgba(58,106,204,0.12),transparent_36%)] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.4))]"
     ></div>
 
     <main class="grid gap-5 xl:grid-cols-[230px_minmax(0,1fr)] xl:items-start">
@@ -380,8 +380,8 @@ watch(
       </div>
 
       <div class="space-y-5">
-        <section class="rounded-[1.6rem] border border-[#2b2a28] bg-[#101010d6] p-5 sm:p-7">
-          <p class="text-[11px] uppercase tracking-[0.12em] text-amber-400">ADMIN / PROJECTS</p>
+        <section class="rounded-[1.6rem] border border-[#243654] bg-[#0a0f17d9] p-5 sm:p-7">
+          <p class="text-[11px] uppercase tracking-[0.12em] text-blue-300">ADMIN / PROJECTS</p>
           <h1 class="mt-2 text-2xl font-semibold text-zinc-100 sm:text-3xl">프로젝트 관리</h1>
           <p class="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">
             프로젝트 카드를 선택해서 트러블슈팅 글, 제목/요약/성과, 이미지, 협업 URL을 수정하거나 추가합니다.
@@ -397,13 +397,13 @@ watch(
             </button>
             <RouterLink
               :to="adminPath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+              class="inline-flex items-center rounded-lg border border-[#243654] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
             >
               관리자 메인
             </RouterLink>
             <RouterLink
               :to="basePath"
-              class="inline-flex items-center rounded-lg border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+              class="inline-flex items-center rounded-lg border border-[#243654] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
             >
               메인으로
             </RouterLink>
@@ -429,8 +429,8 @@ watch(
               class="group cursor-pointer rounded-xl border bg-[#111111] p-4 transition focus:outline-none"
               :class="
                 selectedProjectId === project.id
-                  ? 'border-[#8f784d] bg-[#181611]'
-                  : 'border-[#2d2d2d] hover:border-[#5f5544] hover:bg-[#161513]'
+                  ? 'border-[#5f8cff] bg-[#14223a]'
+                  : 'border-[#2d2d2d] hover:border-[#4f76c7] hover:bg-[#131c2a]'
               "
               @click="openProjectManagerFromCard(project.id)"
               @keydown.enter.prevent="openProjectManagerFromCard(project.id)"
@@ -455,7 +455,7 @@ watch(
               <div class="mt-3 flex items-center gap-2">
                 <button
                   type="button"
-                  class="rounded-md border border-[#3a3731] px-2.5 py-1 text-[11px] text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+                  class="rounded-md border border-[#243654] px-2.5 py-1 text-[11px] text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
                   @click.stop="openProjectEditorFromCard(project.id)"
                 >
                   수정
@@ -486,7 +486,7 @@ watch(
               :class="
                 activeEditorPanel === null
                   ? 'border-blue-500 bg-blue-600 text-white'
-                  : 'border-[#3a3731] text-zinc-200 hover:border-[#5f5544] hover:text-white'
+                  : 'border-[#243654] text-zinc-200 hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white'
               "
               @click="activeEditorPanel = null"
             >
@@ -505,7 +505,7 @@ watch(
               :class="
                 activeEditorPanel === 'settings'
                   ? 'border-blue-500 bg-blue-600 text-white'
-                  : 'border-[#3a3731] text-zinc-200 hover:border-[#5f5544] hover:text-white'
+                  : 'border-[#243654] text-zinc-200 hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white'
               "
               @click="activeEditorPanel = 'settings'"
             >
@@ -532,7 +532,7 @@ watch(
                   :href="link.url"
                   target="_blank"
                   rel="noreferrer"
-                  class="inline-flex items-center rounded-md border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+                  class="inline-flex items-center rounded-md border border-[#243654] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
                 >
                   {{ link.name }} 열기
                 </a>
@@ -752,7 +752,7 @@ watch(
               :href="link.url"
               target="_blank"
               rel="noreferrer"
-              class="inline-flex items-center rounded-md border border-[#3a3731] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f5544] hover:text-white"
+              class="inline-flex items-center rounded-md border border-[#243654] px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#5f8cff] hover:bg-[#101a2c] hover:text-white"
             >
               {{ link.name }} 열기
             </a>
