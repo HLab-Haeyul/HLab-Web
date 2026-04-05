@@ -10,6 +10,12 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: '개인 소프트웨어 연구실',
       impact: '업무 기록률 +31% 상승',
       stack: ['Vue 3', 'ECharts', 'FastAPI', 'Jenkins', 'GCP'],
+      role: '풀스택 개발자',
+      contributions: [
+        'Vue 3 기반 대시보드 구조를 설계하고 운영 화면을 구현했습니다.',
+        'FastAPI API 설계와 Jenkins CI 파이프라인 자동화를 구축했습니다.',
+        'GCP 배포 흐름과 운영 모니터링 환경을 정리했습니다.',
+      ],
       links: [
         { name: 'Git Repository (Web)', url: 'https://github.com/fixgramwork/HLab-Web' },
         { name: 'Git Repository (Backend)', url: 'https://github.com/fixgramwork/HLab-Backend' },
@@ -22,10 +28,19 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: '클라우드 기반 통합 교육 서비스',
       impact: '기존 서비스 대비 사용자 이동 시간 80% 절약',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
+      role: '백엔드 · AI · 팀 리더 · 기획',
+      contributions: [
+        '서비스 아키텍쳐 설계',
+        'AI 수업 자료 기능 개발',
+        '보안 설계',
+        '시간표 관리 기능 API 개발',
+        'CI/CD 환경 설정',
+        '서비스 기획',
+      ],
       links: [
         {
           name: 'Workspace Notion',
-          url: 'https://victorious-secure-70d.notion.site/1c71a084dc46804aa4fafbff39fd7dd9?source=copy_link',
+          url: 'https://bssm.notion.site/Paletto-264f4899fc868056870de0c479446aca',
         },
         { name: 'Git Organization', url: 'https://github.com/SIZZ-Project' },
       ],
@@ -37,6 +52,11 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: '신뢰성 있는 뉴스 플랫폼',
       impact: '일일 활성 사용자 +15%',
       stack: ['Next', 'TypeScript', 'Tailwind', 'Axios'],
+      role: '프론트엔드 개발자 · AI · 기술 결정자',
+      contributions: [
+        '프론트 뉴스 피드 화면 개발',
+        '기사 분류 모델 개발',
+      ],
       links: [
         {
           name: 'Workspace Notion',
@@ -54,6 +74,12 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: 'Personal software research lab',
       impact: 'Work logging rate +31%',
       stack: ['Vue 3', 'ECharts', 'FastAPI', 'Jenkins', 'GCP'],
+      role: 'Full-Stack Developer',
+      contributions: [
+        'Designed the Vue 3 dashboard structure and implemented operations-facing UI screens.',
+        'Built FastAPI endpoints and automated CI pipelines with Jenkins.',
+        'Organized the GCP deployment flow and monitoring setup.',
+      ],
       links: [
         { name: 'Git Repository (Web)', url: 'https://github.com/fixgramwork/HLab-Web' },
         { name: 'Git Repository (Backend)', url: 'https://github.com/fixgramwork/HLab-Backend' },
@@ -66,10 +92,16 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: 'Cloud-based integrated education service',
       impact: 'User navigation time reduced by 80%',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
+      role: 'Backend, AI, Team Leader, and Planner',
+      contributions: [
+        'Implemented core Spring Boot APIs with authentication and authorization flows.',
+        'Structured AWS infrastructure and deployment pipelines.',
+        'Improved team productivity with Notion documentation and Git collaboration rules.',
+      ],
       links: [
         {
           name: 'Workspace Notion',
-          url: 'https://victorious-secure-70d.notion.site/1c71a084dc46804aa4fafbff39fd7dd9?source=copy_link',
+          url: 'https://bssm.notion.site/Paletto-264f4899fc868056870de0c479446aca',
         },
         { name: 'Git Organization', url: 'https://github.com/SIZZ-Project' },
       ],
@@ -81,6 +113,11 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
       summary: 'Reliable news platform',
       impact: 'Daily active users +15%',
       stack: ['Next', 'TypeScript', 'Tailwind', 'Axios'],
+      role: 'Frontend Developer, AI, and Technical Decision Maker',
+      contributions: [
+        'Developed frontend news feed screens.',
+        'Developed an article classification model.',
+      ],
       links: [
         {
           name: 'Workspace Notion',

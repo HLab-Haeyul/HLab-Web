@@ -1,16 +1,26 @@
 <script setup lang="ts">
+<<<<<<< HEAD:src/pages/admin/project-manager/ui/Page.vue
 import { AdminSidebarNav, useAdminNavigation } from '@/widgets/admin'
 import { MarkdownLiveEditor } from '@/shared/ui'
 import { useAdminProjectManagerPage } from '../model/useAdminProjectManagerPage'
 import AdminWorkspaceLayout from '@/widgets/admin-workspace'
 
 const { navItems, activePath, handleLogout } = useAdminNavigation()
+=======
+import AdminSidebarNav from '@/components/organisms/AdminSidebarNav.vue'
+import AdminProjectEditorPanel from '@/components/organisms/AdminProjectEditorPanel.vue'
+import AdminProjectManagerIntroPanel from '@/components/organisms/AdminProjectManagerIntroPanel.vue'
+import AdminProjectSelectionPanel from '@/components/organisms/AdminProjectSelectionPanel.vue'
+import { useAdminProjectManager } from '@/composables/useAdminProjectManager'
+
+>>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/templates/AdminProjectManagerPageTemplate.vue
 const {
   basePath,
   adminPath,
   projects,
   selectedProjectId,
   selectedProject,
+<<<<<<< HEAD:src/pages/admin/project-manager/ui/Page.vue
   editTitle,
   editSummary,
   editImpact,
@@ -21,6 +31,9 @@ const {
   editCollaborationSiteName,
   editCollaborationSiteUrl,
   editCollaborationLinks,
+=======
+  editorDraft,
+>>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/templates/AdminProjectManagerPageTemplate.vue
   activeEditorPanel,
   renderedTroubleshooting,
   createNewProject,
@@ -31,7 +44,11 @@ const {
   removeCollaborationLink,
   saveSelectedProject,
   handleSelectProjectImage,
+<<<<<<< HEAD:src/pages/admin/project-manager/ui/Page.vue
 } = useAdminProjectManagerPage()
+=======
+} = useAdminProjectManager()
+>>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/templates/AdminProjectManagerPageTemplate.vue
 </script>
 
 <template>
@@ -42,6 +59,7 @@ const {
       </div>
     </template>
 
+<<<<<<< HEAD:src/pages/admin/project-manager/ui/Page.vue
     <template #hero>
       <section class="rounded-[1.6rem] border border-[#243654] bg-[#0a0f17d9] p-5 sm:p-7">
         <p class="text-xs uppercase tracking-[0.12em] text-[var(--text-soft)]">ADMIN / PROJECTS</p>
@@ -423,32 +441,44 @@ const {
           </div>
     </section>
   </AdminWorkspaceLayout>
+=======
+      <div class="space-y-5">
+        <AdminProjectManagerIntroPanel
+          :project-count="projects.length"
+          :admin-path="adminPath"
+          :base-path="basePath"
+          @create-project="createNewProject"
+        />
+
+        <AdminProjectSelectionPanel
+          :projects="projects"
+          :selected-project-id="selectedProjectId"
+          @open-project="openProjectManagerFromCard"
+          @edit-project="openProjectEditorFromCard"
+          @delete-project="deleteProjectFromCard"
+        />
+
+        <AdminProjectEditorPanel
+          :selected-project="selectedProject"
+          :rendered-troubleshooting="renderedTroubleshooting"
+          v-model:active-editor-panel="activeEditorPanel"
+          v-model:title="editorDraft.title"
+          v-model:summary="editorDraft.summary"
+          v-model:impact="editorDraft.impact"
+          v-model:team-role="editorDraft.teamRole"
+          v-model:image-src="editorDraft.imageSrc"
+          v-model:image-alt="editorDraft.imageAlt"
+          v-model:troubleshooting="editorDraft.troubleshooting"
+          v-model:collaboration-site-name="editorDraft.collaborationSiteName"
+          v-model:collaboration-site-url="editorDraft.collaborationSiteUrl"
+          v-model:collaboration-links="editorDraft.collaborationLinks"
+          @save="saveSelectedProject"
+          @add-collaboration-link="addCollaborationLink"
+          @remove-collaboration-link="removeCollaborationLink"
+          @select-project-image="handleSelectProjectImage"
+        />
+      </div>
+    </main>
+  </div>
+>>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/templates/AdminProjectManagerPageTemplate.vue
 </template>
-
-<style scoped>
-.markdown-body :deep(h1),
-.markdown-body :deep(h2),
-.markdown-body :deep(h3),
-.markdown-body :deep(h4),
-.markdown-body :deep(h5),
-.markdown-body :deep(h6) {
-  margin: 1.2rem 0 0.6rem;
-  color: #f4f4f5;
-  line-height: 1.35;
-}
-
-.markdown-body :deep(p) {
-  margin: 0 0 0.95rem;
-  color: #e4e4e7;
-}
-
-.markdown-body :deep(ul),
-.markdown-body :deep(ol) {
-  margin: 0 0 1rem;
-  padding-left: 1.25rem;
-}
-
-.markdown-body :deep(li) {
-  margin: 0.35rem 0;
-}
-</style>

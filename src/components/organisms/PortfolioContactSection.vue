@@ -1,0 +1,96 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { PortfolioCopySet } from '@/data/portfolio/types'
+
+const props = defineProps<{
+  copy: PortfolioCopySet
+  isAppLayout: boolean
+}>()
+
+const gmailComposeUrl = computed(
+  () => `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(props.copy.gmailAddress)}`,
+)
+</script>
+
+<template>
+  <section
+    id="contact"
+    class="mt-12 rounded-2xl border border-[#303030] bg-gradient-to-br from-[#141414] to-[#101010] p-5"
+    :class="isAppLayout ? '' : 'md:mt-20'"
+  >
+    <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.contactKicker }}</p>
+    <h2
+      class="mt-3 max-w-[26ch] leading-[1.08] text-zinc-100 [font-family:var(--font-display)]"
+      :class="isAppLayout ? 'text-[clamp(1.3rem,5vw,1.6rem)]' : 'text-[clamp(1.5rem,3.1vw,2.3rem)]'"
+    >
+      {{ copy.contactHeading }}
+    </h2>
+
+    <article class="mt-5 rounded-xl border border-[#2a2a2a] bg-[#111111] p-4">
+      <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.contactInfoTitle }}</p>
+      <div class="mt-3 grid gap-2" :class="isAppLayout ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
+        <div class="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2.5">
+          <p class="text-[11px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.gmailLabel }}</p>
+          <a
+            :href="gmailComposeUrl"
+            target="_blank"
+            rel="noopener"
+            class="mt-1 block text-sm font-medium text-zinc-200 transition hover:text-blue-300"
+          >
+            {{ copy.gmailAddress }}
+          </a>
+        </div>
+        <div class="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2.5">
+          <p class="text-[11px] uppercase tracking-[0.08em] text-zinc-500">{{ copy.contactLabel }}</p>
+          <p class="mt-1 text-sm font-medium text-zinc-200">{{ copy.contactValue }}</p>
+        </div>
+      </div>
+    </article>
+
+    <div :class="isAppLayout ? 'mt-5 grid grid-cols-1 gap-2' : 'mt-6 flex flex-wrap gap-3'">
+      <a
+        class="inline-flex items-center justify-center rounded-full bg-[#6f8fce] px-4 py-3 text-sm font-semibold !text-white shadow-[0_10px_22px_rgba(79,141,255,0.3)] transition hover:bg-[#5f7fbe] hover:!text-white"
+        :class="isAppLayout ? 'w-full' : 'min-w-40'"
+        :href="gmailComposeUrl"
+        target="_blank"
+        rel="noopener"
+      >
+        {{ copy.emailCta }}
+      </a>
+      <a
+        class="inline-flex items-center justify-center rounded-full border border-[#2a2a2a] px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:border-[#6f8fce] hover:text-white"
+        :class="isAppLayout ? 'w-full' : 'min-w-40'"
+        href="https://github.com/fixgramwork"
+        target="_blank"
+        rel="noopener"
+      >
+        {{ copy.githubCta }}
+      </a>
+    </div>
+
+    <div class="mt-6 border-t border-[#2a2a2a] pt-5">
+      <p class="text-xs uppercase tracking-[0.12em] text-zinc-500">{{ copy.studyLinksTitle }}</p>
+      <div
+        class="mt-3 grid gap-2"
+        :class="isAppLayout ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'"
+      >
+        <a
+          v-for="link in copy.studyLinks"
+          :key="link.name"
+          :href="link.url"
+          target="_blank"
+          rel="noopener"
+          class="group flex items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#151515] px-4 py-3 transition hover:border-[#6f8fce] hover:bg-[#1a1a2e]"
+        >
+          <span
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1e1e1e] text-xs font-bold text-blue-300 group-hover:bg-[#252545]"
+            >{{ link.icon }}</span
+          >
+          <span class="text-sm font-medium text-zinc-300 group-hover:text-white">{{
+            link.name
+          }}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</template>

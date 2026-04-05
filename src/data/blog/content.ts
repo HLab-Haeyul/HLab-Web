@@ -1,0 +1,303 @@
+import type { Locale } from '@/data/portfolio/types'
+import type { BlogPageCopySet } from './types'
+
+export type {
+  BlogCategoryKey,
+  BlogPost,
+  PopularPost,
+  BlogCategoryCopy,
+  BlogPageCopySet,
+  BlogPostDetail,
+  BlogPostImage,
+  BlogPostVideo,
+  BlogComment,
+} from './types'
+export { BLOG_CATEGORY_KEYS } from './types'
+
+export const blogPageCopyByLocale: Record<Locale, BlogPageCopySet> = {
+  ko: {
+    kicker: 'STUDY ARCHIVE',
+    heading: '내가 공부한 기록을 쌓는 블로그',
+    description: '기술 실험, 프로젝트 회고, 자기 개발 루틴을 한 곳에 정리합니다.',
+    popularKicker: '인기 글',
+    popularHeading: '인기글',
+    popularDescription: '최근 반응이 좋은 글을 우선 노출합니다.',
+    readLabel: '글 읽기',
+    categories: {
+      tech: {
+        title: '기술',
+        description: '실제 개발 과정에서 검증한 기술 선택과 구현 방법을 정리합니다.',
+      },
+      retrospective: {
+        title: '프로젝트 회고',
+        description: '프로젝트 목표, 시행착오, 개선 포인트를 회고 형식으로 기록합니다.',
+      },
+      selfDev: {
+        title: '자기 개발',
+        description: '학습 습관, 커리어 성장 전략, 실행 루틴을 공유합니다.',
+      },
+    },
+    popularPosts: [
+      {
+        id: 'ko-pop-1',
+        title: 'Vue 3 Composition API 완벽 가이드',
+        excerpt:
+          'Options API에서 Composition API로 전환하면서 배운 핵심 패턴과 실전 팁을 정리합니다.',
+        publishedAt: '2026-02-10',
+        readTime: '12분',
+        tags: ['Vue3', 'CompositionAPI', 'Frontend'],
+        category: 'tech',
+        heroTag: 'Vue3',
+        highlight: '조회수 1,200+',
+        bannerBackground: 'linear-gradient(135deg, #1a3a2a 0%, #0d1f17 100%)',
+      },
+      {
+        id: 'ko-pop-2',
+        title: 'Docker + Nginx 프로덕션 배포 자동화',
+        excerpt: 'Docker Compose와 Nginx 리버스 프록시를 활용한 무중단 배포 파이프라인 구축기.',
+        publishedAt: '2026-01-28',
+        readTime: '15분',
+        tags: ['Docker', 'Nginx', 'DevOps'],
+        category: 'tech',
+        heroTag: 'DevOps',
+        highlight: '조회수 980+',
+        bannerBackground: 'linear-gradient(135deg, #1a2a3a 0%, #0d1720 100%)',
+      },
+      {
+        id: 'ko-pop-3',
+        title: 'HLab-Web 프로젝트 1차 회고',
+        excerpt: '포트폴리오 사이트를 직접 설계하고 배포하면서 겪은 시행착오와 개선 포인트.',
+        publishedAt: '2026-02-15',
+        readTime: '10분',
+        tags: ['회고', 'Vue3', 'Tailwind'],
+        category: 'retrospective',
+        heroTag: '회고',
+        highlight: '조회수 750+',
+        bannerBackground: 'linear-gradient(135deg, #2a1a3a 0%, #170d20 100%)',
+      },
+    ],
+    posts: [
+      {
+        id: 'ko-post-1',
+        title: 'TypeScript 제네릭 실전 패턴 정리',
+        excerpt:
+          '실제 프로젝트에서 자주 사용하는 제네릭 패턴과 유틸리티 타입 활용법을 예제와 함께 설명합니다.',
+        publishedAt: '2026-02-20',
+        readTime: '8분',
+        tags: ['TypeScript', 'Generic', 'Frontend'],
+        category: 'tech',
+      },
+      {
+        id: 'ko-post-2',
+        title: 'Tailwind CSS v4 마이그레이션 경험기',
+        excerpt:
+          'Tailwind CSS v3에서 v4로 전환하며 변경된 설정 방식과 새로운 유틸리티를 정리합니다.',
+        publishedAt: '2026-02-18',
+        readTime: '7분',
+        tags: ['TailwindCSS', 'CSS', 'Frontend'],
+        category: 'tech',
+      },
+      {
+        id: 'ko-post-3',
+        title: 'Pinia 상태 관리 베스트 프랙티스',
+        excerpt:
+          'Vuex 대신 Pinia를 도입하고, store 설계부터 테스트까지 실전에서 적용한 방법을 공유합니다.',
+        publishedAt: '2026-02-12',
+        readTime: '10분',
+        tags: ['Pinia', 'Vue3', 'StateManagement'],
+        category: 'tech',
+      },
+      {
+        id: 'ko-post-4',
+        title: '악성코드 분석 입문: 정적 분석 기초',
+        excerpt:
+          'PE 파일 구조 이해부터 IDA 기본 사용법까지, 악성코드 정적 분석의 첫 걸음을 안내합니다.',
+        publishedAt: '2026-02-05',
+        readTime: '14분',
+        tags: ['보안', '악성코드', '정적분석'],
+        category: 'tech',
+      },
+      {
+        id: 'ko-post-5',
+        title: '개발자 학습 루틴: 매일 1시간 딥워크',
+        excerpt: '매일 1시간 집중 학습을 6개월간 실천하며 느낀 변화와 구체적인 루틴을 공유합니다.',
+        publishedAt: '2026-01-30',
+        readTime: '6분',
+        tags: ['자기개발', '학습루틴', '딥워크'],
+        category: 'selfDev',
+      },
+      {
+        id: 'ko-post-6',
+        title: 'Atomic Design 패턴 실전 적용기',
+        excerpt:
+          'Vue 프로젝트에 Atomic Design을 도입하면서 컴포넌트를 atom, molecule, organism으로 분리한 경험.',
+        publishedAt: '2026-02-22',
+        readTime: '9분',
+        tags: ['AtomicDesign', 'Vue3', '컴포넌트설계'],
+        category: 'retrospective',
+      },
+      {
+        id: 'ko-post-7',
+        title: 'ESLint Flat Config 전환 가이드',
+        excerpt: 'ESLint 9의 flat config 방식으로 전환하면서 마주친 이슈와 해결 방법을 기록합니다.',
+        publishedAt: '2026-01-22',
+        readTime: '5분',
+        tags: ['ESLint', 'DX', 'Tooling'],
+        category: 'tech',
+      },
+      {
+        id: 'ko-post-8',
+        title: '기술 면접 준비: CS 기초 정리 노트',
+        excerpt: '운영체제, 네트워크, 자료구조 핵심 개념을 면접 빈출 질문 중심으로 정리합니다.',
+        publishedAt: '2026-01-15',
+        readTime: '20분',
+        tags: ['CS기초', '면접준비', '자기개발'],
+        category: 'selfDev',
+      },
+    ],
+  },
+  en: {
+    kicker: 'STUDY ARCHIVE',
+    heading: 'A blog to track what I learn',
+    description: 'Technical experiments, retrospectives, and growth notes in one place.',
+    popularKicker: 'Popular Posts',
+    popularHeading: 'Popular Posts',
+    popularDescription: 'Most-read notes are highlighted first.',
+    readLabel: 'Read Post',
+    categories: {
+      tech: {
+        title: 'Tech',
+        description: 'Practical implementation notes and decisions validated in real projects.',
+      },
+      retrospective: {
+        title: 'Project Retrospective',
+        description: 'What worked, what failed, and what to improve in upcoming iterations.',
+      },
+      selfDev: {
+        title: 'Self Development',
+        description: 'Learning routines, career growth strategy, and personal execution systems.',
+      },
+    },
+    popularPosts: [
+      {
+        id: 'en-pop-1',
+        title: 'The Complete Guide to Vue 3 Composition API',
+        excerpt:
+          'Key patterns and practical tips learned while migrating from Options API to Composition API.',
+        publishedAt: '2026-02-10',
+        readTime: '12 min',
+        tags: ['Vue3', 'CompositionAPI', 'Frontend'],
+        category: 'tech',
+        heroTag: 'Vue3',
+        highlight: '1,200+ views',
+        bannerBackground: 'linear-gradient(135deg, #1a3a2a 0%, #0d1f17 100%)',
+      },
+      {
+        id: 'en-pop-2',
+        title: 'Docker + Nginx Production Deployment Automation',
+        excerpt:
+          'Building a zero-downtime deployment pipeline with Docker Compose and Nginx reverse proxy.',
+        publishedAt: '2026-01-28',
+        readTime: '15 min',
+        tags: ['Docker', 'Nginx', 'DevOps'],
+        category: 'tech',
+        heroTag: 'DevOps',
+        highlight: '980+ views',
+        bannerBackground: 'linear-gradient(135deg, #1a2a3a 0%, #0d1720 100%)',
+      },
+      {
+        id: 'en-pop-3',
+        title: 'HLab-Web Project Retrospective #1',
+        excerpt: 'Lessons learned from designing and deploying my portfolio site from scratch.',
+        publishedAt: '2026-02-15',
+        readTime: '10 min',
+        tags: ['Retrospective', 'Vue3', 'Tailwind'],
+        category: 'retrospective',
+        heroTag: 'Retro',
+        highlight: '750+ views',
+        bannerBackground: 'linear-gradient(135deg, #2a1a3a 0%, #170d20 100%)',
+      },
+    ],
+    posts: [
+      {
+        id: 'en-post-1',
+        title: 'TypeScript Generics: Practical Patterns',
+        excerpt:
+          'Commonly used generic patterns and utility type techniques explained with real project examples.',
+        publishedAt: '2026-02-20',
+        readTime: '8 min',
+        tags: ['TypeScript', 'Generic', 'Frontend'],
+        category: 'tech',
+      },
+      {
+        id: 'en-post-2',
+        title: 'Migrating to Tailwind CSS v4',
+        excerpt:
+          'Configuration changes and new utilities when upgrading from Tailwind CSS v3 to v4.',
+        publishedAt: '2026-02-18',
+        readTime: '7 min',
+        tags: ['TailwindCSS', 'CSS', 'Frontend'],
+        category: 'tech',
+      },
+      {
+        id: 'en-post-3',
+        title: 'Pinia State Management Best Practices',
+        excerpt:
+          'From store design to testing — practical approaches after replacing Vuex with Pinia.',
+        publishedAt: '2026-02-12',
+        readTime: '10 min',
+        tags: ['Pinia', 'Vue3', 'StateManagement'],
+        category: 'tech',
+      },
+      {
+        id: 'en-post-4',
+        title: 'Malware Analysis 101: Static Analysis Basics',
+        excerpt:
+          'From PE file structure to basic IDA usage — your first steps in static malware analysis.',
+        publishedAt: '2026-02-05',
+        readTime: '14 min',
+        tags: ['Security', 'Malware', 'StaticAnalysis'],
+        category: 'tech',
+      },
+      {
+        id: 'en-post-5',
+        title: 'Developer Learning Routine: 1 Hour Deep Work Daily',
+        excerpt:
+          'Changes observed after 6 months of daily 1-hour focused learning sessions, with a concrete routine.',
+        publishedAt: '2026-01-30',
+        readTime: '6 min',
+        tags: ['SelfDev', 'LearningRoutine', 'DeepWork'],
+        category: 'selfDev',
+      },
+      {
+        id: 'en-post-6',
+        title: 'Applying Atomic Design in Practice',
+        excerpt:
+          'How I split Vue components into atoms, molecules, and organisms using Atomic Design methodology.',
+        publishedAt: '2026-02-22',
+        readTime: '9 min',
+        tags: ['AtomicDesign', 'Vue3', 'ComponentDesign'],
+        category: 'retrospective',
+      },
+      {
+        id: 'en-post-7',
+        title: 'ESLint Flat Config Migration Guide',
+        excerpt: 'Issues faced and solutions found while migrating to ESLint 9 flat config format.',
+        publishedAt: '2026-01-22',
+        readTime: '5 min',
+        tags: ['ESLint', 'DX', 'Tooling'],
+        category: 'tech',
+      },
+      {
+        id: 'en-post-8',
+        title: 'Tech Interview Prep: CS Fundamentals Notes',
+        excerpt:
+          'OS, networking, and data structure essentials organized around frequently asked interview questions.',
+        publishedAt: '2026-01-15',
+        readTime: '20 min',
+        tags: ['CSBasics', 'InterviewPrep', 'SelfDev'],
+        category: 'selfDev',
+      },
+    ],
+  },
+}
