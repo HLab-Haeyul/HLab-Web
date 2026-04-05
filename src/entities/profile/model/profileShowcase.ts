@@ -9,7 +9,6 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     photoHint: '프로필 사진 준비 중',
     photoSrc: myPictureSrc,
     photoAlt: 'Sample profile portrait',
-<<<<<<< HEAD:src/entities/profile/model/profileShowcase.ts
     awardsTitle: '수상 경력',
     awardPreviewLabel: '수상 미리보기',
     selectedAwardLabel: '선택한 수상',
@@ -23,9 +22,6 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     careerEmptyBody:
       '멘토링 진행, 외주 프로젝트, 회사/팀 실무 경험을 시작 시점, 종료 시점, 총 기간과 함께 여기에 추가할 수 있습니다.',
     careerTimeline: [],
-=======
-    awardsTitle: '수상 기록',
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/data/portfolio/profileShowcase.ts
     awards: [
       {
         year: '2024',
@@ -90,13 +86,15 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2025',
         title: '개발 멘토링',
         organizer: 'BSSM',
-        description: '후배 대상 개발 멘토링을 진행하며 실습 중심의 코드 리뷰와 학습 지도를 수행했습니다.',
+        description:
+          '후배 대상 개발 멘토링을 진행하며 실습 중심의 코드 리뷰와 학습 지도를 수행했습니다.',
       },
       {
         year: '2025',
         title: '해킹 멘토링',
         organizer: 'BSSM',
-        description: '보안 기초부터 CTF 문제 풀이까지 해킹 멘토링을 진행하며 문제 해결 과정을 코칭했습니다.',
+        description:
+          '보안 기초부터 CTF 문제 풀이까지 해킹 멘토링을 진행하며 문제 해결 과정을 코칭했습니다.',
       },
     ],
     hobbiesTitle: '취미',
@@ -127,7 +125,6 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     photoHint: 'Profile photo coming soon',
     photoSrc: myPictureSrc,
     photoAlt: 'Sample profile portrait',
-<<<<<<< HEAD:src/entities/profile/model/profileShowcase.ts
     awardsTitle: 'Awards & Achievements',
     awardPreviewLabel: 'Award Preview',
     selectedAwardLabel: 'Selected Award',
@@ -141,9 +138,6 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
     careerEmptyBody:
       'Add mentoring, freelance, and in-house experience here with start date, end date, and total duration.',
     careerTimeline: [],
-=======
-    awardsTitle: 'Awards',
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/data/portfolio/profileShowcase.ts
     awards: [
       {
         year: '2024',

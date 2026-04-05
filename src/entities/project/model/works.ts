@@ -25,8 +25,9 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     },
     {
       title: 'CLUE',
-      summary: '클라우드 기반 통합 교육 서비스',
-      impact: '기존 서비스 대비 사용자 이동 시간 80% 절약',
+      summary:
+        '4차 산업혁명 시대, 교육 현장의 분산된 플랫폼(Notion·Goorm·Classroom)을 하나로 통합해 수업 자료 분산과 손실을 막는 클라우드 기반 AI 교육 서비스',
+      impact: '세싹 해커톤 U-23 · 서울대 SCSC 온라인 해커톤 1등 · BSSM 전공동아리 발표회 6등',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
       role: '백엔드 · AI · 팀 리더 · 기획',
       contributions: [
@@ -49,14 +50,12 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     },
     {
       title: 'SIZZ',
-      summary: '신뢰성 있는 뉴스 플랫폼',
+      summary:
+        '뉴스의 신뢰성을 검증하고 편향된 정보를 걸러내어, 사람들의 시야를 넓혀주는 신뢰 기반 뉴스 플랫폼',
       impact: '일일 활성 사용자 +15%',
       stack: ['Next', 'TypeScript', 'Tailwind', 'Axios'],
       role: '프론트엔드 개발자 · AI · 기술 결정자',
-      contributions: [
-        '프론트 뉴스 피드 화면 개발',
-        '기사 분류 모델 개발',
-      ],
+      contributions: ['프론트 뉴스 피드 화면 개발', '기사 분류 모델 개발'],
       links: [
         {
           name: 'Workspace Notion',
@@ -89,8 +88,9 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     },
     {
       title: 'CLUE',
-      summary: 'Cloud-based integrated education service',
-      impact: 'User navigation time reduced by 80%',
+      summary:
+        'A cloud-based AI education service that unifies scattered platforms (Notion, Goorm, Classroom) to prevent learning material loss and fragmentation in the Industry 4.0 era',
+      impact: 'Sesac Hackathon U-23 · SNU SCSC Online Hackathon 1st · BSSM Club Presentation 6th',
       stack: ['SpringBoot', 'Fastapi', 'AWS', 'GitAction'],
       role: 'Backend, AI, Team Leader, and Planner',
       contributions: [
@@ -110,7 +110,8 @@ export const worksByLocale: Record<Locale, WorkItem[]> = {
     },
     {
       title: 'SIZZ',
-      summary: 'Reliable news platform',
+      summary:
+        'A trust-based news platform that verifies reliability and filters biased information to broaden public perspective',
       impact: 'Daily active users +15%',
       stack: ['Next', 'TypeScript', 'Tailwind', 'Axios'],
       role: 'Frontend Developer, AI, and Technical Decision Maker',

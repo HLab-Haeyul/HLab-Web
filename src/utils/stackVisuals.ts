@@ -1,5 +1,5 @@
-import { stackTickerByLocale } from '@/data/stack/stackTicker'
-import type { Locale, StackTickerItem } from '@/data/stack/types'
+import { stackTickerByLocale } from '@/entities/stack'
+import type { Locale, StackTickerItem } from '@/entities/stack'
 
 const normalizeStackToken = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, '')
 

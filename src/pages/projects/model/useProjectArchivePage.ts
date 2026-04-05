@@ -152,8 +152,7 @@ export const useProjectArchivePage = () => {
           listHeading: '프로젝트 목록',
           listLead: '',
           detailHeading: '선택한 프로젝트',
-          detailLead:
-            '프로젝트의 핵심 설명, 성과, 기술 스택, 그리고 협업에 사용한 참고 링크를 한 흐름으로 정리했습니다.',
+          detailLead: '',
           selectedLabel: '선택됨',
           summaryLabel: '프로젝트 개요',
           impactLabel: '핵심 성과',

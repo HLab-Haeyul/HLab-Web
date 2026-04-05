@@ -1,25 +1,17 @@
 import type { WorkItem } from '@/entities/project'
 
-<<<<<<< HEAD:src/entities/profile/model/types.ts
 export type { Locale } from '@/shared/types'
-=======
+
+export type StudyLink = {
+  name: string
+  url: string
+  icon: string
+}
+
 export type ExternalLink = {
   name: string
   url: string
 }
-
-export type WorkItem = {
-  title: string
-  summary: string
-  impact: string
-  stack: string[]
-  role?: string
-  contributions?: string[]
-  imageSrc?: string
-  imageAlt?: string
-  links?: ExternalLink[]
-}
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/data/portfolio/types.ts
 
 export type MetricItem = {
   label: string
@@ -114,8 +106,6 @@ export type PortfolioCopySet = {
   principlesHeading: string
   principlesBody: string
   principles: string[]
-<<<<<<< HEAD:src/entities/profile/model/types.ts
-=======
   contactKicker: string
   contactHeading: string
   contactInfoTitle: string
@@ -127,6 +117,5 @@ export type PortfolioCopySet = {
   githubCta: string
   studyLinksTitle: string
   studyLinks: StudyLink[]
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/data/portfolio/types.ts
   footerName: string
 }

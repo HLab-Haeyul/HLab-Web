@@ -1,13 +1,9 @@
 <script setup lang="ts">
-<<<<<<< HEAD:src/entities/project/ui/PortfolioWorkCard.vue
-import type { WorkItem } from '@/entities/portfolio'
-=======
 import { computed } from 'vue'
-import SkillIcon from '@/components/atoms/SkillIcon.vue'
-import { useLocale } from '@/composables/useLocale'
-import type { WorkItem } from '@/data/portfolio/types'
+import SkillIcon from '@/shared/ui/SkillIcon.vue'
+import { useLocale } from '@/shared/lib/routing/useLocale'
+import type { WorkItem } from '@/entities/project/model/types'
 import { resolveStackVisual } from '@/utils/stackVisuals'
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/molecules/PortfolioWorkCard.vue
 
 const props = defineProps<{
   work: WorkItem
@@ -69,15 +65,9 @@ const contributionLabel = computed(() => (locale.value === 'en' ? 'What I Did' :
 
     <ul class="mt-1 flex flex-wrap gap-1.5">
       <li
-<<<<<<< HEAD:src/entities/project/ui/PortfolioWorkCard.vue
-        v-for="item in work.stack"
-        :key="`${work.title}-${item}`"
-        class="ui-surface-chip rounded-full px-1.5 py-0.5 text-xs"
-=======
         v-for="item in props.work.stack"
         :key="`${props.work.title}-${item}`"
         class="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] bg-[#111111] px-2 py-1"
->>>>>>> bcb44d31e79bd4ec3b408f7a2820db0293f0d8dd:src/components/molecules/PortfolioWorkCard.vue
       >
         <SkillIcon
           :image-src="resolveWorkStackVisual(item).imageSrc"
