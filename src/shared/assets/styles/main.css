@@ -1,0 +1,337 @@
+@import url("https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css");
+@import "tailwindcss";
+
+:root {
+  --font-sans: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: var(--font-sans);
+
+  /* Typography scale */
+  --type-label-xs: 0.75rem;
+  --type-label-sm: 0.875rem;
+  --type-body-sm: 0.875rem;
+  --type-body-md: 1rem;
+  --type-body-lg: 1.125rem;
+  --type-data-sm: clamp(1.1rem, 1.8vw, 1.65rem);
+  --type-data-lg: clamp(1.65rem, 3.5vw, 2.15rem);
+  --type-prose-h1: clamp(1.45rem, 2.5vw, 1.75rem);
+  --type-prose-h2: clamp(1.25rem, 2vw, 1.45rem);
+  --type-prose-h3: clamp(1.075rem, 1.65vw, 1.2rem);
+  --type-title-sm: clamp(1.05rem, 2.2vw, 1.5rem);
+  --type-title-sm-compact: clamp(1.25rem, 4.4vw, 1.6rem);
+  --type-title-md: clamp(1.45rem, 3.2vw, 2.25rem);
+  --type-title-md-compact: clamp(1.35rem, 4.8vw, 1.75rem);
+  --type-title-lg: clamp(1.75rem, 4.2vw, 3.2rem);
+  --type-hero: clamp(2.05rem, 5.4vw, 4.1rem);
+  --type-hero-compact: clamp(1.7rem, 7vw, 2.35rem);
+
+  --bg-base: #151515;
+  --bg-gradient:
+    radial-gradient(circle at 18% -8%, rgba(129, 215, 179, 0.08), transparent 28%),
+    radial-gradient(circle at 84% 110%, rgba(255, 255, 255, 0.05), transparent 30%),
+    linear-gradient(180deg, #151515 0%, #161616 52%, #181818 100%);
+  --bg-soft: #1a1a1a;
+  --surface-card: rgba(255, 255, 255, 0.015);
+  --surface-card-strong: rgba(255, 255, 255, 0.02);
+  --surface-card-soft: rgba(255, 255, 255, 0.03);
+  --surface-card-muted: rgba(255, 255, 255, 0.02);
+  --surface-card-contrast: rgba(255, 255, 255, 0.045);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --line-muted: rgba(255, 255, 255, 0.18);
+
+  --text-strong: #f4f4f2;
+  --text-soft: rgba(244, 244, 242, 0.76);
+  --text-muted: rgba(244, 244, 242, 0.46);
+  --text-faint: rgba(244, 244, 242, 0.62);
+  --brand-primary: #81d7b3;
+  --brand-primary-strong: #9fe6c8;
+  --brand-primary-soft: rgba(129, 215, 179, 0.16);
+  --brand-primary-faint: rgba(129, 215, 179, 0.08);
+  --brand-primary-glow: rgba(129, 215, 179, 0.14);
+  --brand-on-primary: #111111;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--text-strong);
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient);
+  background-size: cover;
+  background-repeat: no-repeat;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body,
+button,
+input,
+textarea,
+select,
+option,
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-sans);
+}
+
+#app {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.18);
+  color: #111111;
+}
+
+.ui-surface-panel {
+  border-top: 1px solid var(--line-strong);
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-intro-shell {
+  position: relative;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.ui-intro-card {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-surface-card {
+  border-top: 1px solid var(--line-strong);
+  background: transparent;
+}
+
+.ui-surface-card-soft {
+  border-top: 1px solid var(--line-soft);
+  background: transparent;
+}
+
+.ui-surface-card-contrast {
+  border-top: 1px solid var(--line-strong);
+  background: transparent;
+}
+
+.ui-surface-chip {
+  border: 0;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-soft);
+}
+
+.ui-surface-input {
+  border: 1px solid transparent;
+  border-bottom-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-strong);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.ui-surface-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ui-surface-input:focus {
+  border-bottom-color: var(--brand-primary);
+  outline: none;
+}
+
+.ui-surface-button {
+  border: 1px solid transparent;
+  border-bottom-color: var(--line-strong);
+  background: transparent;
+  color: var(--text-soft);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.ui-surface-button:hover {
+  border-bottom-color: var(--brand-primary);
+  background: rgba(129, 215, 179, 0.04);
+  color: var(--text-strong);
+}
+
+.ui-surface-divider {
+  background: var(--line-strong);
+}
+
+.ui-type-kicker {
+  font-size: var(--type-label-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ui-type-caption {
+  font-size: var(--type-label-xs);
+  line-height: 1.45;
+}
+
+.ui-type-body-sm {
+  font-size: var(--type-body-sm);
+  line-height: 1.6;
+}
+
+.ui-type-body {
+  font-size: var(--type-body-md);
+  line-height: 1.75;
+}
+
+.ui-type-body-lg {
+  font-size: var(--type-body-lg);
+  line-height: 1.75;
+}
+
+.ui-type-title-sm {
+  font-size: var(--type-title-sm);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.ui-type-title-sm-compact {
+  font-size: var(--type-title-sm-compact);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.ui-type-title-md {
+  font-size: var(--type-title-md);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.ui-type-title-md-compact {
+  font-size: var(--type-title-md-compact);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+}
+
+.ui-type-title-lg {
+  font-size: var(--type-title-lg);
+  font-weight: 700;
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.ui-type-hero {
+  font-size: var(--type-hero);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.ui-type-hero-compact {
+  font-size: var(--type-hero-compact);
+  font-weight: 700;
+  line-height: 0.97;
+  letter-spacing: -0.03em;
+}
+
+.blog-page-theme {
+  --bg-base: #101514;
+  --bg-soft: #141a19;
+  --surface-card: rgba(16, 24, 22, 0.88);
+  --surface-card-strong: rgba(255, 255, 255, 0.04);
+  --surface-card-soft: rgba(255, 255, 255, 0.032);
+  --surface-card-muted: rgba(255, 255, 255, 0.026);
+  --surface-card-contrast: rgba(255, 255, 255, 0.055);
+  --line-strong: rgba(255, 255, 255, 0.11);
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --line-muted: rgba(255, 255, 255, 0.18);
+  --text-strong: #eef5f1;
+  --text-soft: rgba(238, 245, 241, 0.76);
+  --text-muted: rgba(238, 245, 241, 0.46);
+  --text-faint: rgba(238, 245, 241, 0.62);
+  --brand-primary: #5fd0a2;
+  --brand-primary-strong: #86e8bf;
+  --brand-primary-soft: rgba(95, 208, 162, 0.16);
+  --brand-primary-faint: rgba(95, 208, 162, 0.08);
+  --brand-primary-glow: rgba(95, 208, 162, 0.18);
+  --brand-on-primary: #08110e;
+  color: var(--text-strong);
+}
+
+.blog-page-theme .ui-surface-panel,
+.blog-page-theme .ui-surface-card,
+.blog-page-theme .ui-surface-card-soft,
+.blog-page-theme .ui-intro-shell,
+.blog-page-theme .ui-intro-card {
+  border: 1px solid var(--line-strong);
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(18, 26, 24, 0.96) 0%, rgba(11, 17, 16, 0.98) 100%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26);
+}
+
+.blog-page-theme .ui-surface-input {
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-strong);
+}
+
+.blog-page-theme .ui-surface-input:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 4px var(--brand-primary-soft);
+}
+
+.blog-page-theme .ui-surface-button {
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+}
+
+.blog-page-theme .ui-surface-button:hover {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-faint);
+  color: var(--brand-primary-strong);
+}
+
+.blog-page-theme .ui-surface-chip {
+  border: 1px solid var(--line-soft);
+  background: var(--surface-card-strong);
+  color: var(--text-soft);
+}
+
+.blog-page-theme .ui-surface-divider {
+  background: var(--line-soft);
+}

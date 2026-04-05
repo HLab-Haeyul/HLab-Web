@@ -16,6 +16,21 @@ services:
     networks:
       - hlab-network
 
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    image: hlab-web-api:dev
+    container_name: hlab-web-api-dev
+    restart: unless-stopped
+    command: ["node", "--watch", "server/index.js"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ..:/app
+    networks:
+      - hlab-network
+
 networks:
   hlab-network:
     driver: bridge

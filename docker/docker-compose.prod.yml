@@ -6,8 +6,20 @@ services:
     image: hlab-web:prod
     container_name: hlab-web-prod
     restart: unless-stopped
+    depends_on:
+      - api
     ports:
       - "3000:80"
+    networks:
+      - hlab-network
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    image: hlab-web-api:prod
+    container_name: hlab-web-api-prod
+    restart: unless-stopped
     networks:
       - hlab-network
 

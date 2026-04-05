@@ -1,0 +1,7 @@
+export { default as PortfolioAwardsSection } from './ui/PortfolioAwardsSection.vue'
+export { default as PortfolioCareerTimelineSection } from './ui/PortfolioCareerTimelineSection.vue'
+export { default as PortfolioCertificatesSection } from './ui/PortfolioCertificatesSection.vue'
+export { default as PortfolioHeroSection } from './ui/PortfolioHeroSection.vue'
+export { default as PortfolioMetricsSection } from './ui/PortfolioMetricsSection.vue'
+export { default as PortfolioPrinciplesSection } from './ui/PortfolioPrinciplesSection.vue'
+export { default as PortfolioStackTickerSection } from './ui/PortfolioStackTickerSection.vue'
