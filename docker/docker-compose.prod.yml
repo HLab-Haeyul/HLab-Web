@@ -3,11 +3,12 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.prod
+      args:
+        VITE_BLOG_API_ENABLED: "false"
+        VITE_PORTFOLIO_METRICS_API_ENABLED: "false"
     image: hlab-web:prod
     container_name: hlab-web-prod
     restart: unless-stopped
-    depends_on:
-      - api
     ports:
       - "3000:80"
     networks:
