@@ -94,7 +94,7 @@ stop_container_by_name() {
   local container_name="$1"
   local container_ids
 
-  container_ids=$(docker ps -q --filter "name=${container_name}" 2>/dev/null)
+  container_ids=$(docker ps -q --filter "name=^/${container_name}$" 2>/dev/null)
   if [ -z "$container_ids" ]; then
     return 0
   fi
