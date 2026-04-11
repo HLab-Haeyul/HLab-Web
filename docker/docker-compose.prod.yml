@@ -6,6 +6,10 @@ services:
       args:
         VITE_BLOG_API_ENABLED: "false"
         VITE_PORTFOLIO_METRICS_API_ENABLED: "false"
+        VITE_ADMIN_ENABLED: "${VITE_ADMIN_ENABLED:-false}"
+        VITE_AUTH_API_URL: "${VITE_AUTH_API_URL:-}"
+        VITE_AUTH_API_BASE_URL: "${VITE_AUTH_API_BASE_URL:-}"
+        VITE_AUTH_API_PATH: "${VITE_AUTH_API_PATH:-}"
     image: hlab-web:prod
     container_name: hlab-web-prod
     restart: unless-stopped
