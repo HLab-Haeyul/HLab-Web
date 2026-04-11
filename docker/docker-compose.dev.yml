@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     environment:
       - VITE_BLOG_API_ENABLED=false
+      - VITE_PORTFOLIO_METRICS_API_ENABLED=false
+      - VITE_ADMIN_ENABLED=true
+      - VITE_ADMIN_AUTH_BYPASS=true
     ports:
       - "3000:3000"
     volumes:

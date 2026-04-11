@@ -8,9 +8,21 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
+const isDockerEnvironment = existsSync('/.dockerenv')
 const apiProxyTarget =
   process.env.VITE_API_PROXY_TARGET?.trim() ||
-  (existsSync('/.dockerenv') ? 'http://api:8080' : 'http://localhost:8080')
+  (isDockerEnvironment ? '' : 'http://localhost:8080')
+
+const apiProxy = apiProxyTarget
+  ? {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api/, ''),
+        ws: true,
+      },
+    }
+  : undefined
 
 export default defineConfig({
   plugins: [
@@ -23,14 +35,7 @@ export default defineConfig({
     outDir: 'dist',
   },
   server: {
-    proxy: {
-      '/api': {
-        target: apiProxyTarget,
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        ws: true,
-      }
-    },
+    proxy: apiProxy,
     port: 3000,
     open: false,
   },
