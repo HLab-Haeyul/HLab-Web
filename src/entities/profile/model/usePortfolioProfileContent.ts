@@ -31,6 +31,29 @@ const cloneAward = (award: AwardItem): AwardItem => ({
 
 const cloneAwards = (awards: AwardItem[]) => awards.map((award) => cloneAward(award))
 
+const createAwardMediaKey = (award: Pick<AwardItem, 'year' | 'title' | 'organizer'>) =>
+  [award.year, award.title, award.organizer].map((value) => value.trim().toLowerCase()).join('::')
+
+const addDefaultAwardImages = (locale: Locale, awards: AwardItem[]) => {
+  const defaultAwardByKey = new Map(
+    profileShowcaseByLocale[locale].awards.map((award) => [createAwardMediaKey(award), award]),
+  )
+
+  return awards.map((award) => {
+    const defaultAward = defaultAwardByKey.get(createAwardMediaKey(award))
+
+    if (!defaultAward?.imageSrc || award.imageSrc) {
+      return cloneAward(award)
+    }
+
+    return {
+      ...award,
+      imageSrc: defaultAward.imageSrc,
+      imageAlt: award.imageAlt ?? defaultAward.imageAlt,
+    }
+  })
+}
+
 const cloneCareerTimelineItem = (item: CareerTimelineItem): CareerTimelineItem => ({
   ...item,
   highlights: [...item.highlights],
@@ -96,10 +119,7 @@ const toAwardItem = (value: unknown): AwardItem | null => {
   }
 }
 
-const toCareerTimelineItem = (
-  value: unknown,
-  fallbackIndex: number,
-): CareerTimelineItem | null => {
+const toCareerTimelineItem = (value: unknown, fallbackIndex: number): CareerTimelineItem | null => {
   if (typeof value !== 'object' || value === null) {
     return null
   }
@@ -179,13 +199,15 @@ const normalizeStoredStore = (value: unknown): PortfolioProfileStore | null => {
     const storedCareerTimeline = storedLocaleRecord.careerTimeline
     const storedStackItems = storedLocaleRecord.stackItems
 
+    const awards = Array.isArray(storedAwards)
+      ? storedAwards
+          .map((award) => toAwardItem(award))
+          .filter((award): award is AwardItem => award !== null)
+      : defaults[locale].awards
+
     defaults[locale] = {
       heroTitle: heroTitle || defaults[locale].heroTitle,
-      awards: Array.isArray(storedAwards)
-        ? storedAwards
-            .map((award) => toAwardItem(award))
-            .filter((award): award is AwardItem => award !== null)
-        : defaults[locale].awards,
+      awards: addDefaultAwardImages(locale, awards),
       careerTimeline: Array.isArray(storedCareerTimeline)
         ? storedCareerTimeline
             .map((item, index) => toCareerTimelineItem(item, index))

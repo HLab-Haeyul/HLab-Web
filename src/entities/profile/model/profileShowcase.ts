@@ -1,6 +1,9 @@
 import type { Locale, ProfileShowcaseCopy } from './types'
 import myPictureSrc from '@/shared/assets/images/MyPicture.jpeg'
 
+const appJamAwardImageSrc = `${import.meta.env.BASE_URL}downloads/APPJam.jpeg`
+const whiteHatAwardImageSrc = `${import.meta.env.BASE_URL}downloads/WhiteHat.jpeg`
+
 export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
   ko: {
     kicker: 'Achievements',
@@ -37,6 +40,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2024',
         title: '2024 동계 AppJam (최우수상, 1등)',
         organizer: 'AppJam',
+        imageSrc: appJamAwardImageSrc,
+        imageAlt: '2024 동계 AppJam 최우수상 상장',
       },
       {
         year: '2025',
@@ -47,6 +52,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2025',
         title: 'WHITEHACK CONST (10등)',
         organizer: 'BSSM',
+        imageSrc: whiteHatAwardImageSrc,
+        imageAlt: 'WHITEHACK CONST 수상 증빙 이미지',
       },
       {
         year: '2025',
@@ -154,6 +161,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2024',
         title: '2024 Winter AppJam (Grand Prize, 1st Place)',
         organizer: 'AppJam',
+        imageSrc: appJamAwardImageSrc,
+        imageAlt: '2024 Winter AppJam grand prize certificate',
       },
       {
         year: '2025',
@@ -164,6 +173,8 @@ export const profileShowcaseByLocale: Record<Locale, ProfileShowcaseCopy> = {
         year: '2025',
         title: 'WHITEHACK CONST (10th Place)',
         organizer: 'BSSM',
+        imageSrc: whiteHatAwardImageSrc,
+        imageAlt: 'WHITEHACK CONST award proof image',
       },
       {
         year: '2025',

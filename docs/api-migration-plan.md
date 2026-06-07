@@ -45,7 +45,7 @@ Suggested payload:
 
 ```json
 {
-  "heroTitle": "McKinsey-style problem solving\n발본색원(拔本塞源)한 개발자",
+  "heroTitle": "McKinsey-style problem solving\n발본색원(拔本塞源)한 엔지니어",
   "awards": [
     {
       "year": "2025",

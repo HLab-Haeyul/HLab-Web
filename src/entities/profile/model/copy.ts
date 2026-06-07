@@ -5,8 +5,8 @@ export const portfolioCopyByLocale: Record<Locale, PortfolioCopySet> = {
   ko: {
     navWork: '작업',
     navPrinciples: '원칙',
-    eyebrow: '백엔드 엔지니어 · 악성코드 분석가',
-    heroTitle: 'McKinsey-style problem solving\n발본색원(拔本塞源)한 개발자',
+    eyebrow: '정보보안 전문가 · 백엔드 개발자',
+    heroTitle: 'McKinsey-style problem solving\n발본색원(拔本塞源)한 엔지니어',
     heroLead:
       '공학은 무한한 탐구의 여정입니다. 저는 이 여정에서 매일 새로운 도전을 즐기며, 깊이 있는 분석과 창의적인 솔루션을 통해 문제를 해결하는 것을 좋아합니다.',
     metrics: [
